@@ -1,0 +1,95 @@
+{
+  "system": {
+    "language": {
+      "label": "語言",
+      "value": {
+        "en": "English",
+        "zhHant": "繁體中文"
+      }
+    },
+    "mode": {
+      "label": "模式",
+      "value": {
+        "operator": "操作員",
+        "administrator": "管理員"
+      }
+    },
+    "menu": {
+      "0": "",
+      "muStaticData": "Static Data",
+      "muSecurity": "Security",
+      "miCurrencyMaintenance": "Currency Maintenance",
+      "miFunctionGroupMaintenance": "Function Group Maintenance",
+      "miUserMaintenance": "User Maintenance",
+      "miPayment": "Payment",
+      "miDeal": "Deal"
+    },
+    "message": {
+      "action": "行為",
+      "add": "新增",
+      "back": "返回",
+      "cancel": "取消",
+      "clear": "清空",
+      "confirm": "確定",
+      "confirmAction": "確定 ${1}",
+      "doYouWantToSaveChange": "確定儲存變更嗎",
+      "dismiss": "關閉",
+      "edit": "更改",
+      "noSearchPerformed": "未執行任何搜尋",
+      "reset": "重置",
+      "save": "儲存",
+      "saveObjectSuccess": "成功儲存 ${1} [${2}]",
+      "signOut": "登出",
+      "search": "搜尋",
+      "searchCriteria": "搜尋條件",
+      "site": "節點",
+      "view": "觀看"
+    },
+    "theme": {
+      "label": "顏色主題",
+      "value": {
+        "light": "淺色主題",
+        "dark": "深色主題"
+      }
+    },
+    "error": {
+      "S9999" : "系統錯誤 - ${1}",
+      "functionGroupMaintenance": {
+        "missingFunctionEntitlement": "Function entitlement is required",
+        "siteFunctionEntitlementRequired": "Both site and function entitlement are required for operator"
+      }
+    }
+  },
+  "login": {
+    "greeting": "歡迎使用",
+    "email": "電郵",
+    "password": "密碼",
+    "signIn": "登入",
+    "success": "登入成功"
+  },
+  "userProfile": {
+    "doYouWantToSignOut": "確定登出嗎",
+    "lastLogin": "上次登入",
+    "name": "名稱",
+    "signOut": "登出"
+  },
+  "currencyMaintenance": {
+    "code": "代號",
+    "name": "名稱",
+    "precision": "小數位",
+    "shortName": "短名稱",
+    "title": "Currency List",
+    "titleEdit": "${1} Currency"
+  },
+  "functionGroupMaintenance": {
+    "code": "代號",
+    "entitlement": {
+      "base": "權限",
+      "function": "功能權限",
+      "site": "節點權限"
+    },
+    "name": "名稱",
+    "title": "Function Group List",
+    "titleEdit": "${1} Function Group"
+  }
+}

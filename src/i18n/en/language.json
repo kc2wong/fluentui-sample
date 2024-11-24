@@ -1,0 +1,96 @@
+{
+  "system": {
+    "language": {
+      "label": "Language",
+      "value": {
+        "en": "English",
+        "zhHant": "繁體中文"
+      }
+    },
+    "mode": {
+      "label": "Mode",
+      "value": {
+        "operator": "Operator",
+        "administrator": "Admin"
+      }
+    },
+    "menu": {
+      "0": "",
+      "muStaticData": "Static Data",
+      "muSecurity": "Security",
+      "miCurrencyMaintenance": "Currency Maintenance",
+      "miFunctionGroupMaintenance": "Function Group Maintenance",
+      "miUserMaintenance": "User Maintenance",
+      "miPayment": "Payment",
+      "miDeal": "Deal"
+    },
+    "message": {
+      "action": "Action",
+      "add": "Add",
+      "back": "Back",
+      "cancel": "Cancel",
+      "clear": "Clear",
+      "confirm": "Confirm",
+      "confirmAction": "Confirm ${1}",
+      "doYouWantToSaveChange": "Do you want to save the changes",
+      "dismiss": "Dismiss",
+      "edit": "Edit",
+      "noSearchPerformed": "No search performed",
+      "reset": "Reset",
+      "save": "Save",
+      "saveObjectSuccess": "${1} [${2}] is saved successfully",
+      "search": "Search",
+      "searchCriteria": "Search Criteria",
+      "signOut": "Sign Out",
+      "site": "Site",
+      "view": "View"
+    },
+    "theme": {
+      "label": "Theme",
+      "value": {
+        "light": "Light Theme",
+        "dark": "Dark Theme"
+      }
+    },
+    "error": {
+      "S9999": "System error - ${1}",
+      "functionGroupMaintenance": {
+        "missingFunctionEntitlement": "Function entitlement is required",
+        "siteFunctionEntitlementRequired": "Both site and function entitlement are required for operator"
+      }
+    }
+  },
+  "login": {
+    "greeting": "Welcome to",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "success": "Login success"
+  },
+  "userProfile": {
+    "doYouWantToSignOut": "Do you want to sign out",
+    "lastLogin": "Last login",
+    "name": "Name",
+    "signOut": "Sign Out"
+  },
+  "currencyMaintenance": {
+    "code": "Code",
+    "name": "Name",
+    "precision": "Precision",
+    "shortName": "Short Name",
+    "title": "Currency List",
+    "titleEdit": "${1} Currency"
+  },
+  "functionGroupMaintenance": {
+    "code": "Code",
+    "entitlement": {
+      "base": "Entitlement",
+      "function": "Function Entitlement",
+      "site": "Site Entitlement"
+    },
+    "name": "Name",
+    "title": "Function Group List",
+    "titleEdit": "${1} Function Group"
+  }
+
+}

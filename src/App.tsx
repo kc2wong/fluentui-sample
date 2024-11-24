@@ -1,26 +1,44 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
 
-function App() {
+import languageEn from './i18n/en/language.json';
+import languageZhHant from './i18n/zhHant/language.json';
+import i18next from 'i18next';
+import { I18nextProvider, initReactI18next } from 'react-i18next';
+import { Main } from './Main';
+import { LoginPage } from './pages/LoginPage';
+import { useAtomValue } from 'jotai';
+// import { authentication } from './states/authentication';
+import { ThemedAppProvider } from './contexts/Theme';
+import { MessageProvider } from './contexts/Message';
+import { DialogProvider } from './contexts/Dialog';
+import { PageElementNavigationProvider } from './contexts/Navigation';
+import { authentication } from './states/authentication';
+
+i18next.use(initReactI18next).init({
+  interpolation: { escapeValue: false },
+  lng: 'en',
+  fallbackLng: 'en',
+  resources: {
+    en: { translation: languageEn },
+    zhHant: { translation: languageZhHant },
+  },
+});
+
+const App: React.FC = () => {
+  // const login = useAtomValue(authentication);
+  const authenticationState = useAtomValue(authentication);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ThemedAppProvider>
+      <I18nextProvider i18n={i18next}>
+        <PageElementNavigationProvider>
+          <MessageProvider>
+            <DialogProvider>{authenticationState.login && authenticationState.acknowledge ? <Main /> : <LoginPage />}</DialogProvider>
+          </MessageProvider>
+        </PageElementNavigationProvider>
+      </I18nextProvider>
+    </ThemedAppProvider>
   );
-}
+};
 
 export default App;
