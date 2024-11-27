@@ -191,8 +191,8 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
   const [isDrawerOpen, setIsDrawerOpen] = useState([false, false]); // shortName, name
   const { t } = useTranslation();
 
-  const [state, action] = useAtom(currencyAtom);
-  const initialData = state.activeRecord;
+  const [currencyState, action] = useAtom(currencyAtom);
+  const initialData = currencyState.activeRecord;
 
   const dialogCtx = useContext(DialogContext);
   const navigationCtx = useContext(PageElementNavigationContext);
@@ -226,7 +226,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
   useEffect(() => {
     // append breadcrumb
     const labelKey = 'currencyMaintenance.titleEdit';
-    const mode = state.activeRecord
+    const mode = currencyState.activeRecord
       ? readOnly
         ? 'system.message.view'
         : 'system.message.edit'
@@ -238,7 +238,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
         onBackButtonPressed
       );
     }
-  }, [state.activeRecord, readOnly, onBackButtonPressed, navigationCtx]);
+  }, [currencyState.activeRecord, readOnly, onBackButtonPressed, navigationCtx]);
 
   const handleNameFieldChange = (
     fieldName: 'name' | 'shortName',
@@ -302,7 +302,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
           <span>
             {' '}
             {constructMessage(t, 'currencyMaintenance.titleEdit', [
-              state.activeRecord
+              currencyState.activeRecord
                 ? readOnly
                   ? t('system.message.view')
                   : t('system.message.edit')
@@ -323,7 +323,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
                 <Input
                   {...field}
                   disabled={
-                    readOnly ? undefined : state.activeRecord !== undefined
+                    readOnly ? undefined : currencyState.activeRecord !== undefined
                   }
                   readOnly={readOnly}
                   maxLength={maxCodeLength}

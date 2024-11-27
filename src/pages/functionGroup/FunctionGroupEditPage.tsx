@@ -45,10 +45,7 @@ import { Field } from '../../components/Field';
 import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
 import { Site } from '../../models/site';
 import { sharedDataAtom } from '../../states/sharedData';
-import {
-  FunctionAccess,
-  FunctionTree,
-} from '../../models/functionEntitlement';
+import { FunctionAccess, FunctionTree } from '../../models/functionEntitlement';
 import { functionGroupAtom } from '../../states/functionGroup';
 
 const useStyles = makeStyles({
@@ -98,7 +95,8 @@ const FunctionEntitlementTree: React.FC<{
   functionTreeId: 'operatorFunctionIds' | 'administratorFunctionIds';
   expandedNode: TreeItemValue[];
   t: TFunction;
-}> = ({ control, t, node, functionTreeId, expandedNode }) => {
+  readOnly: boolean;
+}> = ({ control, t, node, functionTreeId, expandedNode, readOnly }) => {
   const styles = useStyles();
   const label = getLabel(t, `system.menu.${node.id}`, node.id);
   const children = 'children' in node ? node.children : [];
@@ -131,19 +129,22 @@ const FunctionEntitlementTree: React.FC<{
                       control={control}
                       render={({ field }) => (
                         <Checkbox
-                          // key={funcId}
                           checked={field.value.includes(funcId)}
                           className={styles.cell}
                           label={a}
-                          onChange={(_ev, data) => {
-                            if (data.checked === true) {
-                              field.onChange([...field.value, funcId]);
-                            } else {
-                              field.onChange(
-                                field.value.filter((v) => v !== funcId)
-                              );
-                            }
-                          }}
+                          onChange={
+                            readOnly
+                              ? undefined
+                              : (_ev, data) => {
+                                  if (data.checked === true) {
+                                    field.onChange([...field.value, funcId]);
+                                  } else {
+                                    field.onChange(
+                                      field.value.filter((v) => v !== funcId)
+                                    );
+                                  }
+                                }
+                          }
                         />
                       )}
                     />
@@ -162,6 +163,7 @@ const FunctionEntitlementTree: React.FC<{
                 node={c as FunctionTree}
                 functionTreeId={functionTreeId}
                 expandedNode={expandedNode}
+                readOnly={readOnly}
               />
             ))}
           </>
@@ -178,7 +180,14 @@ const FunctionEntitlementAccordion: React.FC<{
   openedTreeNode: TreeItemValue[];
   onTreeNodeClick: (item: TreeItemValue, open: boolean) => void;
   control: Control<FormData>;
-}> = ({ functionTreeId, openedTreeNode, onTreeNodeClick, control }) => {
+  readOnly: boolean;
+}> = ({
+  functionTreeId,
+  openedTreeNode,
+  onTreeNodeClick,
+  control,
+  readOnly,
+}) => {
   const { t } = useTranslation();
   const sharedDataState = useAtomValue(sharedDataAtom);
   const treeNode = sharedDataState.resultSet?.functionTree?.find(
@@ -209,6 +218,7 @@ const FunctionEntitlementAccordion: React.FC<{
               }
               expandedNode={openedTreeNode}
               control={control}
+              readOnly={readOnly}
             />
           ))}
         </Tree>
@@ -223,7 +233,7 @@ const FunctionEntitlementAccordion: React.FC<{
   }
 };
 
-type EntitlementTabPageProps = {
+const EntitlementTabPage: React.FC<{
   control: Control<FormData>;
   openedAccordion: string[];
   toggleAccordionOpen: (value: string, open: boolean) => void;
@@ -236,15 +246,15 @@ type EntitlementTabPageProps = {
     openedTreeNode: TreeItemValue[];
     toggleTreeNodeOpen: (node: TreeItemValue, open: boolean) => void;
   };
-};
-
-const EntitlementTabPage: React.FC<EntitlementTabPageProps> = ({
+  readOnly: boolean;
+}> = ({
   control,
   openedAccordion,
   toggleAccordionOpen,
   siteEntitlementConfig,
   functionEntitlementConfig,
-}: EntitlementTabPageProps) => {
+  readOnly,
+}) => {
   const styles = useStyles();
   const { t } = useTranslation();
 
@@ -275,18 +285,25 @@ const EntitlementTabPage: React.FC<EntitlementTabPageProps> = ({
                           )}
                           label={e[0]}
                           labelPosition="after"
-                          onChange={(_ev, data) => {
-                            const siteOfRegion =
-                              siteGroupedByRegion[e[0]].map((s) => s.code) ??
-                              [];
-                            const newValue = field.value.filter(
-                              (s) => !siteOfRegion.includes(s)
-                            );
-                            if (data.checked) {
-                              siteOfRegion.forEach((s) => newValue.push(s));
-                            }
-                            field.onChange(newValue);
-                          }}
+                          onChange={
+                            readOnly
+                              ? undefined
+                              : (_ev, data) => {
+                                  const siteOfRegion =
+                                    siteGroupedByRegion[e[0]].map(
+                                      (s) => s.code
+                                    ) ?? [];
+                                  const newValue = field.value.filter(
+                                    (s) => !siteOfRegion.includes(s)
+                                  );
+                                  if (data.checked) {
+                                    siteOfRegion.forEach((s) =>
+                                      newValue.push(s)
+                                    );
+                                  }
+                                  field.onChange(newValue);
+                                }
+                          }
                           value={e[0]}
                         ></Switch>
                         <div className={styles.siteRow}>
@@ -309,15 +326,24 @@ const EntitlementTabPage: React.FC<EntitlementTabPageProps> = ({
                                 checked={field.value.includes(s.code)}
                                 className={styles.cell}
                                 value={s.code}
-                                onChange={(_ev, data) => {
-                                  if (data.checked === true) {
-                                    field.onChange([...field.value, s.code]);
-                                  } else {
-                                    field.onChange(
-                                      field.value.filter((v) => v !== s.code)
-                                    );
-                                  }
-                                }}
+                                onChange={
+                                  readOnly
+                                    ? undefined
+                                    : (_ev, data) => {
+                                        if (data.checked === true) {
+                                          field.onChange([
+                                            ...field.value,
+                                            s.code,
+                                          ]);
+                                        } else {
+                                          field.onChange(
+                                            field.value.filter(
+                                              (v) => v !== s.code
+                                            )
+                                          );
+                                        }
+                                      }
+                                }
                                 label={siteLabel}
                               />
                             );
@@ -348,6 +374,7 @@ const EntitlementTabPage: React.FC<EntitlementTabPageProps> = ({
         onAccordionClick={toggleAccordionOpen}
         openedTreeNode={functionEntitlementConfig.openedTreeNode}
         onTreeNodeClick={functionEntitlementConfig.toggleTreeNodeOpen}
+        readOnly={readOnly}
       />
     </AccordionItem>
   ) : (
@@ -526,7 +553,12 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
   useEffect(() => {
     // append breadcrumb
     const labelKey = 'functionGroupMaintenance.titleEdit';
-    const mode = 'system.message.edit';
+    const mode = functionGroupState.activeRecord
+      ? readOnly
+        ? 'system.message.view'
+        : 'system.message.edit'
+      : 'system.message.add';
+
     if (!navigationCtx.popPageElementNavigationTill(labelKey, [mode])) {
       navigationCtx.appendPageElementNavigation(
         labelKey,
@@ -534,7 +566,12 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
         onBackButtonPressed
       );
     }
-  }, [functionGroupState.activeRecord, readOnly, onBackButtonPressed, navigationCtx]);
+  }, [
+    functionGroupState.activeRecord,
+    readOnly,
+    onBackButtonPressed,
+    navigationCtx,
+  ]);
 
   const toggleAccordion = (
     id: string,
@@ -700,6 +737,7 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
                           setOpenedAdminFuncEntl
                         ),
                     }}
+                    readOnly={readOnly}
                   />
                 )}
                 {activeTabPage === 'operator' && (
@@ -724,6 +762,7 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
                           setOpenedOperatorFuncEntl
                         ),
                     }}
+                    readOnly={readOnly}
                   />
                 )}
               </div>
