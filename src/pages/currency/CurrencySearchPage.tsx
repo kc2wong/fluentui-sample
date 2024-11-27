@@ -35,7 +35,7 @@ import { emptyStringToUndefined } from '../../utils/objectUtil';
 import { Language } from '../../models/system';
 import { useStyles } from '../common';
 import { SearchCriteriaDrawer } from '../../components/Drawer';
-import { PageElementNavigationContext } from '../../contexts/Navigation';
+import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
 
 const searchSchema = z.object({
   code: z.preprocess(

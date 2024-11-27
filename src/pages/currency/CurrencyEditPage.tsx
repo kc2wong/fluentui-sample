@@ -32,7 +32,7 @@ import { Language, MessageType } from '../../models/system';
 import { useStyles } from '../common';
 import { Field } from '../../components/Field';
 import { DetailEditingDrawer } from '../../components/Drawer';
-import { PageElementNavigationContext } from '../../contexts/Navigation';
+import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
 import { DialogContext } from '../../contexts/Dialog';
 
 // form in drawer for editing multi language name or shortname

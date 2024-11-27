@@ -37,7 +37,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { emptyStringToUndefined } from '../../utils/objectUtil';
 import { useStyles as useCommonStyles } from '../common';
 import { SearchCriteriaDrawer } from '../../components/Drawer';
-import { PageElementNavigationContext } from '../../contexts/Navigation';
+import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
 import { functionGroupAtom } from '../../states/functionGroup';
 
 const useStyles = makeStyles({

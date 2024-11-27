@@ -42,7 +42,7 @@ import { constructMessage } from '../../utils/stringUtil';
 import { Language } from '../../models/system';
 import { useStyles as useCommonStyles } from '../common';
 import { Field } from '../../components/Field';
-import { PageElementNavigationContext } from '../../contexts/Navigation';
+import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
 import { Site } from '../../models/site';
 import { sharedDataAtom } from '../../states/sharedData';
 import {

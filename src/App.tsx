@@ -11,7 +11,7 @@ import { useAtomValue } from 'jotai';
 import { ThemedAppProvider } from './contexts/Theme';
 import { MessageProvider } from './contexts/Message';
 import { DialogProvider } from './contexts/Dialog';
-import { PageElementNavigationProvider } from './contexts/Navigation';
+import { PageElementNavigationProvider } from './contexts/PageElementNavigation';
 import { authentication } from './states/authentication';
 
 i18next.use(initReactI18next).init({

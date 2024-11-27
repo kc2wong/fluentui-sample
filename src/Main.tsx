@@ -1,9 +1,5 @@
 import React, { useContext, useState } from 'react';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-} from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HamburgerMenu from './components/HamburgerMenu';
 import { OverlayMenu } from './components/OverlayMenu';
 
@@ -23,8 +19,9 @@ import { useAtomValue } from 'jotai';
 import { ThemedAppContext } from './contexts/Theme';
 import { CurrencyMaintenancePage } from './pages/currency/CurrencyMaintenancePage';
 import { Language, UiMode } from './models/system';
-import { BreadcrumbNavigation } from './contexts/Navigation';
 import { FunctionGroupMaintenancePage } from './pages/functionGroup/FunctionGroupMaintenancePage';
+import { Breadcrumb } from './components/Breadcrumb';
+import { PageElementNavigationContext } from './contexts/PageElementNavigation';
 
 i18next.use(initReactI18next).init({
   interpolation: { escapeValue: false },
@@ -72,7 +69,7 @@ export const Main: React.FC = () => {
   const styles = useStyles();
   const { i18n } = useTranslation();
   const { theme, setTheme } = useContext(ThemedAppContext);
-  // const [login] = useAtom(authentication);
+  const { pageElementNavigation } = useContext(PageElementNavigationContext);
   const login = useAtomValue(authentication).login;
   const [uiMode, setUiMode] = useState<UiMode>(
     login?.isAdministrator ? 'administrator' : 'operator'
@@ -89,7 +86,12 @@ export const Main: React.FC = () => {
         <header className={styles.header}>
           <div className={styles.headerMenu}>
             <HamburgerMenu toggleMenu={() => setIsMenuOpen(!isMenuOpen)} />
-            {menuData && <BreadcrumbNavigation menuData={menuData} />}
+            {menuData && (
+              <Breadcrumb
+                menuData={menuData}
+                pageElements={pageElementNavigation}
+              />
+            )}
           </div>
           <div className={styles.headerItem}>
             <SystemToolbar
@@ -130,7 +132,10 @@ export const Main: React.FC = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/currency" element={<CurrencyMaintenancePage />} />
-          <Route path="/functiongroup" element={<FunctionGroupMaintenancePage />} />
+          <Route
+            path="/functiongroup"
+            element={<FunctionGroupMaintenancePage />}
+          />
         </Routes>
       </div>
     </Router>

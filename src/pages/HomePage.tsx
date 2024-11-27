@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { PageElementNavigationContext } from '../contexts/Navigation';
+import { PageElementNavigationContext } from '../contexts/PageElementNavigation';
 
 const HomePage: React.FC = () => {
   const navigationCtx = useContext(PageElementNavigationContext);
