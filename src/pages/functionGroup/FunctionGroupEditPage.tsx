@@ -27,7 +27,6 @@ import {
   SaveRegular,
   SubtractSquare16Regular,
 } from '@fluentui/react-icons';
-import { ButtonPanel } from '../../components/ButtonPanel';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { TFunction } from 'i18next';
@@ -47,6 +46,7 @@ import { Site } from '../../models/site';
 import { sharedDataAtom } from '../../states/sharedData';
 import { FunctionAccess, FunctionTree } from '../../models/functionEntitlement';
 import { functionGroupAtom } from '../../states/functionGroup';
+import { Form, Root } from '../../components/Container';
 
 const useStyles = makeStyles({
   tab: {
@@ -633,163 +633,152 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
     }
   };
 
+  const backButton = (
+    <Button icon={<ArrowTurnUpLeftRegular />} onClick={onBackButtonPressed}>
+      {t('system.message.back')}
+    </Button>
+  );
+  const saveButton = (
+    <Button
+      appearance="primary"
+      disabled={missingRequiredField(getValues())}
+      onClick={handleSubmit(onSubmit)}
+      icon={<SaveRegular />}
+    >
+      {t('system.message.save')}
+    </Button>
+  );
+
   return (
-    <div className={commonStyles.root}>
-      <div className={commonStyles.content}>
-        <div className={commonStyles.titleBar}>
-          <span>
-            {' '}
-            {constructMessage(t, 'functionGroupMaintenance.titleEdit', [
-              t('system.message.edit'),
-            ])}
-          </span>
-        </div>
-        <div className={commonStyles.form}>
-          <Controller
-            name="code"
-            control={control}
-            render={({ field }) => (
+    <Root>
+      <Form
+        buttons={readOnly ? [backButton] : [backButton, saveButton]}
+        numColumn={1}
+        styles={{ width: '600px', maxWidth: '50vw' }}
+        title={constructMessage(t, 'functionGroupMaintenance.titleEdit', [
+          t('system.message.edit'),
+        ])}
+      >
+        <Controller
+          name="code"
+          control={control}
+          render={({ field }) => (
+            <Field
+              label={t('functionGroupMaintenance.code')}
+              required
+              validationMessage={errors?.code?.message}
+            >
+              <Input {...field} readOnly={readOnly} maxLength={maxCodeLength} />
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="name"
+          control={control}
+          render={({ field }) => {
+            return (
               <Field
-                label={t('functionGroupMaintenance.code')}
+                label={t('functionGroupMaintenance.name')}
                 required
-                validationMessage={errors?.code?.message}
+                validationMessage={errors?.name?.message}
               >
                 <Input
                   {...field}
                   readOnly={readOnly}
-                  maxLength={maxCodeLength}
+                  maxLength={maxNameLength}
                 />
               </Field>
-            )}
-          />
+            );
+          }}
+        />
 
-          <Controller
-            name="name"
-            control={control}
-            render={({ field }) => {
-              return (
-                <Field
-                  label={t('functionGroupMaintenance.name')}
-                  required
-                  validationMessage={errors?.name?.message}
-                >
-                  <Input
-                    {...field}
-                    readOnly={readOnly}
-                    maxLength={maxNameLength}
-                  />
-                </Field>
-              );
-            }}
-          />
-
-          <Field
-            label={t('functionGroupMaintenance.entitlement.base')}
-            required
-            validationMessage={
-              errors?.administratorFunctionIds?.message ??
-              errors.operatorFunctionIds?.message ??
-              errors.operatorSites?.message
-            }
-          >
-            <div className={styles.tab}>
-              <TabList
-                appearance="subtle"
-                size="small"
-                onTabSelect={(_ev, data) => setActiveTabPage(data.value)}
-                selectedValue={activeTabPage}
-                style={{ width: '100px' }}
-              >
-                <Tab
-                  value="administrator"
-                  className={
-                    activeTabPage === 'administrator' ? 'activeTab' : undefined
-                  }
-                >
-                  {t('system.mode.value.administrator')}
-                </Tab>
-                <Tab
-                  value="operator"
-                  className={
-                    activeTabPage === 'operator' ? 'activeTab' : undefined
-                  }
-                >
-                  {t('system.mode.value.operator')}
-                </Tab>
-              </TabList>
-
-              <div className={styles.panels}>
-                {activeTabPage === 'administrator' && (
-                  <EntitlementTabPage
-                    control={control}
-                    openedAccordion={openedAdminAccordion}
-                    toggleAccordionOpen={(id, checked) =>
-                      toggleAccordion(id, checked, setOpenedAdminAccordion)
-                    }
-                    functionEntitlementConfig={{
-                      functionTreeId: 'administrator',
-                      openedTreeNode: openedAdminFuncEntl,
-                      toggleTreeNodeOpen: (node, open) =>
-                        toggleOpenedTreeNode(
-                          node,
-                          open,
-                          openedAdminFuncEntl,
-                          setOpenedAdminFuncEntl
-                        ),
-                    }}
-                    readOnly={readOnly}
-                  />
-                )}
-                {activeTabPage === 'operator' && (
-                  <EntitlementTabPage
-                    control={control}
-                    openedAccordion={openedOperatorAccordion}
-                    toggleAccordionOpen={(id, checked) =>
-                      toggleAccordion(id, checked, setOpenedOperatorAccordion)
-                    }
-                    siteEntitlementConfig={{
-                      language: selectedLanguage,
-                      siteGroupedByRegion: groupedByRegion,
-                    }}
-                    functionEntitlementConfig={{
-                      functionTreeId: 'operator',
-                      openedTreeNode: openedOperatorFuncEntl,
-                      toggleTreeNodeOpen: (node, open) =>
-                        toggleOpenedTreeNode(
-                          node,
-                          open,
-                          openedOperatorFuncEntl,
-                          setOpenedOperatorFuncEntl
-                        ),
-                    }}
-                    readOnly={readOnly}
-                  />
-                )}
-              </div>
-            </div>
-          </Field>
-          <ButtonPanel className={commonStyles.buttonPanel}>
-            <Button
-              icon={<ArrowTurnUpLeftRegular />}
-              onClick={onBackButtonPressed}
+        <Field
+          label={t('functionGroupMaintenance.entitlement.base')}
+          required
+          validationMessage={
+            errors?.administratorFunctionIds?.message ??
+            errors.operatorFunctionIds?.message ??
+            errors.operatorSites?.message
+          }
+        >
+          <div className={styles.tab}>
+            <TabList
+              appearance="subtle"
+              size="small"
+              onTabSelect={(_ev, data) => setActiveTabPage(data.value)}
+              selectedValue={activeTabPage}
+              style={{ width: '100px' }}
             >
-              {t('system.message.back')}
-            </Button>
-            {readOnly ? (
-              <></>
-            ) : (
-              <Button
-                appearance="primary"
-                disabled={missingRequiredField(getValues())}
-                onClick={handleSubmit(onSubmit)}
-                icon={<SaveRegular />}
+              <Tab
+                value="administrator"
+                className={
+                  activeTabPage === 'administrator' ? 'activeTab' : undefined
+                }
               >
-                {t('system.message.save')}
-              </Button>
-            )}
-          </ButtonPanel>
-        </div>
-      </div>
-    </div>
+                {t('system.mode.value.administrator')}
+              </Tab>
+              <Tab
+                value="operator"
+                className={
+                  activeTabPage === 'operator' ? 'activeTab' : undefined
+                }
+              >
+                {t('system.mode.value.operator')}
+              </Tab>
+            </TabList>
+
+            <div className={styles.panels}>
+              {activeTabPage === 'administrator' && (
+                <EntitlementTabPage
+                  control={control}
+                  openedAccordion={openedAdminAccordion}
+                  toggleAccordionOpen={(id, checked) =>
+                    toggleAccordion(id, checked, setOpenedAdminAccordion)
+                  }
+                  functionEntitlementConfig={{
+                    functionTreeId: 'administrator',
+                    openedTreeNode: openedAdminFuncEntl,
+                    toggleTreeNodeOpen: (node, open) =>
+                      toggleOpenedTreeNode(
+                        node,
+                        open,
+                        openedAdminFuncEntl,
+                        setOpenedAdminFuncEntl
+                      ),
+                  }}
+                  readOnly={readOnly}
+                />
+              )}
+              {activeTabPage === 'operator' && (
+                <EntitlementTabPage
+                  control={control}
+                  openedAccordion={openedOperatorAccordion}
+                  toggleAccordionOpen={(id, checked) =>
+                    toggleAccordion(id, checked, setOpenedOperatorAccordion)
+                  }
+                  siteEntitlementConfig={{
+                    language: selectedLanguage,
+                    siteGroupedByRegion: groupedByRegion,
+                  }}
+                  functionEntitlementConfig={{
+                    functionTreeId: 'operator',
+                    openedTreeNode: openedOperatorFuncEntl,
+                    toggleTreeNodeOpen: (node, open) =>
+                      toggleOpenedTreeNode(
+                        node,
+                        open,
+                        openedOperatorFuncEntl,
+                        setOpenedOperatorFuncEntl
+                      ),
+                  }}
+                  readOnly={readOnly}
+                />
+              )}
+            </div>
+          </div>
+        </Field>
+      </Form>
+    </Root>
   );
 };

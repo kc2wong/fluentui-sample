@@ -1,4 +1,5 @@
 import {
+  Caption1,
   FieldProps as FlientUiFieldProps,
   Label,
   makeStyles,
@@ -6,6 +7,7 @@ import {
   tokens,
 } from '@fluentui/react-components';
 import { ErrorCircleFilled } from '@fluentui/react-icons';
+import { CSSProperties } from 'react';
 
 const useStyles = makeStyles({
   column: { display: 'flex', flexDirection: 'column', gap: '2px' },
@@ -21,6 +23,9 @@ const useStyles = makeStyles({
     justifyContent: 'flex-end',
     color: tokens.colorStatusDangerForeground1,
   },
+  infoMessageSlot: {
+    height: '15px',
+  },
   errorIcon: {
     marginRight: '4px',
   },
@@ -28,6 +33,8 @@ const useStyles = makeStyles({
 
 type FieldProps = FlientUiFieldProps & {
   validationMessage?: string;
+  infoMessage?: string;
+  style?: CSSProperties;
   label: string;
 };
 
@@ -35,11 +42,13 @@ export const Field: React.FC<FieldProps> = ({
   children,
   label,
   validationMessage,
+  infoMessage,
+  style,
   ...others
 }: FieldProps) => {
   const styles = useStyles();
   return (
-    <div className={styles.column}>
+    <div className={styles.column} style={style}>
       <div className={styles.row}>
         {/* First Row: Label and Error Message */}
         <Label required={others.required}>{label}</Label>
@@ -52,6 +61,13 @@ export const Field: React.FC<FieldProps> = ({
       </div>
       {/* Second Row: child */}
       <>{children}</>
+      {infoMessage ? (
+        <Caption1 align="end" italic>
+          {infoMessage}
+        </Caption1>
+      ) : (
+        <div className={styles.infoMessageSlot} />
+      )}
     </div>
   );
 };

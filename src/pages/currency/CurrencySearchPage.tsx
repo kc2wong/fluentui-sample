@@ -1,9 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import {
   tokens,
-  Toolbar,
   ToolbarButton,
-  Field,
   Input,
   Table,
   TableBody,
@@ -36,6 +34,8 @@ import { Language } from '../../models/system';
 import { useStyles } from '../common';
 import { SearchCriteriaDrawer } from '../../components/Drawer';
 import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
+import { Form, Root } from '../../components/Container';
+import { Field } from '../../components/Field';
 
 const searchSchema = z.object({
   code: z.preprocess(
@@ -86,7 +86,6 @@ const SearchDrawer = ({ t, isOpen, onOpenChange }: SearchDrawerProps) => {
       })}
       t={t}
     >
-      <div className={styles.form}>
         <Controller
           name="code"
           control={control}
@@ -112,7 +111,6 @@ const SearchDrawer = ({ t, isOpen, onOpenChange }: SearchDrawerProps) => {
             </Field>
           )}
         />
-      </div>
     </SearchCriteriaDrawer>
   );
 };
@@ -150,7 +148,6 @@ const drawerOpenAtom = atom(false);
 export const CurrencySearchPage: React.FC<CurrencySearchPageProps> = (
   props: CurrencySearchPageProps
 ) => {
-  const styles = useStyles();
   const [isDrawerOpen, setIsDrawerOpen] = useAtom(drawerOpenAtom);
   const [state, action] = useAtom(currencyAtom);
   const [selectedCcyCode, setSelectedCcyCode] = useState<string | undefined>(
@@ -196,63 +193,83 @@ export const CurrencySearchPage: React.FC<CurrencySearchPageProps> = (
     }
   }, [navigationCtx]);
 
+  const toolbarButtonRefresh = (
+    <ToolbarButton
+      aria-label="Refresh"
+      disabled={state.resultSet === undefined}
+      icon={<ArrowClockwiseRegular />}
+      onClick={() => {
+        action({ refresh: {} });
+      }}
+    />
+  );
+
+  const toolbarButtonAdd = (
+    <ToolbarButton
+      aria-label="Add"
+      icon={<AddCircleRegular />}
+      onClick={() => {
+        action({ new: {} });
+        props.onAddButtonPressed();
+      }}
+    />
+  );
+
+  const toolbarButtonFilter = (
+    <ToolbarButton
+      aria-label="Filter"
+      icon={<FilterRegular />}
+      onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+    />
+  );
+
+  const toolbarButtonEdit = (
+    <ToolbarButton
+      aria-label="Edit"
+      disabled={selectedCcyCode === undefined}
+      icon={<EditRegular />}
+      onClick={() => {
+        if (selectedCcyCode) {
+          action({ edit: { code: selectedCcyCode } });
+          props.onEditButtonPressed();
+        }
+      }}
+    />
+  );
+
+  const toolbarButtonView = (
+    <ToolbarButton
+      aria-label="View"
+      disabled={selectedCcyCode === undefined}
+      icon={<EyeRegular />}
+      onClick={() => {
+        if (selectedCcyCode) {
+          action({ view: { code: selectedCcyCode } });
+          props.onViewButtonPressed();
+        }
+      }}
+    />
+  );
+
   return (
-    <div className={styles.root}>
+    <Root>
       <SearchDrawer
         isOpen={isDrawerOpen}
         onOpenChange={(open) => setIsDrawerOpen(open)}
         t={t}
       />
 
-      <div className={styles.content}>
-        <div className={styles.titleBar}>
-          <span>{t('currencyMaintenance.title')}</span>
-          <Toolbar aria-label="Default">
-            <ToolbarButton
-              aria-label="Filter"
-              icon={<FilterRegular />}
-              onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-            />
-            <ToolbarButton
-              aria-label="Refresh"
-              disabled={state.resultSet === undefined}
-              icon={<ArrowClockwiseRegular />}
-              onClick={() => {
-                action({ refresh: {} });
-              }}
-            />
-            <ToolbarButton
-              aria-label="Add"
-              icon={<AddCircleRegular />}
-              onClick={() => {
-                action({ new: {} });
-                props.onAddButtonPressed();
-              }}
-            />
-            <ToolbarButton
-              aria-label="Edit"
-              disabled={selectedCcyCode === undefined}
-              icon={<EditRegular />}
-              onClick={() => {
-                if (selectedCcyCode) {
-                  action({ edit: { code: selectedCcyCode } });
-                  props.onEditButtonPressed();
-                }
-              }}
-            />
-            <ToolbarButton
-              aria-label="View"
-              disabled={selectedCcyCode === undefined}
-              icon={<EyeRegular />}
-              onClick={() => {
-                if (selectedCcyCode) {
-                  action({ view: { code: selectedCcyCode } });
-                  props.onViewButtonPressed();
-                }
-              }}
-            />
-          </Toolbar>
-        </div>
+      <Form
+        numColumn={1}
+        title={t('currencyMaintenance.title')}
+        toolbarSlot={[
+          toolbarButtonFilter,
+          toolbarButtonRefresh,
+          toolbarButtonAdd,
+          toolbarButtonEdit,
+          toolbarButtonView,
+        ]}
+      >
         {state.resultSet ? (
           <Table arial-label="Default table" style={{ minWidth: '510px' }}>
             <TableHeader>
@@ -293,7 +310,7 @@ export const CurrencySearchPage: React.FC<CurrencySearchPageProps> = (
         ) : (
           <span>{t('system.message.noSearchPerformed')}</span>
         )}
-      </div>
-    </div>
+      </Form>
+    </Root>
   );
 };

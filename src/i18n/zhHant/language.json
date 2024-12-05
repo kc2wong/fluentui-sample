@@ -22,7 +22,8 @@
       "miFunctionGroupMaintenance": "Function Group Maintenance",
       "miUserMaintenance": "User Maintenance",
       "miPayment": "Payment",
-      "miDeal": "Deal"
+      "miDeal": "Deal",
+      "miDealMonitor": "Deal Monitor"
     },
     "message": {
       "action": "行為",
@@ -43,6 +44,7 @@
       "search": "搜尋",
       "searchCriteria": "搜尋條件",
       "site": "節點",
+      "start": "開始",
       "view": "觀看"
     },
     "theme": {
@@ -57,6 +59,9 @@
       "functionGroupMaintenance": {
         "missingFunctionEntitlement": "Function entitlement is required",
         "siteFunctionEntitlementRequired": "Both site and function entitlement are required for operator"
+      },
+      "paymentMaintenance": {
+        "provideOneAmount": "Credit or debit amount only"
       }
     }
   },
@@ -91,5 +96,34 @@
     "name": "名稱",
     "title": "Function Group List",
     "titleEdit": "${1} Function Group"
+  },
+  "paymentMaintenance": {
+    "site": "Site",
+    "account": "Account",
+    "code": "Code",
+    "direction": {
+      "label": "Direction",
+      "value": {
+        "incoming": "Incoming",
+        "outgoing": "Outgoing"
+      }
+    },
+    "bankBuy": "Bank Buy (Credit)",
+    "bankSell": "Bank Sell (Debit)",
+    "instructionId": "Instruction Id",
+    "executeDate": "Execute Date",
+    "fxRef": "FX Ref",
+    "name": "Name",
+    "titleNew": "${1} Payment Detail",
+    "status": {
+      "label": "Status",
+      "value": {
+        "new": "New",
+        "started": "Started",
+        "cancelled": "Cancelled",
+        "rejected": "Rejected",
+        "paired": "Paired"
+      }
+    }    
   }
 }

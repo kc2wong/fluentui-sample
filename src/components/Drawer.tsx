@@ -13,22 +13,21 @@ import {
   SearchRegular,
 } from '@fluentui/react-icons';
 import { ReactElement } from 'react';
-import { ButtonPanel } from './ButtonPanel';
+import { Form } from './Container';
 
 const useStylesDrawer = makeStyles({
   drawerSupplementInfo: { maxWidth: '40vw' },
   drawerSsearchCriteria: { minWidth: '400px', maxWidth: '25vw' },
-  drawerBodyContent: { display: 'flex', flexDirection: 'column', gap: '20px' },
 });
 
 type DrawerComponentProps = {
   children: ReactElement | ReactElement[];
   isOpen: boolean;
   onClose: () => void;
-  position: "start" | "end";
+  position: 'start' | 'end';
+  noPadding: boolean;
   title: string;
   className: string;
-  actionButtons?: ReactElement;
 };
 
 const DrawerComponent: React.FC<DrawerComponentProps> = ({
@@ -36,14 +35,23 @@ const DrawerComponent: React.FC<DrawerComponentProps> = ({
   isOpen,
   onClose,
   position,
+  noPadding,
   title,
   className,
-  actionButtons,
+  // actionButtons,
 }) => {
-  const stylesDrawer = useStylesDrawer();
+  const styles = noPadding
+    ? { paddingLeft: 'unset', paddingTop: '6px' }
+    : { paddingTop: '6px' };
   return (
-    <InlineDrawer className={className} separator open={isOpen} position={position} size="large">
-      <DrawerHeader>
+    <InlineDrawer
+      className={className}
+      separator
+      open={isOpen}
+      position={position}
+      size="large"
+    >
+      <DrawerHeader style={styles}>
         <DrawerHeaderTitle
           action={
             <Button
@@ -58,18 +66,13 @@ const DrawerComponent: React.FC<DrawerComponentProps> = ({
         </DrawerHeaderTitle>
       </DrawerHeader>
 
-      <DrawerBody>
-        <div className={stylesDrawer.drawerBodyContent}>
-          {children}
-          {actionButtons && <ButtonPanel>{actionButtons}</ButtonPanel>}
-        </div>
-      </DrawerBody>
+      <DrawerBody style={styles}>{children}</DrawerBody>
     </InlineDrawer>
   );
 };
 
 type SearchCriteriaDrawerProps = {
-  children: ReactElement | ReactElement[];
+  children: ReactElement[];
   isOpen: boolean;
   onDrawerClose: () => void;
   onClear: () => void;
@@ -89,26 +92,34 @@ export const SearchCriteriaDrawer: React.FC<SearchCriteriaDrawerProps> = ({
 }) => {
   const stylesDrawer = useStylesDrawer();
 
-  const actionButtons = (
-    <>
-      <Button icon={<EraserRegular />} onClick={onClear}>
-        {t('system.message.clear')}
-      </Button>
-      <Button appearance="primary" icon={<SearchRegular />} onClick={onSearch}>
-        {t('system.message.search')}
-      </Button>
-    </>
+  const searchForm = (
+    <Form
+      numColumn={1}
+      buttons={[
+        <Button icon={<EraserRegular />} onClick={onClear}>
+          {t('system.message.reset')}
+        </Button>,
+        <Button
+          appearance="primary"
+          icon={<SearchRegular />}
+          onClick={onSearch}
+        >
+          {t('system.message.search')}
+        </Button>,
+      ]}
+    >
+      {children}
+    </Form>
   );
-
   return (
     <DrawerComponent
-      children={children}
+      children={searchForm}
       isOpen={isOpen}
       onClose={onDrawerClose}
-      position='start'
+      position="start"
+      noPadding={true}
       title={title ?? t('system.message.searchCriteria')}
       className={stylesDrawer.drawerSsearchCriteria}
-      actionButtons={actionButtons}
     />
   );
 };
@@ -134,7 +145,8 @@ export const DetailEditingDrawer: React.FC<DetailEditingDrawerProps> = ({
       children={children}
       isOpen={isOpen}
       onClose={onCloseDrawer}
-      position='end'
+      position="end"
+      noPadding={false}
       title={title}
       className={stylesDrawer.drawerSupplementInfo}
     />

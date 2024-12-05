@@ -1,9 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import {
   tokens,
-  Toolbar,
   ToolbarButton,
-  Field,
   Input,
   Table,
   TableBody,
@@ -35,14 +33,15 @@ import { atom, useAtom } from 'jotai';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { emptyStringToUndefined } from '../../utils/objectUtil';
-import { useStyles as useCommonStyles } from '../common';
 import { SearchCriteriaDrawer } from '../../components/Drawer';
 import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
 import { functionGroupAtom } from '../../states/functionGroup';
+import { Form, Root } from '../../components/Container';
+import { Field } from '../../components/Field';
 
 const useStyles = makeStyles({
   tooltip: {
-    whiteSpace: 'pre-line'
+    whiteSpace: 'pre-line',
   },
 });
 
@@ -68,8 +67,6 @@ type SearchDrawerProps = {
 };
 
 const SearchDrawer = ({ t, isOpen, onOpenChange }: SearchDrawerProps) => {
-  const commonStyles = useCommonStyles();
-
   const [state, action] = useAtom(functionGroupAtom);
 
   const { control, reset, getValues, handleSubmit } = useForm<SearchFormData>({
@@ -95,33 +92,33 @@ const SearchDrawer = ({ t, isOpen, onOpenChange }: SearchDrawerProps) => {
       })}
       t={t}
     >
-      <div className={commonStyles.form}>
-        <Controller
-          name="code"
-          control={control}
-          render={({ field }) => (
-            <Field
-              label={t('functionGroupMaintenance.code')}
-              orientation="horizontal"
-            >
-              <Input {...field} />
-            </Field>
-          )}
-        />
+      {/* <div className={commonStyles.form}> */}
+      <Controller
+        name="code"
+        control={control}
+        render={({ field }) => (
+          <Field
+            label={t('functionGroupMaintenance.code')}
+            orientation="horizontal"
+          >
+            <Input {...field} />
+          </Field>
+        )}
+      />
 
-        <Controller
-          name="name"
-          control={control}
-          render={({ field }) => (
-            <Field
-              label={t('functionGroupMaintenance.name')}
-              orientation="horizontal"
-            >
-              <Input {...field} />
-            </Field>
-          )}
-        />
-      </div>
+      <Controller
+        name="name"
+        control={control}
+        render={({ field }) => (
+          <Field
+            label={t('functionGroupMaintenance.name')}
+            orientation="horizontal"
+          >
+            <Input {...field} />
+          </Field>
+        )}
+      />
+      {/* </div> */}
     </SearchCriteriaDrawer>
   );
 };
@@ -177,7 +174,6 @@ export const FunctionGroupSearchPage: React.FC<FunctionGroupSearchPageProps> = (
   props: FunctionGroupSearchPageProps
 ) => {
   const styles = useStyles();
-  const commonStyles = useCommonStyles();
   const [isDrawerOpen, setIsDrawerOpen] = useAtom(drawerOpenAtom);
   const [state, action] = useAtom(functionGroupAtom);
   const [selectedCcyCode, setSelectedCcyCode] = useState<string | undefined>(
@@ -234,63 +230,79 @@ export const FunctionGroupSearchPage: React.FC<FunctionGroupSearchPageProps> = (
     }
   }, [navigationCtx]);
 
+  const toolbarButtonFilter = (
+    <ToolbarButton
+      aria-label="Filter"
+      icon={<FilterRegular />}
+      onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+    />
+  );
+  const toolbarButtonFilterRefresh = (
+    <ToolbarButton
+      aria-label="Refresh"
+      disabled={state.resultSet === undefined}
+      icon={<ArrowClockwiseRegular />}
+      onClick={() => {
+        action({ refresh: {} });
+      }}
+    />
+  );
+  const toolbarButtonFilterAdd = (
+    <ToolbarButton
+      aria-label="Add"
+      icon={<AddCircleRegular />}
+      onClick={() => {
+        action({ new: {} });
+        props.onAddButtonPressed();
+      }}
+    />
+  );
+  const toolbarButtonFilterEdit = (
+    <ToolbarButton
+      aria-label="Edit"
+      disabled={selectedCcyCode === undefined}
+      icon={<EditRegular />}
+      onClick={() => {
+        if (selectedCcyCode) {
+          action({ edit: { code: selectedCcyCode } });
+          props.onEditButtonPressed();
+        }
+      }}
+    />
+  );
+  const toolbarButtonFilterView = (
+    <ToolbarButton
+      aria-label="View"
+      disabled={selectedCcyCode === undefined}
+      icon={<EyeRegular />}
+      onClick={() => {
+        if (selectedCcyCode) {
+          action({ view: { code: selectedCcyCode } });
+          props.onViewButtonPressed();
+        }
+      }}
+    />
+  );
+
   return (
-    <div className={commonStyles.root}>
+    <Root>
       <SearchDrawer
         isOpen={isDrawerOpen}
         onOpenChange={(open) => setIsDrawerOpen(open)}
         t={t}
       />
 
-      <div className={commonStyles.content}>
-        <div className={commonStyles.titleBar}>
-          <span>{t('functionGroupMaintenance.title')}</span>
-          <Toolbar aria-label="Default">
-            <ToolbarButton
-              aria-label="Filter"
-              icon={<FilterRegular />}
-              onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-            />
-            <ToolbarButton
-              aria-label="Refresh"
-              disabled={state.resultSet === undefined}
-              icon={<ArrowClockwiseRegular />}
-              onClick={() => {
-                action({ refresh: {} });
-              }}
-            />
-            <ToolbarButton
-              aria-label="Add"
-              icon={<AddCircleRegular />}
-              onClick={() => {
-                action({ new: {} });
-                props.onAddButtonPressed();
-              }}
-            />
-            <ToolbarButton
-              aria-label="Edit"
-              disabled={selectedCcyCode === undefined}
-              icon={<EditRegular />}
-              onClick={() => {
-                if (selectedCcyCode) {
-                  action({ edit: { code: selectedCcyCode } });
-                  props.onEditButtonPressed();
-                }
-              }}
-            />
-            <ToolbarButton
-              aria-label="View"
-              disabled={selectedCcyCode === undefined}
-              icon={<EyeRegular />}
-              onClick={() => {
-                if (selectedCcyCode) {
-                  action({ view: { code: selectedCcyCode } });
-                  props.onViewButtonPressed();
-                }
-              }}
-            />
-          </Toolbar>
-        </div>
+      <Form
+        numColumn={1}
+        title={t('functionGroupMaintenance.title')}
+        toolbarSlot={[
+          toolbarButtonFilter,
+          toolbarButtonFilterRefresh,
+          toolbarButtonFilterAdd,
+          toolbarButtonFilterEdit,
+          toolbarButtonFilterView,
+        ]}
+      >
         {state.resultSet ? (
           <Table
             arial-label="Default table"
@@ -325,11 +337,7 @@ export const FunctionGroupSearchPage: React.FC<FunctionGroupSearchPageProps> = (
                   aria-selected={selected}
                   appearance={appearance}
                 >
-                  <TableSelectionCell
-                    checked={selected}
-                    type="radio"
-                    // radioIndicator={{ 'aria-label': 'Select row' }}
-                  />
+                  <TableSelectionCell checked={selected} type="radio" />
                   <TableCell
                     {...columnSizing_unstable.getTableCellProps('code')}
                   >
@@ -353,7 +361,10 @@ export const FunctionGroupSearchPage: React.FC<FunctionGroupSearchPageProps> = (
                     )}
                   >
                     <Tooltip
-                      content={{children: item.funtions.replaceAll(', ', '\u000a'), className: styles.tooltip }}
+                      content={{
+                        children: item.funtions.replaceAll(', ', '\u000a'),
+                        className: styles.tooltip,
+                      }}
                       relationship="description"
                     >
                       <Text truncate>{item.funtions}</Text>
@@ -366,7 +377,7 @@ export const FunctionGroupSearchPage: React.FC<FunctionGroupSearchPageProps> = (
         ) : (
           <span>{t('system.message.noSearchPerformed')}</span>
         )}
-      </div>
-    </div>
+      </Form>
+    </Root>
   );
 };

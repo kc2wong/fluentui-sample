@@ -15,7 +15,6 @@ import {
   SaveRegular,
   TranslateAutoRegular,
 } from '@fluentui/react-icons';
-import { ButtonPanel } from '../../components/ButtonPanel';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { TFunction } from 'i18next';
@@ -29,11 +28,11 @@ import {
 } from '../../utils/objectUtil';
 import { constructMessage } from '../../utils/stringUtil';
 import { Language, MessageType } from '../../models/system';
-import { useStyles } from '../common';
 import { Field } from '../../components/Field';
 import { DetailEditingDrawer } from '../../components/Drawer';
 import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
 import { DialogContext } from '../../contexts/Dialog';
+import { Form, Root } from '../../components/Container';
 
 // form in drawer for editing multi language name or shortname
 const nameMultiLangSchema = z.object(
@@ -66,7 +65,6 @@ const NameMultiLangDrawer = ({
   title,
   t,
 }: NameMultiLangDrawerProps) => {
-  const styles = useStyles();
   useForm<NameMultiLangFormData>({
     defaultValues: initialData,
     resolver: zodResolver(nameMultiLangSchema),
@@ -78,7 +76,7 @@ const NameMultiLangDrawer = ({
       title={title}
       t={t}
     >
-      <div className={styles.form}>
+      <Form numColumn={1}>
         {Object.values(Language).map((lang) => (
           <Field
             label={t(`system.language.value.${lang}`)}
@@ -93,7 +91,7 @@ const NameMultiLangDrawer = ({
             />
           </Field>
         ))}
-      </div>
+      </Form>
     </DetailEditingDrawer>
   );
 };
@@ -187,7 +185,6 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
   onBackButtonPressed,
   readOnly,
 }: CurrencyEditPageProps) => {
-  const styles = useStyles();
   const [isDrawerOpen, setIsDrawerOpen] = useState([false, false]); // shortName, name
   const { t } = useTranslation();
 
@@ -238,7 +235,12 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
         onBackButtonPressed
       );
     }
-  }, [currencyState.activeRecord, readOnly, onBackButtonPressed, navigationCtx]);
+  }, [
+    currencyState.activeRecord,
+    readOnly,
+    onBackButtonPressed,
+    navigationCtx,
+  ]);
 
   const handleNameFieldChange = (
     fieldName: 'name' | 'shortName',
@@ -295,184 +297,179 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
     }
   };
 
+  const backButton = (
+    <Button icon={<ArrowTurnUpLeftRegular />} onClick={onBackButtonPressed}>
+      {t('system.message.back')}
+    </Button>
+  );
+  const saveButton = (
+    <Button
+      appearance="primary"
+      disabled={missingRequiredField(getValues())}
+      onClick={handleSubmit(() => {
+        dialogCtx.showConfirmationDialog({
+          confirmType: 'save',
+          message: t('system.message.doYouWantToSaveChange'),
+          primaryButton: {
+            label: t('system.message.save'),
+            icon: <CheckmarkRegular />,
+            action: () => {
+              action({
+                save: {
+                  currency: { ...initialData, ...getValues() },
+                  successMessage: {
+                    key: 'system.message.saveObjectSuccess',
+                    type: MessageType.Success,
+                    parameters: ['Currency', formValues.code],
+                  },
+                },
+              });
+            },
+          },
+          secondaryButton: {
+            label: t('system.message.cancel'),
+            icon: <DismissRegular />,
+          },
+        });
+      })}
+      icon={<SaveRegular />}
+    >
+      {t('system.message.save')}
+    </Button>
+  );
+
   return (
-    <div className={styles.root}>
-      <div className={styles.content}>
-        <div className={styles.titleBar}>
-          <span>
-            {' '}
-            {constructMessage(t, 'currencyMaintenance.titleEdit', [
-              currencyState.activeRecord
-                ? readOnly
-                  ? t('system.message.view')
-                  : t('system.message.edit')
-                : t('system.message.add'),
-            ])}
-          </span>
-        </div>
-        <div className={styles.form}>
-          <Controller
-            name="code"
-            control={control}
-            render={({ field }) => (
+    <Root>
+      <Form
+        buttons={readOnly ? [backButton] : [backButton, saveButton]}
+        numColumn={1}
+        styles={{ width: '600px', maxWidth: '50vw' }}
+        title={constructMessage(t, 'currencyMaintenance.titleEdit', [
+          currencyState.activeRecord
+            ? readOnly
+              ? t('system.message.view')
+              : t('system.message.edit')
+            : t('system.message.add'),
+        ])}
+      >
+        <Controller
+          name="code"
+          control={control}
+          render={({ field }) => (
+            <Field
+              label={t('currencyMaintenance.code')}
+              required
+              validationMessage={errors?.code?.message}
+            >
+              <Input
+                {...field}
+                disabled={
+                  readOnly
+                    ? undefined
+                    : currencyState.activeRecord !== undefined
+                }
+                readOnly={readOnly}
+                maxLength={maxCodeLength}
+              />
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="shortName"
+          control={control}
+          render={({ field }) => {
+            return (
               <Field
-                label={t('currencyMaintenance.code')}
+                label={t('currencyMaintenance.shortName')}
                 required
-                validationMessage={errors?.code?.message}
+                validationMessage={errors?.shortName?.en?.message}
               >
                 <Input
-                  {...field}
-                  disabled={
-                    readOnly ? undefined : currencyState.activeRecord !== undefined
+                  name={field.name}
+                  disabled={readOnly ? false : isShortNameDrawerOpen}
+                  onChange={(evt, data) =>
+                    handleNameFieldChange(
+                      field.name,
+                      evt.target.name,
+                      data.value
+                    )
                   }
+                  value={field.value[Language.English]}
                   readOnly={readOnly}
-                  maxLength={maxCodeLength}
+                  contentAfter={
+                    <NameMultiLangButton
+                      isOpen={isShortNameDrawerOpen}
+                      onClick={() => toggleDrawer('shortName')}
+                    />
+                  }
                 />
               </Field>
-            )}
-          />
+            );
+          }}
+        />
 
-          <Controller
-            name="shortName"
-            control={control}
-            render={({ field }) => {
-              return (
-                <Field
-                  label={t('currencyMaintenance.shortName')}
-                  required
-                  validationMessage={errors?.shortName?.en?.message}
-                >
-                  <Input
-                    name={field.name}
-                    disabled={readOnly ? false : isShortNameDrawerOpen}
-                    onChange={(evt, data) =>
-                      handleNameFieldChange(
-                        field.name,
-                        evt.target.name,
-                        data.value
-                      )
-                    }
-                    value={field.value[Language.English]}
-                    readOnly={readOnly}
-                    contentAfter={
-                      <NameMultiLangButton
-                        isOpen={isShortNameDrawerOpen}
-                        onClick={() => toggleDrawer('shortName')}
-                      />
-                    }
-                  />
-                </Field>
-              );
-            }}
-          />
-
-          <Controller
-            name="name"
-            control={control}
-            render={({ field }) => {
-              return (
-                <Field
-                  label={t('currencyMaintenance.name')}
-                  required
-                  validationMessage={errors?.name?.en?.message}
-                >
-                  <Input
-                    name={field.name}
-                    disabled={readOnly ? false : isShortNameDrawerOpen}
-                    onChange={(evt, data) =>
-                      handleNameFieldChange(
-                        field.name,
-                        evt.target.name,
-                        data.value
-                      )
-                    }
-                    value={field.value[Language.English]}
-                    readOnly={readOnly}
-                    contentAfter={
-                      <NameMultiLangButton
-                        isOpen={isNameDrawerOpen}
-                        onClick={() => toggleDrawer('name')}
-                      />
-                    }
-                  />
-                </Field>
-              );
-            }}
-          />
-
-          <Controller
-            name="precision"
-            control={control}
-            render={({ field }) => {
-              const { value, ...others } = field;
-              return (
-                <Field
-                  label={t('currencyMaintenance.precision')}
-                  required
-                  validationMessage={errors?.precision?.message}
-                >
-                  {readOnly ? (
-                    <Input {...others} readOnly value={value.toString()} />
-                  ) : (
-                    <SpinButton
-                      {...field}
-                      min={minPrecision}
-                      max={maxPrecision}
-                      onChange={handlePrecisionChange}
-                    />
-                  )}
-                </Field>
-              );
-            }}
-          />
-
-          <ButtonPanel className={styles.buttonPanel}>
-            <Button
-              icon={<ArrowTurnUpLeftRegular />}
-              onClick={onBackButtonPressed}
-            >
-              {t('system.message.back')}
-            </Button>
-            {readOnly ? (
-              <></>
-            ) : (
-              <Button
-                appearance="primary"
-                disabled={missingRequiredField(getValues())}
-                onClick={handleSubmit(() => {
-                  dialogCtx.showConfirmationDialog({
-                    confirmType: 'save',
-                    message: t('system.message.doYouWantToSaveChange'),
-                    primaryButton: {
-                      label: t('system.message.save'),
-                      icon: <CheckmarkRegular />,
-                      action: () => {
-                        action({
-                          save: {
-                            currency: { ...initialData, ...getValues() },
-                            successMessage: {
-                              key: 'system.message.saveObjectSuccess',
-                              type: MessageType.Success,
-                              parameters: ['Currency', formValues.code],
-                            },
-                          },
-                        });
-                      },
-                    },
-                    secondaryButton: {
-                      label: t('system.message.cancel'),
-                      icon: <DismissRegular />,
-                    },
-                  });
-                })}
-                icon={<SaveRegular />}
+        <Controller
+          name="name"
+          control={control}
+          render={({ field }) => {
+            return (
+              <Field
+                label={t('currencyMaintenance.name')}
+                required
+                validationMessage={errors?.name?.en?.message}
               >
-                {t('system.message.save')}
-              </Button>
-            )}
-          </ButtonPanel>
-        </div>
-      </div>
+                <Input
+                  name={field.name}
+                  disabled={readOnly ? false : isShortNameDrawerOpen}
+                  onChange={(evt, data) =>
+                    handleNameFieldChange(
+                      field.name,
+                      evt.target.name,
+                      data.value
+                    )
+                  }
+                  value={field.value[Language.English]}
+                  readOnly={readOnly}
+                  contentAfter={
+                    <NameMultiLangButton
+                      isOpen={isNameDrawerOpen}
+                      onClick={() => toggleDrawer('name')}
+                    />
+                  }
+                />
+              </Field>
+            );
+          }}
+        />
+
+        <Controller
+          name="precision"
+          control={control}
+          render={({ field }) => {
+            const { value, ...others } = field;
+            return (
+              <Field
+                label={t('currencyMaintenance.precision')}
+                required
+                validationMessage={errors?.precision?.message}
+              >
+                {readOnly ? (
+                  <Input {...others} readOnly value={value.toString()} />
+                ) : (
+                  <SpinButton
+                    {...field}
+                    min={minPrecision}
+                    max={maxPrecision}
+                    onChange={handlePrecisionChange}
+                  />
+                )}
+              </Field>
+            );
+          }}
+        />
+      </Form>
+      <div style={{ flex: 1 }}></div>
 
       <NameMultiLangDrawer
         initialData={getValues().shortName}
@@ -495,6 +492,6 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
         title={t('currencyMaintenance.name')}
         t={t}
       />
-    </div>
+    </Root>
   );
 };
