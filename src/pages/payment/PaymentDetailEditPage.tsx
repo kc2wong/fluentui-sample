@@ -505,12 +505,14 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
   }, [paymentState.activeRecord, reset]);
 
   useEffect(() => {
-    if (paymentState.account.length === 1) {
-      setValue('site', paymentState.account[0].site);
-    } else {
-      setValue('site', '');
+    if (isNewPayment) {
+      if (paymentState.account.length === 1) {
+        setValue('site', paymentState.account[0].site);
+      } else {
+        setValue('site', '');
+      }  
     }
-  }, [setValue, paymentState.account]);
+  }, [isNewPayment, setValue, paymentState.account]);
 
   useEffect(() => {
     const unPopuldatedDeal = (paymentState.potentialMatchDeal ?? []).find(
