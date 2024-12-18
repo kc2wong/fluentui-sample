@@ -32,18 +32,16 @@ export function useNotification<T extends BaseState>(
         showSpinner();
       } else if (state.operationEndTime > state.operationStartTime) {
         stopSpinner();
-      }
+        const operationResult = state.operationResult;
+        if (operationResult) {
+          showOperationResultMessage(operationResult);
+        }
 
-      const operationResult = state.operationResult;
-      if (operationResult) {
-        showOperationResultMessage(operationResult);
+        // Execute the additional action
+        if (additionAction) {
+          additionAction(state);
+        }
       }
-
-      // Execute the additional action
-      if (additionAction) {
-        additionAction(state);
-      }
-
       stateVersion.current = state.version;
     }
   }, [

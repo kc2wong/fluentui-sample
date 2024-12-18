@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HamburgerMenu from './components/HamburgerMenu';
 import { OverlayMenu } from './components/OverlayMenu';
@@ -15,13 +15,17 @@ import languageZhHant from './i18n/zhHant/language.json';
 import i18next from 'i18next';
 import { initReactI18next, useTranslation } from 'react-i18next';
 import { authentication } from './states/authentication';
-import { useAtomValue } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import { ThemedAppContext } from './contexts/Theme';
 import { CurrencyMaintenancePage } from './pages/currency/CurrencyMaintenancePage';
 import { Language, UiMode } from './models/system';
 import { FunctionGroupMaintenancePage } from './pages/functionGroup/FunctionGroupMaintenancePage';
 import { Breadcrumb } from './components/Breadcrumb';
 import { PageElementNavigationContext } from './contexts/PageElementNavigation';
+import PaymentMaintenancePage from './pages/payment/PaymentMaintenancePage';
+import { entitledSiteAtom } from './states/entitledSite';
+import { getMenuItemIdByPath } from './pages/common';
+import { MenuItem } from './models/login';
 
 i18next.use(initReactI18next).init({
   interpolation: { escapeValue: false },
@@ -71,8 +75,40 @@ export const Main: React.FC = () => {
   const { theme, setTheme } = useContext(ThemedAppContext);
   const { pageElementNavigation } = useContext(PageElementNavigationContext);
   const login = useAtomValue(authentication).login;
+
+  const findMenuItemById = (
+    menuItem: MenuItem,
+    id: string
+  ): MenuItem | undefined => {
+    if (menuItem.id === id) {
+      return menuItem;
+    } else {
+      return (menuItem.children ?? []).find((item) => {
+        const rtn = findMenuItemById(item, id);
+        return rtn ? menuItem : undefined;
+      });
+    }
+  };
+
+  const defaultUiMode = (): UiMode => {
+    const pathname = window.location.pathname;
+    const menu = login?.menu.find(
+      (m) => findMenuItemById(m, getMenuItemIdByPath(pathname)!) !== undefined
+    );
+    if (menu) {
+      switch (menu.id) {
+        case 'administrator':
+        case 'operator':
+          return menu.id;
+        default:
+          return login?.isAdministrator ? 'administrator' : 'operator';
+      }
+    } else {
+      return login?.isAdministrator ? 'administrator' : 'operator';
+    }
+  };
   const [uiMode, setUiMode] = useState<UiMode>(
-    login?.isAdministrator ? 'administrator' : 'operator'
+    defaultUiMode()
   );
 
   const isLightTheme = theme === 'light';
@@ -80,6 +116,7 @@ export const Main: React.FC = () => {
     i18n.language === 'en' ? Language.English : Language.TraditionalChinese;
 
   const menuData = uiMode === 'administrator' ? login?.menu[0] : login?.menu[1];
+
   return (
     <Router>
       <div className={styles.app}>
@@ -136,6 +173,7 @@ export const Main: React.FC = () => {
             path="/functiongroup"
             element={<FunctionGroupMaintenancePage />}
           />
+          <Route path="/payment" element={<PaymentMaintenancePage />} />
         </Routes>
       </div>
     </Router>

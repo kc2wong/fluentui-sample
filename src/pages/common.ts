@@ -11,6 +11,8 @@ export const useStyles = makeStyles({
     ...shorthands.overflow('hidden'),
     display: 'flex',
     height: '100vh',
+    ...shorthands.flex(1),
+    margin: '20px 0 0 20px',
   },
 
   content: {

@@ -1,11 +1,7 @@
 import {
   Button,
-  Link,
   makeStyles,
   MessageBar,
-  MessageBarBody,
-  MessageBarTitle,
-  Text,
   shorthands,
   tokens,
   Toolbar,
@@ -14,11 +10,6 @@ import {
 } from '@fluentui/react-components';
 import React from 'react';
 import { ReactElement } from 'react';
-import {
-  Dismiss24Regular,
-  EraserRegular,
-  SearchRegular,
-} from '@fluentui/react-icons';
 
 const useStyles = makeStyles({
   root: {
@@ -26,7 +17,7 @@ const useStyles = makeStyles({
     display: 'flex',
     height: '100vh',
     ...shorthands.flex(1),
-    margin: '20px 0 0 20px',
+    margin: `${tokens.spacingHorizontalXXL} 0 0 ${tokens.spacingHorizontalXXL}`,
   },
   titleBar: {
     display: 'flex',
@@ -111,7 +102,12 @@ export const Form: React.FC<FormProps> = ({
   }
   const toolBar = toolbarSlot ? (
     Array.isArray(toolbarSlot) ? (
-      <Toolbar>{toolbarSlot}</Toolbar>
+      <Toolbar>
+        {' '}
+        {toolbarSlot.map((btn, index) =>
+          React.cloneElement(btn, { key: index })
+        )}
+      </Toolbar>
     ) : (
       toolbarSlot
     )

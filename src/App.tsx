@@ -3,7 +3,7 @@ import React from 'react';
 import languageEn from './i18n/en/language.json';
 import languageZhHant from './i18n/zhHant/language.json';
 import i18next from 'i18next';
-import { I18nextProvider, initReactI18next } from 'react-i18next';
+import { initReactI18next } from 'react-i18next';
 import { Main } from './Main';
 import { LoginPage } from './pages/LoginPage';
 import { useAtomValue } from 'jotai';

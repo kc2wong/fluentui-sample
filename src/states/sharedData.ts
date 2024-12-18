@@ -7,14 +7,18 @@ import { searchSite } from '../services/site';
 import { BaseState } from './baseState';
 import { FunctionTree } from '../models/functionEntitlement';
 import { searchFunctionTree } from '../services/functionEntitlement';
+import { Currency } from '../models/currency';
+import { searchCurrency } from '../services/currency';
 
 export type SharedDataPayload = {
+  getCurrency: {};
   getSite: {};
   getFunctionTree: {};
 };
 
 interface SharedDataState extends BaseState {
   resultSet?: {
+    currencies?: Currency[];
     sites?: Site[];
     functionTree?: FunctionTree[];
   };
@@ -45,6 +49,35 @@ const setOperationResult = (
   });
 };
 
+const handleSearchCurrency = async (
+  current: SharedDataState,
+  set: SharedDataAtomSetter
+) => {
+  let beforeState = {
+    ...current,
+    operationStartTime: new Date().getTime(),
+    version: current.version + 1,
+  };
+  set(baseSharedDataAtom, beforeState);
+
+  const searchCurrencyResult = beforeState.resultSet?.currencies ?? (await searchCurrency());
+  const isError = 'code' in searchCurrencyResult;
+  setOperationResult(
+    beforeState,
+    set,
+    isError ? searchCurrencyResult : undefined,
+    isError
+      ? {}
+      : {
+          resultSet: {
+            ...beforeState.resultSet,
+            currencies: searchCurrencyResult
+          },
+          version: beforeState.version + 1,
+        }
+  );
+};
+
 const handleSearchSite = async (
   current: SharedDataState,
   set: SharedDataAtomSetter
@@ -66,8 +99,8 @@ const handleSearchSite = async (
       ? {}
       : {
           resultSet: {
-            sites: searchSiteResult,
-            functionTree: beforeState.resultSet?.functionTree,
+            ...beforeState.resultSet,
+            sites: searchSiteResult
           },
           version: beforeState.version + 1,
         }
@@ -95,8 +128,8 @@ const handleSearchFunctionTree = async (
       ? {}
       : {
           resultSet: {
+            ...beforeState.resultSet,
             functionTree: searchFunctionTreeResult,
-            sites: beforeState.resultSet?.sites,
           },
         }
   );
@@ -120,8 +153,10 @@ export const sharedDataAtom = atom<
       if (payload === RESET) {
         set(baseSharedDataAtom, payload);
       } else {
-        const { getSite, getFunctionTree } = payload;
-        if (getSite) {
+        const { getCurrency, getSite, getFunctionTree } = payload;
+        if (getCurrency) {
+          await handleSearchCurrency(current, set);
+        } else if (getSite) {
           await handleSearchSite(current, set);
         } else if (getFunctionTree) {
           await handleSearchFunctionTree(current, set);

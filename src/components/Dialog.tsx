@@ -24,7 +24,7 @@ type DialogButtonWithOptionalAction = BaseDialogButton & {
   action?: () => void;
 };
 export type ConfirmationDialogProps = {
-  confirmType: 'save' | 'signOut';
+  confirmType: 'save' | 'submit' | 'signOut';
   message: string;
   primaryButton: DialogButton;
   secondaryButton?: DialogButtonWithOptionalAction;

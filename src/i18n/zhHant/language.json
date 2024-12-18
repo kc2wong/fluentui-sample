@@ -37,6 +37,7 @@
       "dismiss": "關閉",
       "edit": "更改",
       "noSearchPerformed": "未執行任何搜尋",
+      "next": "下一步",
       "reset": "重置",
       "save": "儲存",
       "saveObjectSuccess": "成功儲存 ${1} [${2}]",
@@ -45,6 +46,8 @@
       "searchCriteria": "搜尋條件",
       "site": "節點",
       "start": "開始",
+      "submit": "提交",
+      "typeHere": "在此輸入...",
       "view": "觀看"
     },
     "theme": {
@@ -98,8 +101,9 @@
     "titleEdit": "${1} Function Group"
   },
   "paymentMaintenance": {
-    "site": "Site",
     "account": "Account",
+    "action": "Action",
+    "amount": "Amount",
     "code": "Code",
     "direction": {
       "label": "Direction",
@@ -109,12 +113,35 @@
       }
     },
     "bankBuy": "Bank Buy (Credit)",
+    "bankBuyCcy": "Bank Buy CCY",
     "bankSell": "Bank Sell (Debit)",
-    "instructionId": "Instruction Id",
+    "bankSellCcy": "Bank Sell CCY",
+    "dealCcy": "Deal CCY",
+    "dealAmount": "Deal Amount",
     "executeDate": "Execute Date",
     "fxRef": "FX Ref",
+    "instructionId": "Instruction Id",
+    "memo": "Memo",
+    "message": {
+      "doYouWantToInitiatePaymentRequest": "Do you want to initiate payment request",
+      "doYouWantToSubmitMatchingRequest": "Do you want to submit matching request with fxRef [${1}]",
+      "doYouWantToSubmitBookingRequest": "Do you want to submit booking request with product [${1}] and value date [${2}]",
+      "initiatePaymentSuccess": "Payment is initated successfully",
+      "submitRequestSuccess": "${1} request is submitted successfully"
+    },
     "name": "Name",
-    "titleNew": "${1} Payment Detail",
+    "pairedFxRef": "Paired FX Ref",
+    "pairing": {
+      "title": "Submit matching or booking",
+      "value": {
+        "matching": "Matching",
+        "booking": "Booking"
+      }
+    },
+    "product": "Product",
+    "remainingCcy": "Remaining CCY",
+    "remainingAmount": "Remaining Amount",
+    "site": "Site",
     "status": {
       "label": "Status",
       "value": {
@@ -124,6 +151,9 @@
         "rejected": "Rejected",
         "paired": "Paired"
       }
-    }    
+    },
+    "title": "Payment List",
+    "titleEdit": "${1} Payment Detail",
+    "valueDate": "Value Date"
   }
 }

@@ -20,7 +20,9 @@ import {
 import {
   BuildingBankRegular,
   GlobeRegular,
+  PersonCallRegular,
   PersonRegular,
+  PersonSettingsRegular,
   WeatherMoonRegular,
   WeatherSunnyRegular,
 } from '@fluentui/react-icons';
@@ -28,7 +30,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Language, UiMode } from '../models/system';
 import { Theme } from '../contexts/Theme';
-import { useNavigate } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom';
 import { useAtom } from 'jotai';
 import { entitledSiteAtom } from '../states/entitledSite';
 import { Site } from '../models/site';
@@ -83,8 +85,7 @@ const EnititledSiteSelectionMenu: React.FC<{ language: Language }> = ({
   useNotification(entitledSiteState, {
     showSpinner: messageCtx.showSpinner,
     stopSpinner: messageCtx.stopSpinner,
-    showOperationResultMessage: () => {
-    },
+    showOperationResultMessage: () => {},
   });
 
   useEffect(() => {
@@ -99,14 +100,6 @@ const EnititledSiteSelectionMenu: React.FC<{ language: Language }> = ({
     }
   }, [action, entitledSiteState.resultSet?.entitledSite]);
 
-  // useEffect(() => {
-  //   if (stateAtom.operationStartTime > stateAtom.operationEndTime) {
-  //     messageCtx.showSpinner();
-  //   } else {
-  //     messageCtx.stopSpinner();
-  //   }
-  // }, [messageCtx, stateAtom.operationStartTime, stateAtom.operationEndTime]);
-  
   const handleToggleRegionSelection = (region: string, checked: boolean) => {
     const siteOfRegion = entitledSites.filter((item) => item.region === region);
     if (checked) {
@@ -328,7 +321,16 @@ export const SystemToolbar: React.FC<SystemToolbarProps> = ({
         </Label>
         <Menu checkedValues={{ mode: [mode] }}>
           <MenuTrigger disableButtonEnhancement>
-            <Button className={styles.button} icon={<PersonRegular />}>
+            <Button
+              className={styles.button}
+              icon={
+                mode === 'administrator' ? (
+                  <PersonSettingsRegular />
+                ) : (
+                  <PersonCallRegular />
+                )
+              }
+            >
               <Text>
                 {mode === 'administrator' ? modeAdministrator : modeOperator}
               </Text>

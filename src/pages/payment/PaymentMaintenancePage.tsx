@@ -1,19 +1,198 @@
-import React, { useEffect } from 'react';
-import { entitledSiteAtom } from '../../states/entitledSite';
-import { useSetAtom, useAtomValue } from 'jotai';
+import React, { useContext, useEffect, useState } from 'react';
+import { useAtomValue, useAtom } from 'jotai';
 import { paymentAtom } from '../../states/payment';
-import { RESET } from 'jotai/utils';
+import { useTranslation } from 'react-i18next';
+import { MessageContext } from '../../contexts/Message';
+import { MessageType } from '../../models/system';
+import { useNotification } from '../../states/baseState';
+import { sharedDataAtom } from '../../states/sharedData';
+import {
+  constructErrorMessage,
+  constructMessage,
+} from '../../utils/stringUtil';
+import { PaymentDetailEditPage } from './PaymentDetailEditPage';
+import { PaymentSearchPage } from './PaymentSearchPage';
+import { PaymentPairingPage } from './PaymentPairingPage';
+import { PaymentStatus } from '../../models/payment';
+import { PaymentDetailViewPage } from './PaymentDetailViewPage';
+import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
+
+type Mode =
+  | 'search'
+  | 'addDetail'
+  | 'editDetail'
+  | 'editPairing'
+  | 'viewDetail'
+  | 'viewPairing';
 
 const PaymentMaintenancePage: React.FC = () => {
-  const entitledSiteState = useAtomValue(entitledSiteAtom);
-  const paymentAction = useSetAtom(paymentAtom);
+  const messageCtx = useContext(MessageContext);
+  const navigationCtx = useContext(PageElementNavigationContext);
+
+  const { t } = useTranslation();
+
+  const [sharedDataState, sharedDataAction] = useAtom(sharedDataAtom);
+  const paymentState = useAtomValue(paymentAtom);
+
+  const [mode, setMode] = useState<Mode>('search');
+
+  useNotification(sharedDataState, {
+    showSpinner: messageCtx.showSpinner,
+    stopSpinner: messageCtx.stopSpinner,
+    showOperationResultMessage: (message) => {
+      if (message.type === MessageType.Error) {
+        messageCtx.dispatchMessage({
+          type: message.type,
+          text: constructErrorMessage(t, message.key, message.parameters),
+        });
+      } else {
+        messageCtx.dispatchMessage({
+          type: message.type,
+          text: constructMessage(t, message.key, message.parameters),
+        });
+      }
+    },
+  });
+
+  useNotification(paymentState, {
+    showSpinner: messageCtx.showSpinner,
+    stopSpinner: messageCtx.stopSpinner,
+    showOperationResultMessage: (message) => {
+      if (message.type === MessageType.Error) {
+        messageCtx.dispatchMessage({
+          type: message.type,
+          text: constructErrorMessage(t, message.key, message.parameters),
+        });
+      } else {
+        messageCtx.dispatchMessage({
+          type: message.type,
+          text: constructMessage(t, message.key, message.parameters),
+        });
+      }
+    },
+  });
 
   useEffect(() => {
-    // reset payment when entitled site is changed
-    paymentAction(RESET);
-  }, [entitledSiteState, paymentAction]);
+    if (sharedDataState.resultSet?.currencies === undefined) {
+      sharedDataAction({ getCurrency: {} });
+    }
+  }, [sharedDataAction, sharedDataState.resultSet?.currencies]);
 
-  return <h1>Home Page</h1>;
+  const searchPage = (
+    <PaymentSearchPage
+      onAddButtonPress={() => {
+        setMode('addDetail');
+      }}
+      onEditButtonPress={(payment) => {
+        switch (payment.status) {
+          case PaymentStatus.New:
+            setMode('editDetail');
+            break;
+          case PaymentStatus.Started:
+            const labelKey = 'paymentMaintenance.titleEdit';
+            const paramKey = 'system.message.edit';
+            if (
+              !navigationCtx.popPageElementNavigationTill(labelKey, [paramKey])
+            ) {
+              navigationCtx.appendPageElementNavigation(
+                labelKey,
+                [paramKey],
+                () => {
+                  setMode('search');
+                }
+              );
+            }
+            setMode('editPairing');
+            break;
+          default:
+            setMode('viewDetail');
+            break;
+        }
+      }}
+      onViewButtonPress={(_payment) => {
+        setMode('viewDetail');
+      }}
+    />
+  );
+
+  const addDetailPage = (
+    <PaymentDetailEditPage
+      mode={'add'}
+      onBack={() => {
+        setMode('search');
+      }}
+      onNext={() => {
+        setMode('editPairing');
+      }}
+      onSave={() => {
+        setMode('editPairing');
+      }}
+    />
+  );
+
+  const editDetailPage = (
+    <PaymentDetailEditPage
+      mode={'edit'}
+      onNext={() => {
+        setMode('editPairing');
+      }}
+      onBack={() => {
+        setMode('search');
+      }}
+      onSave={() => {
+        setMode('editPairing');
+      }}
+    />
+  );
+
+  const viewDetailPage = (
+    <PaymentDetailViewPage
+      onBackButtonPress={() => {
+        setMode('search');
+      }}
+    />
+  );
+
+  const editPairingPage = (
+    <PaymentPairingPage
+      readOnly={false}
+      onBackButtonPress={() => {
+        setMode('editDetail');
+      }}
+      onSubmit={() => {
+        setMode('search');
+      }}
+    />
+  );
+
+  const viewPairingPage = (
+    <PaymentPairingPage
+      readOnly={true}
+      onBackButtonPress={() => {
+        setMode('viewDetail');
+      }}
+      onSubmit={() => {
+        setMode('search');
+      }}
+    />
+  );
+
+  switch (mode) {
+    case 'search':
+      return searchPage;
+    case 'addDetail':
+      return addDetailPage;
+    case 'editDetail':
+      return editDetailPage;
+    case 'editPairing':
+      return editPairingPage;
+    case 'viewDetail':
+      return viewDetailPage;
+    case 'viewPairing':
+      return viewPairingPage;
+    default:
+      return <></>;
+  }
 };
 
 export default PaymentMaintenancePage;
