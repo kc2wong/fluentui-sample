@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { useAtomValue, useAtom } from 'jotai';
 import { paymentAtom } from '../../states/payment';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,7 @@ import { PaymentPairingPage } from './PaymentPairingPage';
 import { PaymentStatus } from '../../models/payment';
 import { PaymentDetailViewPage } from './PaymentDetailViewPage';
 import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
+import { usePageTransition } from '../../contexts/PageTransition';
 
 type Mode =
   | 'search'
@@ -34,7 +35,9 @@ const PaymentMaintenancePage: React.FC = () => {
   const [sharedDataState, sharedDataAction] = useAtom(sharedDataAtom);
   const paymentState = useAtomValue(paymentAtom);
 
-  const [mode, setMode] = useState<Mode>('search');
+  // const [mode, setMode] = useState<Mode>('search');
+  const mode = useRef<Mode>('search');
+  const { startTransition } = usePageTransition();
 
   useNotification(sharedDataState, {
     showSpinner: messageCtx.showSpinner,
@@ -78,6 +81,17 @@ const PaymentMaintenancePage: React.FC = () => {
     }
   }, [sharedDataAction, sharedDataState.resultSet?.currencies]);
 
+  const setMode = (newMode: Mode, actionBeforeTransition?: () => void) => {
+    if (mode.current !== newMode) {
+      startTransition(() => {
+        if (actionBeforeTransition) {
+          actionBeforeTransition();
+        }
+        mode.current = newMode;
+      });
+    }
+  };
+
   const searchPage = (
     <PaymentSearchPage
       onAddButtonPress={() => {
@@ -89,20 +103,25 @@ const PaymentMaintenancePage: React.FC = () => {
             setMode('editDetail');
             break;
           case PaymentStatus.Started:
-            const labelKey = 'paymentMaintenance.titleEdit';
-            const paramKey = 'system.message.edit';
-            if (
-              !navigationCtx.popPageElementNavigationTill(labelKey, [paramKey])
-            ) {
-              navigationCtx.appendPageElementNavigation(
-                labelKey,
-                [paramKey],
-                () => {
-                  setMode('search');
-                }
-              );
-            }
-            setMode('editPairing');
+            setMode('editPairing', () => {
+              const labelKey = 'paymentMaintenance.titleEdit';
+              const paramKey = 'system.message.edit';
+              if (
+                !navigationCtx.popPageElementNavigationTill(labelKey, [
+                  paramKey,
+                ])
+              ) {
+                console.log('hihi');
+                navigationCtx.appendPageElementNavigation(
+                  labelKey,
+                  [paramKey],
+                  () => {
+                    setMode('search');
+                  }
+                );
+              }
+              setMode('editPairing');
+            });
             break;
           default:
             setMode('viewDetail');
@@ -177,22 +196,29 @@ const PaymentMaintenancePage: React.FC = () => {
     />
   );
 
-  switch (mode) {
-    case 'search':
-      return searchPage;
-    case 'addDetail':
-      return addDetailPage;
-    case 'editDetail':
-      return editDetailPage;
-    case 'editPairing':
-      return editPairingPage;
-    case 'viewDetail':
-      return viewDetailPage;
-    case 'viewPairing':
-      return viewPairingPage;
-    default:
-      return <></>;
-  }
+  const getPage = () => {
+    switch (mode.current) {
+      case 'search':
+        return searchPage;
+      case 'addDetail':
+        return addDetailPage;
+      case 'editDetail':
+        return editDetailPage;
+      case 'editPairing':
+        return editPairingPage;
+      case 'viewDetail':
+        return viewDetailPage;
+      case 'viewPairing':
+        return viewPairingPage;
+      default:
+        return <></>;
+    }
+  };
+
+  return (
+    getPage()
+  );
 };
 
 export default PaymentMaintenancePage;
+
