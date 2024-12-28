@@ -8,7 +8,7 @@ import {
   tokens,
 } from '@fluentui/react-components';
 import { ErrorCircleFilled } from '@fluentui/react-icons';
-import { CSSProperties } from 'react';
+import { CSSProperties, ReactNode } from 'react';
 
 const useStyles = makeStyles({
   column: { display: 'flex', flexDirection: 'column', gap: '2px' },
@@ -36,10 +36,12 @@ const useStyles = makeStyles({
   },
 });
 
-type FieldProps = FlientUiFieldProps & {
+type FieldProps = Omit<FlientUiFieldProps, 'children'> & {
+  children: ReactNode,
   horizontal?: boolean;
   infoMessage?: string;
   label: string;
+  colSpan?: number;
   style?: CSSProperties;
   validationMessage?: string;
 };
@@ -48,11 +50,17 @@ export const Field: React.FC<FieldProps> = ({
   children,
   horizontal,
   label,
+  colSpan,
   validationMessage,
   infoMessage,
   style,
   ...others
 }: FieldProps) => {
+  const mergedStyle: CSSProperties = {
+    ...style,
+    ...(colSpan ? { gridColumn: `span ${colSpan}` } : {}),
+  };
+
   const styles = useStyles();
   if (horizontal ?? false) {
     const hint = infoMessage ? (
@@ -67,7 +75,7 @@ export const Field: React.FC<FieldProps> = ({
         orientation="horizontal"
         validationMessage={validationMessage}
         className={styles.hint}
-        style={style}
+        style={mergedStyle}
         {...others}
       >
         {children}
@@ -75,7 +83,7 @@ export const Field: React.FC<FieldProps> = ({
     );
   } else {
     return (
-      <div className={styles.column} style={style}>
+      <div className={styles.column} style={mergedStyle}>
         <div className={styles.row}>
           {/* First Row: Label and Error Message */}
           <Label required={others.required}>{label}</Label>

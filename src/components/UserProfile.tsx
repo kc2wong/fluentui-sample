@@ -17,8 +17,9 @@ import { authentication } from '../states/authentication';
 import { useSetAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { DialogContext } from '../contexts/Dialog';
+import { DialogContext, useDialog } from '../contexts/Dialog';
 import { MessageContext } from '../contexts/Message';
+import { useFormDirty } from '../contexts/FormDirty';
 
 const useStyles = makeStyles({
   profileContentHeader: {
@@ -35,10 +36,20 @@ export const UserProfile: React.FC<UserProfileProps> = ({ login }) => {
   const action = useSetAtom(authentication);
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const dialogCtx = useContext(DialogContext);
+  const { showConfirmationDialog } = useDialog();
+  const { isDirty } = useFormDirty();
   const messageCtx = useContext(MessageContext);
 
   const { user } = login;
+
+  const signOut = () => {
+    messageCtx.showSpinner();
+    setTimeout(() => {
+      messageCtx.stopSpinner();
+      action({ signOut: {} });
+      navigate('/');
+    }, 500);
+  }
 
   return (
     <Popover withArrow>
@@ -59,26 +70,32 @@ export const UserProfile: React.FC<UserProfileProps> = ({ login }) => {
           <Button
             icon={<DoorArrowLeftRegular />}
             onClick={() => {
-              dialogCtx.showConfirmationDialog({
-                confirmType: 'signOut',
-                message: t('userProfile.doYouWantToSignOut'),
-                primaryButton: {
-                  label: t('userProfile.signOut'),
-                  icon: <CheckmarkRegular />,
-                  action: () => {
-                    messageCtx.showSpinner();
-                    setTimeout(() => {
-                      messageCtx.stopSpinner();
-                      action({ signOut: {} });
-                      navigate('/');
-                    }, 500);
+              if (isDirty()) {
+                showConfirmationDialog({
+                  confirmType: t(`system.message.signOut`),
+                  message: t('userProfile.doYouWantToSignOut'),
+                  primaryButton: {
+                    label: t('userProfile.signOut'),
+                    icon: <CheckmarkRegular />,
+                    action: signOut,
+                    // action: () => {
+                    //   messageCtx.showSpinner();
+                    //   setTimeout(() => {
+                    //     messageCtx.stopSpinner();
+                    //     action({ signOut: {} });
+                    //     navigate('/');
+                    //   }, 500);
+                    // },
                   },
-                },
-                secondaryButton: {
-                  label: t('system.message.cancel'),
-                  icon: <DismissRegular />,
-                },
-              });
+                  secondaryButton: {
+                    label: t('system.message.cancel'),
+                    icon: <DismissRegular />,
+                  },
+                });  
+              }
+              else {
+                signOut();
+              }
             }}
           >
             {t('userProfile.signOut')}

@@ -111,7 +111,6 @@ const PaymentMaintenancePage: React.FC = () => {
                   paramKey,
                 ])
               ) {
-                console.log('hihi');
                 navigationCtx.appendPageElementNavigation(
                   labelKey,
                   [paramKey],

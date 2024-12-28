@@ -26,6 +26,8 @@ import PaymentMaintenancePage from './pages/payment/PaymentMaintenancePage';
 import { getMenuItemIdByPath } from './pages/common';
 import { MenuItem } from './models/login';
 import { PageTransitionProvider } from './contexts/PageTransition';
+import { useFormDirty } from './contexts/FormDirty';
+import { useDialog } from './contexts/Dialog';
 
 i18next.use(initReactI18next).init({
   interpolation: { escapeValue: false },
@@ -74,6 +76,8 @@ export const Main: React.FC = () => {
   const { i18n } = useTranslation();
   const { theme, setTheme } = useContext(ThemedAppContext);
   const { pageElementNavigation } = useContext(PageElementNavigationContext);
+  const { isDirty, resetDirty } = useFormDirty();
+  const { showDiscardChangeDialog } = useDialog();
   const login = useAtomValue(authentication).login;
 
   const findMenuItemById = (
@@ -115,66 +119,89 @@ export const Main: React.FC = () => {
 
   const menuData = uiMode === 'administrator' ? login?.menu[0] : login?.menu[1];
 
+  const enrichedPageElementNavigation = pageElementNavigation.map(i => {
+    const breadcrumbAction = i.action;
+    if (breadcrumbAction) {
+      const actionWithConfirmation = () => {
+        if (isDirty()) {
+          showDiscardChangeDialog({
+            action: () => {
+              breadcrumbAction();
+              resetDirty();
+            }
+          })
+        } else {
+          breadcrumbAction();
+          resetDirty();
+        }
+      }
+      return {action: actionWithConfirmation, labelKey: i.labelKey, labelParams: i.labelParams}
+    }
+    else {
+      return {...i}
+    }
+  })
+
   return (
     <Router>
       <div className={styles.app}>
-        <header className={styles.header}>
-          <div className={styles.headerMenu}>
-            <HamburgerMenu toggleMenu={() => setIsMenuOpen(!isMenuOpen)} />
-            {menuData && (
-              <Breadcrumb
-                menuData={menuData}
-                pageElements={pageElementNavigation}
-              />
-            )}
-          </div>
-          <div className={styles.headerItem}>
-            <SystemToolbar
-              mode={uiMode}
-              onSetMode={(mode) => {
-                if (uiMode !== mode) {
-                  setUiMode(mode);
+          <header className={styles.header}>
+            <div className={styles.headerMenu}>
+              <HamburgerMenu toggleMenu={() => setIsMenuOpen(!isMenuOpen)} />
+              {menuData && (
+                <Breadcrumb
+                  menuData={menuData}
+                  pageElements={enrichedPageElementNavigation}
+                />
+              )}
+            </div>
+            <div className={styles.headerItem}>
+              <SystemToolbar
+                mode={uiMode}
+                onSetMode={(mode) => {
+                  if (uiMode !== mode) {
+                    setUiMode(mode);
+                  }
+                }}
+                language={
+                  selectedLanguage === Language.English
+                    ? Language.English
+                    : Language.TraditionalChinese
                 }
-              }}
-              language={
-                selectedLanguage === Language.English
-                  ? Language.English
-                  : Language.TraditionalChinese
-              }
-              onSetLanguage={(value) => {
-                i18n.changeLanguage(value === 'zhHant' ? 'zhHant' : 'en');
-              }}
-              theme={isLightTheme ? 'light' : 'dark'}
-              onSetTheme={(theme) => {
-                setTheme(theme);
-              }}
-            />
-            {login ? <UserProfile login={login} /> : <></>}
-          </div>
-        </header>
+                onSetLanguage={(value) => {
+                  i18n.changeLanguage(value === 'zhHant' ? 'zhHant' : 'en');
+                }}
+                theme={isLightTheme ? 'light' : 'dark'}
+                onSetTheme={(theme) => {
+                  setTheme(theme);
+                }}
+              />
+              {login ? <UserProfile login={login} /> : <></>}
+            </div>
+          </header>
 
-        {menuData && isMenuOpen && (
-          <OverlayMenu
-            menuData={menuData}
-            closeMenu={() => setIsMenuOpen(false)}
-            isOpen={isMenuOpen}
-            openMenu={() => setIsMenuOpen(true)}
-          />
-        )}
-
-        <PageTransitionProvider>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/services" element={<ServicesPage />} />
-            <Route path="/currency" element={<CurrencyMaintenancePage />} />
-            <Route
-              path="/functiongroup"
-              element={<FunctionGroupMaintenancePage />}
+          {menuData && isMenuOpen && (
+            <OverlayMenu
+              menuData={menuData}
+              closeMenu={() => setIsMenuOpen(false)}
+              isOpen={isMenuOpen}
+              openMenu={() => setIsMenuOpen(true)}
             />
-            <Route path="/payment" element={<PaymentMaintenancePage />} />
-          </Routes>
-        </PageTransitionProvider>
+          )}
+
+          <PageTransitionProvider>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/currency" element={<CurrencyMaintenancePage />} />
+              <Route
+                path="/functiongroup"
+                element={<FunctionGroupMaintenancePage />}
+              />
+              <Route path="/payment" element={<PaymentMaintenancePage />} />
+            </Routes>
+          </PageTransitionProvider>
       </div>
     </Router>
   );

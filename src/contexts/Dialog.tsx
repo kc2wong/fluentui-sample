@@ -1,96 +1,149 @@
-import React, { createContext, useState } from 'react';
-import {
-  ConfirmationDialog,
-  ConfirmationDialogProps,
-} from '../components/Dialog';
+import React, { createContext, useContext, useState } from 'react';
+import { CheckmarkRegular, DismissRegular } from '@fluentui/react-icons';
+import { Dialog, DialogProps } from '../components/Dialog';
+import { useTranslation } from 'react-i18next';
+import { TFunction } from 'i18next';
+import { constructMessage } from '../utils/stringUtil';
+
+type BaseDialogButton = {
+  label: string;
+  icon?: React.ReactElement;
+};
+
+type PositiveDialogButton = BaseDialogButton & {
+  action: () => void;
+};
+
+type NegativeDialogButton = BaseDialogButton & {
+  action?: () => void;
+};
+
+export type ConfirmationDialogProps = {
+  // confirmType: 'save' | 'submit' | 'signOut';
+  confirmType: string;
+  message: string;
+  primaryButton: PositiveDialogButton;
+  secondaryButton?: NegativeDialogButton;
+  tertiaryButton?: NegativeDialogButton;
+};
+
+export type DiscardChangeDialogProps = {
+  action: () => void;
+};
 
 interface DialogContextType {
   showConfirmationDialog: (dialogProps: ConfirmationDialogProps) => void;
+  showDiscardChangeDialog: (dialogProps: DiscardChangeDialogProps) => void;
 }
 
 export const DialogContext = createContext<DialogContextType>({
   showConfirmationDialog: () => {},
+  showDiscardChangeDialog: () => {},
 });
 
 export const DialogProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const [confirmationDialogProps, setConfirmationDialogProps] = useState<
-    | (ConfirmationDialogProps & { openTime: number; closeTime: number })
-    | undefined
+  const [dialogProps, setDialogProps] = useState<
+    (DialogProps & { openTime: number; closeTime: number }) | undefined
   >(undefined);
 
-  const handleShowConfirmationDialog = (
-    dialogProps: ConfirmationDialogProps
-  ) => {
-    setConfirmationDialogProps({
-      ...dialogProps,
+  const handleShowConfirmationDialog = ({
+    confirmType,
+    message,
+    primaryButton,
+    secondaryButton,
+    tertiaryButton,
+  }: ConfirmationDialogProps) => {
+    const buttonList = [];
+    if (tertiaryButton) {
+      buttonList.push(tertiaryButton);
+    }
+    if (secondaryButton) {
+      buttonList.push(secondaryButton);
+    }
+    buttonList.push({ ...primaryButton, isCta: true });
+    setDialogProps({
+      // title: constructMessage(t, 'system.message.confirmAction', [
+      //   t(`system.message.${confirmType}`),
+      // ]),
+      title: constructMessage(t, 'system.message.confirmAction', [confirmType]),
+      message,
+      buttons: buttonList,
       openTime: new Date().getTime(),
       closeTime: -1,
     });
   };
 
-  const hideConfirmationDialog = () => {
-    if (confirmationDialogProps) {
-      setConfirmationDialogProps({
-        ...confirmationDialogProps,
+  const handleShowDiscardChangeDialog = (
+    t: TFunction,
+    dialogProps: DiscardChangeDialogProps
+  ) => {
+    setDialogProps({
+      title: t('system.message.discardChange'),
+      message: t('system.message.doYouWantToDiscardChange'),
+      buttons: [
+        {
+          label: t('system.message.no'),
+          icon: <DismissRegular />,
+          isCta: true,
+        },
+        {
+          label: t('system.message.yes'),
+          icon: <CheckmarkRegular />,
+          action: dialogProps.action,
+        },
+      ],
+      openTime: new Date().getTime(),
+      closeTime: -1,
+    });
+  };
+
+  const hideDialog = () => {
+    if (dialogProps) {
+      setDialogProps({
+        ...dialogProps,
         closeTime: new Date().getTime(),
       });
     }
   };
 
+  const { t } = useTranslation();
   return (
     <DialogContext.Provider
       value={{
         showConfirmationDialog: handleShowConfirmationDialog,
+        showDiscardChangeDialog: (props) =>
+          handleShowDiscardChangeDialog(t, props),
       }}
     >
       {children}
-      {confirmationDialogProps && (
-        <ConfirmationDialog
-          confirmType={confirmationDialogProps.confirmType}
-          message={confirmationDialogProps.message}
-          open={
-            confirmationDialogProps.openTime > confirmationDialogProps.closeTime
-          }
-          primaryButton={{
-            label: confirmationDialogProps.primaryButton.label,
-            icon: confirmationDialogProps.primaryButton.icon,
-            action: () => {
-              hideConfirmationDialog();
-              confirmationDialogProps.primaryButton.action();
-            },
-          }}
-          secondaryButton={
-            confirmationDialogProps.secondaryButton
-              ? {
-                  label: confirmationDialogProps.secondaryButton.label,
-                  icon: confirmationDialogProps.secondaryButton.icon,
-                  action: () => {
-                    hideConfirmationDialog();
-                    if (confirmationDialogProps.secondaryButton?.action) {
-                      confirmationDialogProps.secondaryButton?.action();
-                    }
-                  },
+      {dialogProps && (
+        <Dialog
+          title={dialogProps.title}
+          message={dialogProps.message}
+          open={dialogProps.openTime > dialogProps.closeTime}
+          buttons={dialogProps.buttons.map(({ action, ...others }) => {
+            return {
+              ...others,
+              action: () => {
+                hideDialog();
+                if (action) {
+                  action();
                 }
-              : undefined
-          }
-          tertiaryButton={
-            confirmationDialogProps.tertiaryButton
-              ? {
-                  label: confirmationDialogProps.tertiaryButton.label,
-                  icon: confirmationDialogProps.tertiaryButton.icon,
-                  action: () => {
-                    hideConfirmationDialog();
-                    if (confirmationDialogProps.tertiaryButton?.action) {
-                      confirmationDialogProps.tertiaryButton?.action();
-                    }
-                  },
-                }
-              : undefined
-          }
-        ></ConfirmationDialog>
+              },
+            };
+          })}
+        ></Dialog>
       )}
     </DialogContext.Provider>
   );
+};
+
+export const useDialog = (): DialogContextType => {
+  const context = useContext(DialogContext);
+  if (!context) {
+    throw new Error('useDialog must be used within a DialogContextProvider');
+  }
+  return context;
 };

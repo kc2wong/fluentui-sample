@@ -1,6 +1,9 @@
-import { Payment, PaymentBase, PaymentStatus } from '../models/payment';
+import { Memo, Payment, PaymentBase, PaymentStatus } from '../models/payment';
 import { Error, systemError } from '../models/system';
 import { getCurrentDate } from '../utils/dateUtil';
+
+type MemoEntity = Omit<Memo, 'createDatetime'> & {createDatetime: number}
+type PaymentEntity = Omit<Payment, 'executeDate' | 'memo'> & {executeDate: number, memo: MemoEntity[]}
 
 export const searchPayment = async (
   site?: string[]
@@ -13,7 +16,7 @@ export const searchPayment = async (
     },
   });
   if (res.status === 200) {
-    const data = ((await res.json()) as Payment[]).map((row) => {
+    const data = ((await res.json()) as PaymentEntity[]).map((row) => {
       return {
         ...row,
         executeDate: new Date(row.executeDate),

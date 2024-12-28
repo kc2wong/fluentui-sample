@@ -1,4 +1,4 @@
-import React, { createContext, useRef, useState } from 'react';
+import React, { createContext, useContext, useRef, useState } from 'react';
 import {
   Button,
   makeStyles,
@@ -197,4 +197,12 @@ export const MessageProvider: React.FC<{
       })}
     </MessageContext.Provider>
   );
+};
+
+export const useMessage = (): MessageContextType => {
+  const context = useContext(MessageContext);
+  if (!context) {
+    throw new Error('useMessage must be used within a MessageProvider');
+  }
+  return context;
 };

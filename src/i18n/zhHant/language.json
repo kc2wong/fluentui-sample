@@ -33,11 +33,14 @@
       "clear": "清空",
       "confirm": "確定",
       "confirmAction": "確定 ${1}",
+      "doYouWantToDiscardChange": "確定放棄變更嗎",
       "doYouWantToSaveChange": "確定儲存變更嗎",
+      "discardChange": "放棄變更",
       "dismiss": "關閉",
       "edit": "更改",
-      "noSearchPerformed": "未執行任何搜尋",
       "next": "下一步",
+      "no": "否",
+      "noSearchPerformed": "未執行任何搜尋",
       "reset": "重置",
       "save": "儲存",
       "saveObjectSuccess": "成功儲存 ${1} [${2}]",
@@ -48,7 +51,8 @@
       "start": "開始",
       "submit": "提交",
       "typeHere": "在此輸入...",
-      "view": "觀看"
+      "view": "觀看",
+      "yes": "是"
     },
     "theme": {
       "label": "顏色主題",
@@ -76,7 +80,7 @@
     "success": "登入成功"
   },
   "userProfile": {
-    "doYouWantToSignOut": "確定登出嗎",
+    "doYouWantToSignOut": "確定放棄變更再登出嗎",
     "lastLogin": "上次登入",
     "name": "名稱",
     "signOut": "登出"

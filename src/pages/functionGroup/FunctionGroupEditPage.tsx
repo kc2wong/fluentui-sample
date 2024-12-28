@@ -47,6 +47,7 @@ import { sharedDataAtom } from '../../states/sharedData';
 import { FunctionAccess, FunctionTree } from '../../models/functionEntitlement';
 import { functionGroupAtom } from '../../states/functionGroup';
 import { Form, Root } from '../../components/Container';
+import { useFormDirty } from '../../contexts/FormDirty';
 
 const useStyles = makeStyles({
   tab: {
@@ -472,7 +473,6 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
   onBackButtonPressed,
   readOnly,
 }: FunctionGroupEditPageProps) => {
-  const commonStyles = useCommonStyles();
   const styles = useStyles();
   const { t, i18n } = useTranslation();
   const selectedLanguage =
@@ -525,6 +525,7 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
   };
 
   const navigationCtx = useContext(PageElementNavigationContext);
+  const { markDirty, resetDirty } = useFormDirty();
 
   const {
     control,
@@ -532,7 +533,7 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
     getValues,
     handleSubmit,
     watch,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<FormData>({
     defaultValues: {
       // initialize to empty string in order to keep as controlled field
@@ -548,7 +549,11 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
   const formValues = watch();
   useEffect(() => {
     // to trigger enable / disable of save button
-  }, [formValues]);
+    if (isDirty) {
+      markDirty();
+    }
+    return () => resetDirty();
+  }, [formValues, isDirty, markDirty, resetDirty]);
 
   useEffect(() => {
     // append breadcrumb

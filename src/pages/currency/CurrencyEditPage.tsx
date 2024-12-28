@@ -2,7 +2,6 @@ import React from 'react';
 import { useContext, useEffect, useState } from 'react';
 import {
   Button,
-  Input,
   SpinButton,
   SpinButtonChangeEvent,
   SpinButtonOnChangeData,
@@ -33,6 +32,9 @@ import { DetailEditingDrawer } from '../../components/Drawer';
 import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
 import { DialogContext } from '../../contexts/Dialog';
 import { Form, Root } from '../../components/Container';
+import { useFormDirty } from '../../contexts/FormDirty';
+import { EmptyCell } from '../../components/EmptyCell';
+import { Input } from '../../components/Input';
 
 // form in drawer for editing multi language name or shortname
 const nameMultiLangSchema = z.object(
@@ -193,6 +195,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
 
   const dialogCtx = useContext(DialogContext);
   const navigationCtx = useContext(PageElementNavigationContext);
+  const { markDirty, resetDirty } = useFormDirty();
 
   const {
     control,
@@ -200,7 +203,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
     getValues,
     handleSubmit,
     watch,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<FormData>({
     defaultValues: {
       // initialize to empty string in order to keep as controlled field
@@ -217,8 +220,12 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
 
   const formValues = watch();
   useEffect(() => {
-    // to trigger enable / disable of save button
-  }, [formValues]);
+    // to trigger enable / disable of save button and mark dirtiness
+    if (isDirty) {
+      markDirty();
+    }
+    return () => resetDirty();
+  }, [formValues, isDirty, markDirty, resetDirty]);
 
   useEffect(() => {
     // append breadcrumb
@@ -317,10 +324,13 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
               action({
                 save: {
                   currency: { ...initialData, ...getValues() },
-                  successMessage: {
-                    key: 'system.message.saveObjectSuccess',
-                    type: MessageType.Success,
-                    parameters: ['Currency', formValues.code],
+                  onSaveSuccess: {
+                    message: {
+                      key: 'system.message.saveObjectSuccess',
+                      type: MessageType.Success,
+                      parameters: ['Currency', formValues.code],
+                    },
+                    callback: resetDirty,
                   },
                 },
               });
@@ -342,8 +352,8 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
     <Root>
       <Form
         buttons={readOnly ? [backButton] : [backButton, saveButton]}
-        numColumn={1}
-        styles={{ width: '600px', maxWidth: '50vw' }}
+        numColumn={3}
+        styles={{ width: '510px', maxWidth: '50vw' }}
         title={constructMessage(t, 'currencyMaintenance.titleEdit', [
           currencyState.activeRecord
             ? readOnly
@@ -363,17 +373,13 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
             >
               <Input
                 {...field}
-                disabled={
-                  readOnly
-                    ? undefined
-                    : currencyState.activeRecord !== undefined
-                }
-                readOnly={readOnly}
+                readOnly={readOnly || currencyState.activeRecord !== undefined}
                 maxLength={maxCodeLength}
               />
             </Field>
           )}
         />
+        <EmptyCell colSpan={2} />
 
         <Controller
           name="shortName"
@@ -383,18 +389,19 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
               <Field
                 label={t('currencyMaintenance.shortName')}
                 required
+                colSpan={3}
                 validationMessage={errors?.shortName?.en?.message}
               >
                 <Input
                   name={field.name}
                   disabled={readOnly ? false : isShortNameDrawerOpen}
-                  onChange={(evt, data) =>
+                  onChange={(evt, data) => {
                     handleNameFieldChange(
                       field.name,
                       evt.target.name,
                       data.value
-                    )
-                  }
+                    );
+                  }}
                   value={field.value[Language.English]}
                   readOnly={readOnly}
                   contentAfter={
@@ -417,18 +424,19 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
               <Field
                 label={t('currencyMaintenance.name')}
                 required
+                colSpan={3}
                 validationMessage={errors?.name?.en?.message}
               >
                 <Input
                   name={field.name}
                   disabled={readOnly ? false : isShortNameDrawerOpen}
-                  onChange={(evt, data) =>
+                  onChange={(evt, data) => {
                     handleNameFieldChange(
                       field.name,
                       evt.target.name,
                       data.value
-                    )
-                  }
+                    );
+                  }}
                   value={field.value[Language.English]}
                   readOnly={readOnly}
                   contentAfter={
@@ -468,6 +476,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
             );
           }}
         />
+        <EmptyCell colSpan={2} />
       </Form>
       <div style={{ flex: 1 }}></div>
 

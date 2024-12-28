@@ -25,7 +25,10 @@ type EditCurrencyPayload = {
 
 type SaveCurrencyPayload = {
   currency: CurrencyBase | Currency;
-  successMessage: Message | undefined;
+  onSaveSuccess: {
+    message?: Message;
+    callback?: (payment: Currency) => void;
+  };
 };
 
 export type CurrencyMaintenancePayload = {
@@ -136,13 +139,18 @@ const handleSave = async (
       : await addCurrency(currency);
 
   const isError = 'code' in result && !('name' in result);
-  const operationResult = isError ? result : save.successMessage;
+  const operationResult = isError ? result : save.onSaveSuccess.message;
 
   setOperationResult(beforeState, set, operationResult, {
     activeRecord: isError ? current.activeRecord : result,
     // result set may mismatch with input payload after record is updated
     isResultSetDirty: current.resultSet !== undefined,
   });
+
+  if (!isError && save.onSaveSuccess.callback) {
+    save.onSaveSuccess.callback(result);
+  }
+
 };
 
 const handleEditOrView = async (

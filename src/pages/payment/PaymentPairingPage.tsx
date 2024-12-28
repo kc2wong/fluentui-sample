@@ -35,10 +35,7 @@ import { useAtom, useAtomValue } from 'jotai';
 import { Control, Controller, useForm, UseFormSetValue } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { emptyStringToUndefined } from '../../utils/objectUtil';
-import {
-  constructMessage,
-  formatNumber,
-} from '../../utils/stringUtil';
+import { constructMessage, formatNumber } from '../../utils/stringUtil';
 import { Field } from '../../components/Field';
 import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
 import { DialogContext } from '../../contexts/Dialog';
@@ -541,9 +538,7 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
         numColumn={2}
         buttons={readOnly ? [backButton] : [backButton, submitButton]}
         title={constructMessage(t, 'paymentMaintenance.pairing.title')}
-        toolbarSlot={
-          payment ? <PaymentStatusBar payment={payment} /> : <></>
-        }
+        toolbarSlot={payment ? <PaymentStatusBar payment={payment} /> : <></>}
       >
         <Field
           label={t('paymentMaintenance.account')}

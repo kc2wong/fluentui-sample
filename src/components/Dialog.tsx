@@ -1,5 +1,5 @@
 import {
-  Dialog,
+  Dialog as FluentUiDialog,
   Button,
   DialogSurface,
   DialogBody,
@@ -7,80 +7,55 @@ import {
   DialogContent,
   DialogActions,
 } from '@fluentui/react-components';
-import { useTranslation } from 'react-i18next';
-import { constructMessage } from '../utils/stringUtil';
 import React from 'react';
 
-type BaseDialogButton = {
+type DialogButton = {
   label: string;
   icon?: React.ReactElement;
-};
-
-type DialogButton = BaseDialogButton & {
-  action: () => void;
-};
-
-type DialogButtonWithOptionalAction = BaseDialogButton & {
+  isCta?: boolean;
   action?: () => void;
 };
-export type ConfirmationDialogProps = {
-  confirmType: 'save' | 'submit' | 'signOut';
+
+export type DialogProps = {
+  title: string;
   message: string;
-  primaryButton: DialogButton;
-  secondaryButton?: DialogButtonWithOptionalAction;
-  tertiaryButton?: DialogButtonWithOptionalAction;
+  buttons: DialogButton[];
 };
 
-type HideShowConfirmationDialogProps = ConfirmationDialogProps & { open: boolean };
-export const ConfirmationDialog: React.FC<HideShowConfirmationDialogProps> = ({
-  confirmType,
+type HideShowDialogProps = DialogProps & {
+  open: boolean;
+};
+export const Dialog: React.FC<HideShowDialogProps> = ({
+  title,
   message,
   open,
-  primaryButton,
-  secondaryButton,
-  tertiaryButton,
-}: HideShowConfirmationDialogProps) => {
-  const { t } = useTranslation();
+  buttons,
+}: HideShowDialogProps) => {
 
   return (
-    <Dialog modalType="alert" open={open}>
+    <FluentUiDialog modalType="alert" open={open}>
       <DialogSurface>
         <DialogBody>
           <DialogTitle>
-            {constructMessage(t, 'system.message.confirmAction', [
-              t(`system.message.${confirmType}`),
-            ])}
+              {title}
           </DialogTitle>
           <DialogContent>{`${message} ?`}</DialogContent>
           <DialogActions>
-            {tertiaryButton && (
-              <Button
-                appearance="secondary"
-                icon={tertiaryButton.icon}
-                onClick={tertiaryButton.action}
-              >
-                {tertiaryButton.label}
-              </Button>
-            )}
-            {secondaryButton && (
-              <Button
-                appearance="secondary"
-                icon={secondaryButton.icon}
-                onClick={secondaryButton.action}
-              >
-                {secondaryButton.label}
-              </Button>
-            )}
-            <Button
-              appearance="primary"
-              icon={primaryButton.icon}
-              onClick={primaryButton.action}
-            >
-              {primaryButton.label}
-            </Button>
+            {buttons.map((b, index) => {
+              return (
+                <Button
+                  key={index}
+                  appearance={b.isCta ?? false ? 'primary' : 'secondary'}
+                  icon={b.icon}
+                  onClick={b.action}
+                >
+                  {b.label}
+                </Button>
+              );
+            })}
           </DialogActions>
         </DialogBody>
       </DialogSurface>
-    </Dialog>
+    </FluentUiDialog>
   );
 };

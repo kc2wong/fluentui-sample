@@ -18,6 +18,8 @@ import { useTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
 import { getMenuItemPathById } from '../pages/common';
 import { MessageContext } from '../contexts/Message';
+import { useFormDirty } from '../contexts/FormDirty';
+import { useDialog } from '../contexts/Dialog';
 
 const useStyles = makeStyles({
   body: {
@@ -31,6 +33,9 @@ const TreeBranch: React.FC<{
   node: MenuItem;
   onLeafClick: (id: string) => void;
 }> = ({ t, node, onLeafClick }) => {
+  const { isDirty } = useFormDirty();
+  const { showDiscardChangeDialog } = useDialog();
+
   const getLabel = (id: string, defaultLabel: string) => {
     const label = t(id);
     return label === id ? defaultLabel : label;
@@ -49,7 +54,19 @@ const TreeBranch: React.FC<{
     </TreeItem>
   ) : (
     <TreeItem key={node.id} itemType="leaf">
-      <TreeItemLayout onClick={() => onLeafClick(node.id)}>
+      <TreeItemLayout
+        onClick={() => {
+          if (isDirty()) {
+            showDiscardChangeDialog({
+              action: () => {
+                onLeafClick(node.id);
+              },
+            });
+          } else {
+            onLeafClick(node.id);
+          }
+        }}
+      >
         {label}
       </TreeItemLayout>
     </TreeItem>

@@ -33,11 +33,14 @@
       "clear": "Clear",
       "confirm": "Confirm",
       "confirmAction": "Confirm ${1}",
+      "doYouWantToDiscardChange": "Are you sure to discard unsaved changes",
       "doYouWantToSaveChange": "Do you want to save the changes",
+      "discardChange": "Discard change",
       "dismiss": "Dismiss",
       "edit": "Edit",
-      "noSearchPerformed": "No search performed",
       "next": "Next",
+      "no": "No",
+      "noSearchPerformed": "No search performed",
       "reset": "Reset",
       "save": "Save",
       "saveObjectSuccess": "${1} [${2}] is saved successfully",
@@ -48,7 +51,8 @@
       "start": "Start",
       "submit": "Submit",
       "typeHere": "Type here...",
-      "view": "View"
+      "view": "View",
+      "yes": "Yes"
     },
     "theme": {
       "label": "Theme",
@@ -76,7 +80,7 @@
     "success": "Login success"
   },
   "userProfile": {
-    "doYouWantToSignOut": "Do you want to sign out",
+    "doYouWantToSignOut": "Are you sure to discard unsaved changes and sign out",
     "lastLogin": "Last login",
     "name": "Name",
     "signOut": "Sign Out"

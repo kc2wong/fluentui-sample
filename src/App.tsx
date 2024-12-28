@@ -12,6 +12,7 @@ import { MessageProvider } from './contexts/Message';
 import { DialogProvider } from './contexts/Dialog';
 import { PageElementNavigationProvider } from './contexts/PageElementNavigation';
 import { authentication } from './states/authentication';
+import { FormDirtyProvider } from './contexts/FormDirty';
 
 i18next.use(initReactI18next).init({
   interpolation: { escapeValue: false },
@@ -28,13 +29,19 @@ const App: React.FC = () => {
 
   return (
     <ThemedAppProvider>
-      {/* <I18nextProvider i18n={i18next}> */}
-        <PageElementNavigationProvider>
-          <MessageProvider>
-            <DialogProvider>{authenticationState.login && authenticationState.acknowledge ? <Main /> : <LoginPage />}</DialogProvider>
-          </MessageProvider>
-        </PageElementNavigationProvider>
-      {/* </I18nextProvider> */}
+      <PageElementNavigationProvider>
+        <MessageProvider>
+          <DialogProvider>
+            {authenticationState.login && authenticationState.acknowledge ? (
+              <FormDirtyProvider>
+                <Main />
+              </FormDirtyProvider>
+            ) : (
+              <LoginPage />
+            )}
+          </DialogProvider>
+        </MessageProvider>
+      </PageElementNavigationProvider>
     </ThemedAppProvider>
   );
 };

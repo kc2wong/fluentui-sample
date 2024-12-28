@@ -67,6 +67,7 @@ import { MessageType } from '../../models/system';
 import { Input } from '../../components/Input';
 import { PaymentStatusBar } from './PaymentStatusComponent';
 import { Memo } from './Memo';
+import { useFormDirty } from '../../contexts/FormDirty';
 
 const useStyles = makeStyles({
   formWrapper: {
@@ -443,6 +444,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
   const payment = paymentState.activeRecord;
   const isNewPayment = !payment || payment.status === PaymentStatus.New;
 
+  const { markDirty, resetDirty} = useFormDirty();  
   const dialogCtx = useContext(DialogContext);
   const navigationCtx = useContext(PageElementNavigationContext);
 
@@ -471,13 +473,12 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
     handleSubmit,
     watch,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<FormData>({
     defaultValues: paymentToFormData(paymentState.activeRecord),
     resolver: zodResolver(schema),
   });
 
-  const formValues = watch();
   const siteValue = useWatch({
     control,
     name: 'site',
@@ -496,9 +497,14 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
   });
   const populatedDeal = useRef<string | undefined>(fxRefValue);
 
+  const formValues = watch();
   useEffect(() => {
     // to trigger enable / disable of save button
-  }, [formValues]);
+    if (isDirty) {
+      markDirty();
+    }
+    return () => resetDirty();
+  }, [formValues, isDirty, markDirty, resetDirty]);
 
   useEffect(() => {
     reset(paymentToFormData(paymentState.activeRecord));
@@ -510,7 +516,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
         setValue('site', paymentState.account[0].site);
       } else {
         setValue('site', '');
-      }  
+      }
     }
   }, [isNewPayment, setValue, paymentState.account]);
 
@@ -662,6 +668,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
                       parameters: ['Payment', ''],
                     },
                     callback: (_payment) => {
+                      resetDirty();
                       onSave();
                     },
                   },
