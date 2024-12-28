@@ -262,7 +262,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
         : Language.English
     ] = value;
 
-    setValue(fieldName, currentFieldValues);
+    setValue(fieldName, currentFieldValues, { shouldDirty: true });
   };
 
   const handlePrecisionChange = (
@@ -270,10 +270,10 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
     data: SpinButtonOnChangeData
   ) => {
     if (data.value) {
-      setValue('precision', data.value);
+      setValue('precision', data.value, { shouldDirty: true });
     } else if ('value' in e.target) {
       // value entered directly
-      setValue('precision', parseInt(e.target.value));
+      setValue('precision', parseInt(e.target.value), { shouldDirty: true });
     }
   };
 

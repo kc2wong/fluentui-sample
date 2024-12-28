@@ -7,7 +7,6 @@ import {
   AccordionPanel,
   Button,
   Checkbox,
-  Input,
   Label,
   makeStyles,
   Switch,
@@ -39,7 +38,6 @@ import {
 } from '../../utils/objectUtil';
 import { constructMessage } from '../../utils/stringUtil';
 import { Language } from '../../models/system';
-import { useStyles as useCommonStyles } from '../common';
 import { Field } from '../../components/Field';
 import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
 import { Site } from '../../models/site';
@@ -48,6 +46,8 @@ import { FunctionAccess, FunctionTree } from '../../models/functionEntitlement';
 import { functionGroupAtom } from '../../states/functionGroup';
 import { Form, Root } from '../../components/Container';
 import { useFormDirty } from '../../contexts/FormDirty';
+import { Input } from '../../components/Input';
+import { EmptyCell } from '../../components/EmptyCell';
 
 const useStyles = makeStyles({
   tab: {
@@ -658,7 +658,7 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
     <Root>
       <Form
         buttons={readOnly ? [backButton] : [backButton, saveButton]}
-        numColumn={1}
+        numColumn={3}
         styles={{ width: '600px', maxWidth: '50vw' }}
         title={constructMessage(t, 'functionGroupMaintenance.titleEdit', [
           t('system.message.edit'),
@@ -673,10 +673,15 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
               required
               validationMessage={errors?.code?.message}
             >
-              <Input {...field} readOnly={readOnly} maxLength={maxCodeLength} />
+              <Input
+                {...field}
+                readOnly={readOnly || activeRecord !== undefined}
+                maxLength={maxCodeLength}
+              />
             </Field>
           )}
         />
+        <EmptyCell colSpan={2} />
 
         <Controller
           name="name"
@@ -684,6 +689,7 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
           render={({ field }) => {
             return (
               <Field
+                colSpan={3}
                 label={t('functionGroupMaintenance.name')}
                 required
                 validationMessage={errors?.name?.message}
@@ -700,6 +706,7 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
 
         <Field
           label={t('functionGroupMaintenance.entitlement.base')}
+          colSpan={3}
           required
           validationMessage={
             errors?.administratorFunctionIds?.message ??
