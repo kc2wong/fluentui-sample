@@ -127,6 +127,8 @@ const BankBuySell: React.FC<BankBuySellProps> = (props: BankBuySellProps) => {
               onOptionSelect={(_e, data) => {
                 onCcyChange(data.optionValue);
               }}
+              selectedOptions={[field.value]}
+              value={field.value}
             >
               {ccyList
                 .sort((e1, e2) => e1.code.localeCompare(e2.code))
@@ -246,11 +248,12 @@ const AccountSearchDrawer = ({
                 <Field label={t('paymentMaintenance.site')}>
                   <Combobox
                     {...field}
-                    value={field.value.join(',')}
                     multiselect
                     onOptionSelect={(_ev, data) => {
                       setValue(field.name, data.selectedOptions);
                     }}
+                    selectedOptions={field.value}
+                    value={field.value.join(',')}
                   >
                     {siteList.map((item) => (
                       <Option key={item}>{item}</Option>

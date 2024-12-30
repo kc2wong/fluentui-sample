@@ -1,6 +1,6 @@
 import { Memo, Payment, PaymentBase, PaymentStatus } from '../models/payment';
 import { Error, systemError } from '../models/system';
-import { getCurrentDate } from '../utils/dateUtil';
+import { delay, getCurrentDate } from '../utils/dateUtil';
 
 type MemoEntity = Omit<Memo, 'createDatetime'> & {createDatetime: number}
 type PaymentEntity = Omit<Payment, 'executeDate' | 'memo'> & {executeDate: number, memo: MemoEntity[]}
@@ -55,8 +55,7 @@ export const addPayment = async (
     status: PaymentStatus.Started,
     memo: [],
   };
-  const delay = async () => new Promise((resolve) => setTimeout(resolve, 1000));
-  await delay();
+  await delay(1000);
   return Promise.resolve(savedPayment);
 };
 
@@ -68,8 +67,7 @@ export const matchDeal = async (
     ...payment,
     status: PaymentStatus.Submitted,
   };
-  const delay = async () => new Promise((resolve) => setTimeout(resolve, 1000));
-  await delay();
+  await delay(1000);
   return Promise.resolve(savedPayment);
 };
 
@@ -82,8 +80,7 @@ export const bookDeal = async (
     ...payment,
     status: PaymentStatus.Submitted,
   };
-  const delay = async () => new Promise((resolve) => setTimeout(resolve, 1000));
-  await delay();
+  await delay(1000);
   return Promise.resolve(savedPayment);
 };
 
@@ -116,7 +113,6 @@ export const addMemo = async (
     ...others,
     memo: [...memo, { createDatetime: new Date(), message }],
   };
-  const delay = async () => new Promise((resolve) => setTimeout(resolve, 1000));
-  await delay();
+  await delay(1000);
   return Promise.resolve(savedPayment);
 };

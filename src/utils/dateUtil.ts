@@ -42,7 +42,6 @@ export const formatDateDDMMYYYYHHMISS = (date?: Date): string => {
   }
 };
 
-
 export const parseDateMMDDYYYY = (dateStr: string): Date | undefined => {
   const [day, month, year] = dateStr.split('/').map(Number);
   if (isNaN(day) || isNaN(month) || isNaN(year)) {
@@ -55,3 +54,7 @@ export const parseDateMMDDYYYY = (dateStr: string): Date | undefined => {
     date.getDate() === day;
   return isValid ? date : undefined;
 };
+
+export const delay = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+

@@ -31,12 +31,15 @@ import { TFunction } from 'i18next';
 import { atom, useAtom, useAtomValue } from 'jotai';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { emptyStringToUndefined } from '../../utils/objectUtil';
+import {
+  emptyStringToUndefined,
+  undefinedToEmptyString,
+} from '../../utils/objectUtil';
 import { SearchCriteriaDrawer } from '../../components/Drawer';
 import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
 import { Form, Root } from '../../components/Container';
 import { Field } from '../../components/Field';
-import { paymentAtom } from '../../states/payment';
+import { paymentAtom, SearchPaymentPayload } from '../../states/payment';
 import { entitledSiteAtom } from '../../states/entitledSite';
 import { Payment, PaymentDirection, PaymentStatus } from '../../models/payment';
 import { formatNumber } from '../../utils/stringUtil';
@@ -78,13 +81,35 @@ const SearchDrawer = ({
   siteList,
   onOpenChange,
 }: SearchDrawerProps) => {
-  const [state, action] = useAtom(paymentAtom);
+  const [{ payload }, action] = useAtom(paymentAtom);
+
+  const payloadToFormData = (payload?: SearchPaymentPayload) => {
+    return {
+      site: payload?.site ?? [],
+      account: undefinedToEmptyString(payload?.account),
+      instructionId: undefinedToEmptyString(payload?.instructionId),
+    };
+  };
+
+  const formDataToPayload = (formData: SearchFormData) => {
+    return {
+      offset: 0,
+      pageSize: 25,
+      site: formData.site.length === 0 ? undefined : formData.site,
+      account: emptyStringToUndefined(formData.account),
+      instructionId: emptyStringToUndefined(formData.instructionId),
+    };
+  };
 
   const { control, reset, getValues, handleSubmit, setValue } =
     useForm<SearchFormData>({
-      defaultValues: { ...emptyObject, ...state.payload },
+      defaultValues: payloadToFormData(payload),
       resolver: zodResolver(searchSchema),
     });
+
+  useEffect(() => {
+    reset(payloadToFormData(payload));
+  }, [reset, payload]);
 
   return (
     <SearchCriteriaDrawer
@@ -94,11 +119,7 @@ const SearchDrawer = ({
       onSearch={handleSubmit(() => {
         const formData = getValues();
         action({
-          searchPayment: {
-            offset: 0,
-            pageSize: 25,
-            site: (formData.site ?? []).length > 0 ? formData.site : undefined,
-          },
+          searchPayment: formDataToPayload(formData),
         });
       })}
       t={t}
@@ -112,6 +133,7 @@ const SearchDrawer = ({
               {...field}
               value={(field.value ?? []).join(',')}
               multiselect
+              selectedOptions={field.value}
               onOptionSelect={(_ev, data) => {
                 setValue(field.name, data.selectedOptions);
               }}

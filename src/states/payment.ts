@@ -18,10 +18,12 @@ import { Deal } from '../models/deal';
 import { searchDeal } from '../services/deal';
 import { searchProductValueDate } from '../services/product';
 
-type SearchPaymentPayload = {
+export type SearchPaymentPayload = {
   offset: number;
   pageSize: number;
   site?: string[];
+  account?: string;
+  instructionId?: string;
 };
 
 type LookupAccountPayload = {

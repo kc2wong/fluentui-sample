@@ -1,10 +1,9 @@
-import { getCurrentDate } from '../utils/dateUtil';
+import { delay, getCurrentDate } from '../utils/dateUtil';
 
 export const searchProductValueDate = async (): Promise<
   Record<string, Date[]>
 > => {
-  const delay = async () => new Promise((resolve) => setTimeout(resolve, 1000));
-  await delay();
+  await delay(1000);
 
   const currentDate = getCurrentDate();
   const nextDate = new Date(currentDate.getTime());

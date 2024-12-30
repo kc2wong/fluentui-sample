@@ -5,8 +5,9 @@ import { OneOnly } from '../utils/objectUtil';
 import { searchSite } from '../services/site';
 import { BaseState } from './baseState';
 import { Site } from '../models/site';
+import { delay } from '../utils/dateUtil';
 
-export type EntitledSitePayload = {
+type EntitledSitePayload = {
   get: {};
   selectEntitledSite: { siteCode: string[] };
 };
@@ -84,17 +85,26 @@ const handleSearchOrRefresh = async (
   );
 };
 
-const handleSelectEntitledSite = (
+const handleSelectEntitledSite = async (
   current: EntitledSiteState,
   set: SiteMaintenanceAtomSetter,
   siteCode: string[]
 ) => {
+  let beforeState = {
+    ...current,
+    operationStartTime: new Date().getTime(),
+    version: current.version + 1,
+  };
+  set(baseEntitledSiteAtom, beforeState);
+
+  await delay(500);
+
   const siteCodeSet = new Set<string>(siteCode);
   const newEntitledSite = [...(current.resultSet?.entitledSite ?? [])];
   newEntitledSite.forEach(
     (item) => (item.selected = siteCodeSet.has(item.site.code))
   );
-  setOperationResult(current, set, undefined, {
+  setOperationResult(beforeState, set, undefined, {
     resultSet: { entitledSite: newEntitledSite },
   });
 };

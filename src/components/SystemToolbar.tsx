@@ -46,6 +46,8 @@ import { useDialog } from '../contexts/Dialog';
 import { useFormDirty } from '../contexts/FormDirty';
 import { Login } from '../models/login';
 import { authentication } from '../states/authentication';
+import { paymentAtom } from '../states/payment';
+import { RESET } from 'jotai/utils';
 
 const useStyles = makeStyles({
   item: {
@@ -99,6 +101,7 @@ const EnititledSiteSelectionMenu: React.FC<EnititledSiteSelectionMenuProps> = ({
   const styles = useStyles();
   const { t } = useTranslation();
   const [entitledSiteState, action] = useAtom(entitledSiteAtom);
+  const [, paymentAction] = useAtom(paymentAtom);
   const [entitledSites, setEntitledSites] = useState<SiteWithSelection[]>([]);
   const messageCtx = useContext(MessageContext);
 
@@ -178,6 +181,8 @@ const EnititledSiteSelectionMenu: React.FC<EnititledSiteSelectionMenuProps> = ({
           .map((item) => item.code),
       },
     });
+    // reset payment state
+    paymentAction(RESET);
   };
 
   const groupedByRegion = entitledSites
@@ -529,10 +534,7 @@ export const SystemToolbar: React.FC<SystemToolbarProps> = ({
         </MenuPopover>
       </Menu>
       {login ? (
-        <UserProfile
-          login={login}
-          onButtonClick={handleCloseSiteMenu}
-        />
+        <UserProfile login={login} onButtonClick={handleCloseSiteMenu} />
       ) : (
         <></>
       )}
