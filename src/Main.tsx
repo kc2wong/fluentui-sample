@@ -8,7 +8,6 @@ import AboutPage from './pages/AboutPage';
 import ServicesPage from './pages/ServicesPage';
 import { makeStyles, tokens } from '@fluentui/react-components';
 import { SystemToolbar } from './components/SystemToolbar';
-import { UserProfile } from './components/UserProfile';
 
 import languageEn from './i18n/en/language.json';
 import languageZhHant from './i18n/zhHant/language.json';
@@ -176,7 +175,6 @@ export const Main: React.FC = () => {
                   setTheme(theme);
                 }}
               />
-              {login ? <UserProfile login={login} /> : <></>}
             </div>
           </header>
 

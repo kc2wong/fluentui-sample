@@ -16,12 +16,18 @@ import {
   Caption1,
   Switch,
   Caption1Strong,
+  Avatar,
+  Popover,
+  PopoverSurface,
+  PopoverTrigger,
 } from '@fluentui/react-components';
 import {
   BuildingBankRegular,
+  CheckmarkRegular,
+  DismissRegular,
+  DoorArrowLeftRegular,
   GlobeRegular,
   PersonCallRegular,
-  PersonRegular,
   PersonSettingsRegular,
   WeatherMoonRegular,
   WeatherSunnyRegular,
@@ -30,12 +36,16 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Language, UiMode } from '../models/system';
 import { Theme } from '../contexts/Theme';
-import {  useNavigate } from 'react-router-dom';
-import { useAtom } from 'jotai';
+import { useNavigate } from 'react-router-dom';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { entitledSiteAtom } from '../states/entitledSite';
 import { Site } from '../models/site';
 import { MessageContext } from '../contexts/Message';
 import { useNotification } from '../states/baseState';
+import { useDialog } from '../contexts/Dialog';
+import { useFormDirty } from '../contexts/FormDirty';
+import { Login } from '../models/login';
+import { authentication } from '../states/authentication';
 
 const useStyles = makeStyles({
   item: {
@@ -63,6 +73,9 @@ const useStyles = makeStyles({
   divider: {
     width: '8px',
   },
+  profileContentHeader: {
+    marginTop: '0',
+  },
 });
 
 const Spacer: React.FC = () => {
@@ -72,12 +85,19 @@ const Spacer: React.FC = () => {
 
 type SiteWithSelection = Site & { selected: boolean };
 
-const EnititledSiteSelectionMenu: React.FC<{ language: Language }> = ({
+type EnititledSiteSelectionMenuProps = {
+  language: Language;
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+};
+
+const EnititledSiteSelectionMenu: React.FC<EnititledSiteSelectionMenuProps> = ({
   language,
+  isOpen,
+  setIsOpen,
 }) => {
   const styles = useStyles();
   const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState(false);
   const [entitledSiteState, action] = useAtom(entitledSiteAtom);
   const [entitledSites, setEntitledSites] = useState<SiteWithSelection[]>([]);
   const messageCtx = useContext(MessageContext);
@@ -261,6 +281,85 @@ const EnititledSiteSelectionMenu: React.FC<{ language: Language }> = ({
   );
 };
 
+interface UserProfileProps {
+  login: Login;
+  onButtonClick: () => void;
+}
+
+export const UserProfile: React.FC<UserProfileProps> = ({
+  login,
+  onButtonClick,
+}) => {
+  const styles = useStyles();
+  const action = useSetAtom(authentication);
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { showConfirmationDialog } = useDialog();
+  const { isDirty } = useFormDirty();
+  const messageCtx = useContext(MessageContext);
+
+  const { user } = login;
+
+  const signOut = () => {
+    messageCtx.showSpinner();
+    setTimeout(() => {
+      messageCtx.stopSpinner();
+      action({ signOut: {} });
+      navigate('/');
+    }, 500);
+  };
+
+  return (
+    <Popover withArrow>
+      <PopoverTrigger disableButtonEnhancement>
+        <Avatar
+          name={user.name}
+          onClick={() => {
+            onButtonClick();
+          }}
+        />
+      </PopoverTrigger>
+
+      <PopoverSurface tabIndex={-1}>
+        <div>
+          <h3 className={styles.profileContentHeader}>{user.id}</h3>
+          <p>
+            {t('userProfile.name')}: {user.name}
+          </p>
+          <p>
+            {t('userProfile.lastLogin')}:{' '}
+            {new Date(login.user.lastLoginDatetime).toLocaleString()}
+          </p>
+          <Button
+            icon={<DoorArrowLeftRegular />}
+            onClick={() => {
+              if (isDirty()) {
+                showConfirmationDialog({
+                  confirmType: t(`system.message.signOut`),
+                  message: t('userProfile.doYouWantToSignOut'),
+                  primaryButton: {
+                    label: t('userProfile.signOut'),
+                    icon: <CheckmarkRegular />,
+                    action: signOut,
+                  },
+                  secondaryButton: {
+                    label: t('system.message.cancel'),
+                    icon: <DismissRegular />,
+                  },
+                });
+              } else {
+                signOut();
+              }
+            }}
+          >
+            {t('userProfile.signOut')}
+          </Button>
+        </div>
+      </PopoverSurface>
+    </Popover>
+  );
+};
+
 interface SystemToolbarProps {
   mode: UiMode;
   onSetMode: (mode: UiMode) => void;
@@ -295,6 +394,12 @@ export const SystemToolbar: React.FC<SystemToolbarProps> = ({
     onSetLanguage(value);
   };
 
+  const handleCloseSiteMenu = () => {
+    if (isSiteMenuOpen) {
+      setIsSiteMenuOpen(false);
+    }
+  };
+
   const languageEn = t('system.language.value.en');
   const languageZhHant = t('system.language.value.zhHant');
   const themeLight = t('system.theme.value.light');
@@ -302,12 +407,19 @@ export const SystemToolbar: React.FC<SystemToolbarProps> = ({
   const modeAdministrator = t('system.mode.value.administrator');
   const modeOperator = t('system.mode.value.operator');
 
+  const [isSiteMenuOpen, setIsSiteMenuOpen] = useState(false);
+  const login = useAtomValue(authentication).login;
+
   return (
     <div className={styles.item}>
       {/* show site dropdown for operator mode */}
       {mode === 'operator' ? (
         <>
-          <EnititledSiteSelectionMenu language={language} />
+          <EnititledSiteSelectionMenu
+            language={language}
+            isOpen={isSiteMenuOpen}
+            setIsOpen={(isOpen: boolean) => setIsSiteMenuOpen(isOpen)}
+          />
           <Spacer />
         </>
       ) : (
@@ -330,6 +442,7 @@ export const SystemToolbar: React.FC<SystemToolbarProps> = ({
                   <PersonCallRegular />
                 )
               }
+              onClick={handleCloseSiteMenu}
             >
               <Text>
                 {mode === 'administrator' ? modeAdministrator : modeOperator}
@@ -359,7 +472,10 @@ export const SystemToolbar: React.FC<SystemToolbarProps> = ({
       <Spacer />
       <Menu checkedValues={{ lang: [language] }}>
         <MenuTrigger disableButtonEnhancement>
-          <Button icon={<GlobeRegular />}></Button>
+          <Button
+            icon={<GlobeRegular />}
+            onClick={handleCloseSiteMenu}
+          ></Button>
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
@@ -390,6 +506,7 @@ export const SystemToolbar: React.FC<SystemToolbarProps> = ({
                 <WeatherMoonRegular />
               )
             }
+            onClick={handleCloseSiteMenu}
           ></Button>
         </MenuTrigger>
         <MenuPopover>
@@ -411,6 +528,14 @@ export const SystemToolbar: React.FC<SystemToolbarProps> = ({
           </MenuList>
         </MenuPopover>
       </Menu>
+      {login ? (
+        <UserProfile
+          login={login}
+          onButtonClick={handleCloseSiteMenu}
+        />
+      ) : (
+        <></>
+      )}
     </div>
   );
 };
