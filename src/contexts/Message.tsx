@@ -59,7 +59,7 @@ interface MessageContextType {
   dispatchMessage: (message: Omit<ToastMessage, 'id'>) => void;
 }
 
-export const MessageContext = createContext<MessageContextType>({
+const MessageContext = createContext<MessageContextType>({
   showSpinner: () => {},
   stopSpinner: () => {},
   dispatchMessage: () => {},

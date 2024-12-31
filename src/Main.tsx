@@ -15,12 +15,12 @@ import i18next from 'i18next';
 import { initReactI18next, useTranslation } from 'react-i18next';
 import { authentication } from './states/authentication';
 import { useAtomValue } from 'jotai';
-import { ThemedAppContext } from './contexts/Theme';
+import { useTheme } from './contexts/Theme';
 import { CurrencyMaintenancePage } from './pages/currency/CurrencyMaintenancePage';
 import { Language, UiMode } from './models/system';
 import { FunctionGroupMaintenancePage } from './pages/functionGroup/FunctionGroupMaintenancePage';
 import { Breadcrumb } from './components/Breadcrumb';
-import { PageElementNavigationContext } from './contexts/PageElementNavigation';
+import { usePageElementNavigation } from './contexts/PageElementNavigation';
 import PaymentMaintenancePage from './pages/payment/PaymentMaintenancePage';
 import { getMenuItemIdByPath } from './pages/common';
 import { MenuItem } from './models/login';
@@ -73,8 +73,8 @@ export const Main: React.FC = () => {
 
   const styles = useStyles();
   const { i18n } = useTranslation();
-  const { theme, setTheme } = useContext(ThemedAppContext);
-  const { pageElementNavigation } = useContext(PageElementNavigationContext);
+  const { theme, setTheme } = useTheme();
+  const { pageElementNavigation } = usePageElementNavigation();
   const { isDirty, resetDirty } = useFormDirty();
   const { showDiscardChangeDialog } = useDialog();
   const login = useAtomValue(authentication).login;
@@ -118,7 +118,7 @@ export const Main: React.FC = () => {
 
   const menuData = uiMode === 'administrator' ? login?.menu[0] : login?.menu[1];
 
-  const enrichedPageElementNavigation = pageElementNavigation.map(i => {
+  const enrichedPageElementNavigation = pageElementNavigation.map((i) => {
     const breadcrumbAction = i.action;
     if (breadcrumbAction) {
       const actionWithConfirmation = () => {
@@ -127,79 +127,82 @@ export const Main: React.FC = () => {
             action: () => {
               breadcrumbAction();
               resetDirty();
-            }
-          })
+            },
+          });
         } else {
           breadcrumbAction();
           resetDirty();
         }
-      }
-      return {action: actionWithConfirmation, labelKey: i.labelKey, labelParams: i.labelParams}
+      };
+      return {
+        action: actionWithConfirmation,
+        labelKey: i.labelKey,
+        labelParams: i.labelParams,
+      };
+    } else {
+      return { ...i };
     }
-    else {
-      return {...i}
-    }
-  })
+  });
 
   return (
     <Router>
       <div className={styles.app}>
-          <header className={styles.header}>
-            <div className={styles.headerMenu}>
-              <HamburgerMenu toggleMenu={() => setIsMenuOpen(!isMenuOpen)} />
-              {menuData && (
-                <Breadcrumb
-                  menuData={menuData}
-                  pageElements={enrichedPageElementNavigation}
-                />
-              )}
-            </div>
-            <div className={styles.headerItem}>
-              <SystemToolbar
-                mode={uiMode}
-                onSetMode={(mode) => {
-                  if (uiMode !== mode) {
-                    setUiMode(mode);
-                  }
-                }}
-                language={
-                  selectedLanguage === Language.English
-                    ? Language.English
-                    : Language.TraditionalChinese
+        <header className={styles.header}>
+          <div className={styles.headerMenu}>
+            <HamburgerMenu toggleMenu={() => setIsMenuOpen(!isMenuOpen)} />
+            {menuData && (
+              <Breadcrumb
+                menuData={menuData}
+                pageElements={enrichedPageElementNavigation}
+              />
+            )}
+          </div>
+          <div className={styles.headerItem}>
+            <SystemToolbar
+              mode={uiMode}
+              onSetMode={(mode) => {
+                if (uiMode !== mode) {
+                  setUiMode(mode);
                 }
-                onSetLanguage={(value) => {
-                  i18n.changeLanguage(value === 'zhHant' ? 'zhHant' : 'en');
-                }}
-                theme={isLightTheme ? 'light' : 'dark'}
-                onSetTheme={(theme) => {
-                  setTheme(theme);
-                }}
-              />
-            </div>
-          </header>
-
-          {menuData && isMenuOpen && (
-            <OverlayMenu
-              menuData={menuData}
-              closeMenu={() => setIsMenuOpen(false)}
-              isOpen={isMenuOpen}
-              openMenu={() => setIsMenuOpen(true)}
+              }}
+              language={
+                selectedLanguage === Language.English
+                  ? Language.English
+                  : Language.TraditionalChinese
+              }
+              onSetLanguage={(value) => {
+                i18n.changeLanguage(value === 'zhHant' ? 'zhHant' : 'en');
+              }}
+              theme={isLightTheme ? 'light' : 'dark'}
+              onSetTheme={(theme) => {
+                setTheme(theme);
+              }}
             />
-          )}
+          </div>
+        </header>
 
-          <PageTransitionProvider>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/currency" element={<CurrencyMaintenancePage />} />
-              <Route
-                path="/functiongroup"
-                element={<FunctionGroupMaintenancePage />}
-              />
-              <Route path="/payment" element={<PaymentMaintenancePage />} />
-            </Routes>
-          </PageTransitionProvider>
+        {menuData && isMenuOpen && (
+          <OverlayMenu
+            menuData={menuData}
+            closeMenu={() => setIsMenuOpen(false)}
+            isOpen={isMenuOpen}
+            openMenu={() => setIsMenuOpen(true)}
+          />
+        )}
+
+        <PageTransitionProvider>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/currency" element={<CurrencyMaintenancePage />} />
+            <Route
+              path="/functiongroup"
+              element={<FunctionGroupMaintenancePage />}
+            />
+            <Route path="/payment" element={<PaymentMaintenancePage />} />
+          </Routes>
+        </PageTransitionProvider>
       </div>
     </Router>
   );

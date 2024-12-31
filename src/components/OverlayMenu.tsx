@@ -11,13 +11,13 @@ import {
   useRestoreFocusSource,
 } from '@fluentui/react-components';
 import { Dismiss24Regular } from '@fluentui/react-icons';
-import React, { useContext } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MenuItem } from '../models/login';
 import { useTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
 import { getMenuItemPathById } from '../pages/common';
-import { MessageContext } from '../contexts/Message';
+import { useMessage } from '../contexts/Message';
 import { useFormDirty } from '../contexts/FormDirty';
 import { useDialog } from '../contexts/Dialog';
 
@@ -111,16 +111,16 @@ export const OverlayMenu: React.FC<OverlayMenuProps> = ({
 }) => {
   const styles = useStyles();
   const navigate = useNavigate();
-  const messageCtx = useContext(MessageContext);
+  const { showSpinner, stopSpinner } = useMessage();
 
   const handleMenuClick = async (id: string) => {
     const path = getMenuItemPathById(id);
     if (path) {
-      messageCtx.showSpinner();
+      showSpinner();
       setTimeout(() => {
         navigate(path);
         closeMenu();
-        messageCtx.stopSpinner();
+        stopSpinner();
       }, 500);
     }
   };

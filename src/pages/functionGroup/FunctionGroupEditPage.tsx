@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Accordion,
   AccordionHeader,
@@ -39,7 +39,7 @@ import {
 import { constructMessage } from '../../utils/stringUtil';
 import { Language } from '../../models/system';
 import { Field } from '../../components/Field';
-import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
+import { useAppendBreadcrumb } from '../../contexts/PageElementNavigation';
 import { Site } from '../../models/site';
 import { sharedDataAtom } from '../../states/sharedData';
 import { FunctionAccess, FunctionTree } from '../../models/functionEntitlement';
@@ -524,7 +524,8 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
       .flatMap((item) => item.action.map((a) => `${item.id}.${a}`)),
   };
 
-  const navigationCtx = useContext(PageElementNavigationContext);
+  // const { popPageElementNavigationTill, appendPageElementNavigation } =
+  //   usePageElementNavigation();
   const { markDirty, resetDirty } = useFormDirty();
 
   const {
@@ -555,28 +556,12 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
     return () => resetDirty();
   }, [formValues, isDirty, markDirty, resetDirty]);
 
-  useEffect(() => {
-    // append breadcrumb
-    const labelKey = 'functionGroupMaintenance.titleEdit';
-    const mode = functionGroupState.activeRecord
-      ? readOnly
-        ? 'system.message.view'
-        : 'system.message.edit'
-      : 'system.message.add';
-
-    if (!navigationCtx.popPageElementNavigationTill(labelKey, [mode])) {
-      navigationCtx.appendPageElementNavigation(
-        labelKey,
-        [mode],
-        onBackButtonPressed
-      );
-    }
-  }, [
-    functionGroupState.activeRecord,
-    readOnly,
-    onBackButtonPressed,
-    navigationCtx,
-  ]);
+  const mode = functionGroupState.activeRecord
+  ? readOnly
+    ? 'system.message.view'
+    : 'system.message.edit'
+  : 'system.message.add';
+  useAppendBreadcrumb('functionGroupMaintenance.titleEdit', mode, onBackButtonPressed);
 
   const toggleAccordion = (
     id: string,

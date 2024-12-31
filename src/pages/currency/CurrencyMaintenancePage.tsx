@@ -2,8 +2,8 @@ import { useAtomValue } from 'jotai';
 import { currencyAtom } from '../../states/currency';
 import { CurrencySearchPage } from './CurrencySearchPage';
 import { CurrencyEditPage } from './CurrencyEditPage';
-import { useContext, useEffect, useState } from 'react';
-import { MessageContext } from '../../contexts/Message';
+import { useEffect, useState } from 'react';
+import { useMessage } from '../../contexts/Message';
 import {
   constructErrorMessage,
   constructMessage,
@@ -15,22 +15,22 @@ import { MessageType } from '../../models/system';
 type Mode = 'search' | 'add' | 'edit' | 'view';
 
 export const CurrencyMaintenancePage: React.FC = () => {
-  const messageCtx = useContext(MessageContext);
+  const { showSpinner, stopSpinner, dispatchMessage } = useMessage();
   const { t } = useTranslation();
 
   const state = useAtomValue(currencyAtom);
 
   useNotification(state, {
-    showSpinner: messageCtx.showSpinner,
-    stopSpinner: messageCtx.stopSpinner,
+    showSpinner: showSpinner,
+    stopSpinner: stopSpinner,
     showOperationResultMessage: (message) => {
       if (message.type === MessageType.Error) {
-        messageCtx.dispatchMessage({
+        dispatchMessage({
           type: message.type,
           text: constructErrorMessage(t, message.key, message.parameters),
         });
       } else {
-        messageCtx.dispatchMessage({
+        dispatchMessage({
           type: message.type,
           text: constructMessage(t, message.key, message.parameters),
         });

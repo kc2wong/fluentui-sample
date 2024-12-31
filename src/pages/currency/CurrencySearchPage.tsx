@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   tokens,
   ToolbarButton,
@@ -31,9 +31,8 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { emptyStringToUndefined } from '../../utils/objectUtil';
 import { Language } from '../../models/system';
-import { useStyles } from '../common';
 import { SearchCriteriaDrawer } from '../../components/Drawer';
-import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
+import { useStartBreadcrumb } from '../../contexts/PageElementNavigation';
 import { Form, Root } from '../../components/Container';
 import { Field } from '../../components/Field';
 
@@ -59,8 +58,6 @@ type SearchDrawerProps = {
 };
 
 const SearchDrawer = ({ t, isOpen, onOpenChange }: SearchDrawerProps) => {
-  const styles = useStyles();
-
   const [state, action] = useAtom(currencyAtom);
 
   const { control, reset, getValues, handleSubmit } = useForm<SearchFormData>({
@@ -86,31 +83,25 @@ const SearchDrawer = ({ t, isOpen, onOpenChange }: SearchDrawerProps) => {
       })}
       t={t}
     >
-        <Controller
-          name="code"
-          control={control}
-          render={({ field }) => (
-            <Field
-              label={t('currencyMaintenance.code')}
-              orientation="horizontal"
-            >
-              <Input {...field} />
-            </Field>
-          )}
-        />
+      <Controller
+        name="code"
+        control={control}
+        render={({ field }) => (
+          <Field label={t('currencyMaintenance.code')} orientation="horizontal">
+            <Input {...field} />
+          </Field>
+        )}
+      />
 
-        <Controller
-          name="name"
-          control={control}
-          render={({ field }) => (
-            <Field
-              label={t('currencyMaintenance.name')}
-              orientation="horizontal"
-            >
-              <Input {...field} />
-            </Field>
-          )}
-        />
+      <Controller
+        name="name"
+        control={control}
+        render={({ field }) => (
+          <Field label={t('currencyMaintenance.name')} orientation="horizontal">
+            <Input {...field} />
+          </Field>
+        )}
+      />
     </SearchCriteriaDrawer>
   );
 };
@@ -154,7 +145,6 @@ export const CurrencySearchPage: React.FC<CurrencySearchPageProps> = (
     state.activeRecord?.code
   );
   const { t } = useTranslation();
-  const navigationCtx = useContext(PageElementNavigationContext);
 
   const items = (state.resultSet ?? []).map((i) => ({
     code: i.code,
@@ -185,13 +175,7 @@ export const CurrencySearchPage: React.FC<CurrencySearchPageProps> = (
     }
   }, [state.isResultSetDirty, action]);
 
-  useEffect(() => {
-    // append breadcrumb
-    const labelKey = 'currencyMaintenance.title';
-    if (!navigationCtx.popPageElementNavigationTill(labelKey)) {
-      navigationCtx.startPageElementNavigation(labelKey);
-    }
-  }, [navigationCtx]);
+  useStartBreadcrumb('currencyMaintenance.title');
 
   const toolbarButtonRefresh = (
     <ToolbarButton

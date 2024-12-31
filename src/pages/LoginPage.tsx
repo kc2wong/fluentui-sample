@@ -10,8 +10,8 @@ import { Card, CardHeader, CardPreview } from '@fluentui/react-components';
 import { ButtonPanel } from '../components/ButtonPanel';
 import { authentication } from '../states/authentication';
 import { useAtom } from 'jotai';
-import { useContext, useEffect } from 'react';
-import { MessageContext } from '../contexts/Message';
+import { useEffect } from 'react';
+import { useMessage } from '../contexts/Message';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -62,7 +62,7 @@ type FormData = z.infer<typeof schema>;
 
 export const LoginPage = () => {
   const styles = useStyles();
-  const messageCtx = useContext(MessageContext);
+  const { showSpinner, stopSpinner, dispatchMessage } = useMessage();
 
   const { t } = useTranslation();
 
@@ -79,16 +79,16 @@ export const LoginPage = () => {
   });
 
   useNotification(state, {
-    showSpinner: messageCtx.showSpinner,
-    stopSpinner: messageCtx.stopSpinner,
+    showSpinner: showSpinner,
+    stopSpinner: stopSpinner,
     showOperationResultMessage: (message) => {
       if (message.type === MessageType.Error) {
-        messageCtx.dispatchMessage({
+        dispatchMessage({
           type: message.type,
           text: constructErrorMessage(t, message.key, message.parameters),
         });
       } else {
-        messageCtx.dispatchMessage({
+        dispatchMessage({
           type: message.type,
           text: constructMessage(t, message.key, message.parameters),
         });

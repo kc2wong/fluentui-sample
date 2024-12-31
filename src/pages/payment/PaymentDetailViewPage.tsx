@@ -1,11 +1,5 @@
 import React from 'react';
-import { useContext, useEffect } from 'react';
-import {
-  Button,
-  Text,
-  Radio,
-  RadioGroup,
-} from '@fluentui/react-components';
+import { Button, Text, Radio, RadioGroup } from '@fluentui/react-components';
 import {
   ArrowTurnUpLeftRegular,
   CheckmarkStarburstRegular,
@@ -15,7 +9,7 @@ import { useAtomValue } from 'jotai';
 import { undefinedToEmptyString } from '../../utils/objectUtil';
 import { constructMessage } from '../../utils/stringUtil';
 import { Field } from '../../components/Field';
-import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
+import { useAppendBreadcrumb } from '../../contexts/PageElementNavigation';
 import { entitledSiteAtom } from '../../states/entitledSite';
 import { Form, Root } from '../../components/Container';
 import { NumericInput } from '../../components/NumericInput';
@@ -60,23 +54,12 @@ export const PaymentDetailViewPage: React.FC<PaymentDetailPageProps> = ({
   const entitledSiteState = useAtomValue(entitledSiteAtom);
   const paymentState = useAtomValue(paymentAtom);
 
-  const navigationCtx = useContext(PageElementNavigationContext);
-
   const payment = paymentState.activeRecord;
 
   const labelKey = 'paymentMaintenance.titleEdit';
   const mode = 'system.message.view';
 
-  useEffect(() => {
-    // append breadcrumb
-    if (!navigationCtx.popPageElementNavigationTill(labelKey, [mode])) {
-      navigationCtx.appendPageElementNavigation(
-        labelKey,
-        [mode],
-        onBackButtonPress
-      );
-    }
-  }, [mode, onBackButtonPress, navigationCtx]);
+  useAppendBreadcrumb(labelKey, mode, onBackButtonPress);
 
   const getInstructionIdPrefix = (): string | undefined => {
     const siteValue = payment?.site;
@@ -105,9 +88,7 @@ export const PaymentDetailViewPage: React.FC<PaymentDetailPageProps> = ({
         numColumn={2}
         buttons={[backButton]}
         title={constructMessage(t, 'paymentMaintenance.titleEdit', [mode])}
-        toolbarSlot={
-          payment ? <PaymentStatusBar payment={payment} /> : <></>
-        }
+        toolbarSlot={payment ? <PaymentStatusBar payment={payment} /> : <></>}
       >
         <Field label={t('paymentMaintenance.site')}>
           <Input readOnly value={undefinedToEmptyString(payment?.site)} />

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   tokens,
   ToolbarButton,
@@ -36,7 +36,7 @@ import {
   undefinedToEmptyString,
 } from '../../utils/objectUtil';
 import { SearchCriteriaDrawer } from '../../components/Drawer';
-import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
+import { useStartBreadcrumb } from '../../contexts/PageElementNavigation';
 import { Form, Root } from '../../components/Container';
 import { Field } from '../../components/Field';
 import { paymentAtom, SearchPaymentPayload } from '../../states/payment';
@@ -250,7 +250,6 @@ export const PaymentSearchPage: React.FC<PaymentSearchPageProps> = (
     state.activeRecord ? paymentToItem(state.activeRecord) : undefined
   );
   const { t } = useTranslation();
-  const navigationCtx = useContext(PageElementNavigationContext);
 
   const items = (state.resultSet ?? []).map((p) => paymentToItem(p));
 
@@ -276,13 +275,7 @@ export const PaymentSearchPage: React.FC<PaymentSearchPageProps> = (
     }
   }, [state.isResultSetDirty, action]);
 
-  useEffect(() => {
-    // append breadcrumb
-    const labelKey = 'paymentMaintenance.title';
-    if (!navigationCtx.popPageElementNavigationTill(labelKey)) {
-      navigationCtx.startPageElementNavigation(labelKey);
-    }
-  }, [navigationCtx]);
+  useStartBreadcrumb('paymentMaintenance.title');
 
   const entitledSiteCode = (entitledSiteState.resultSet?.entitledSite ?? [])
     .filter((item) => item.selected)

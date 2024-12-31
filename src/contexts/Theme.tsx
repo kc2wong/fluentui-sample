@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import {
   FluentProvider,
   webLightTheme,
@@ -7,12 +7,12 @@ import {
 
 export type Theme = 'light' | 'dark';
 
-interface ThemeContextType {
+interface ThemedAppContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
 }
 
-export const ThemedAppContext = createContext<ThemeContextType>({
+const ThemedAppContext = createContext<ThemedAppContextType>({
   theme: 'light',
   setTheme: () => {},
 });
@@ -29,4 +29,12 @@ export const ThemedAppProvider: React.FC<{
       </FluentProvider>
     </ThemedAppContext.Provider>
   );
+};
+
+export const useTheme = (): ThemedAppContextType => {
+  const context = useContext(ThemedAppContext);
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemedAppProvider');
+  }
+  return context;
 };

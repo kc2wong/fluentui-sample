@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   tokens,
   ToolbarButton,
@@ -34,7 +34,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { emptyStringToUndefined } from '../../utils/objectUtil';
 import { SearchCriteriaDrawer } from '../../components/Drawer';
-import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
+import { useStartBreadcrumb } from '../../contexts/PageElementNavigation';
 import { functionGroupAtom } from '../../states/functionGroup';
 import { Form, Root } from '../../components/Container';
 import { Field } from '../../components/Field';
@@ -180,7 +180,6 @@ export const FunctionGroupSearchPage: React.FC<FunctionGroupSearchPageProps> = (
     state.activeRecord?.code
   );
   const { t } = useTranslation();
-  const navigationCtx = useContext(PageElementNavigationContext);
 
   const items = (state.resultSet ?? []).map((i) => ({
     code: i.code,
@@ -222,13 +221,7 @@ export const FunctionGroupSearchPage: React.FC<FunctionGroupSearchPageProps> = (
     }
   }, [state.isResultSetDirty, action]);
 
-  useEffect(() => {
-    // append breadcrumb
-    const labelKey = 'functionGroupMaintenance.title';
-    if (!navigationCtx.popPageElementNavigationTill(labelKey)) {
-      navigationCtx.startPageElementNavigation(labelKey);
-    }
-  }, [navigationCtx]);
+  useStartBreadcrumb('functionGroupMaintenance.title');
 
   const toolbarButtonFilter = (
     <ToolbarButton

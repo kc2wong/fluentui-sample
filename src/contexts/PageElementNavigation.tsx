@@ -1,4 +1,10 @@
-import React, { createContext, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { isEqual } from '../utils/objectUtil';
 
 export type PageElement = {
@@ -21,11 +27,11 @@ interface PageElementNavigationContextType {
   ) => void;
   replaceLastPageElementNavigation: (
     labelKey: string,
-    labelParam?: string[],
+    labelParam?: string[]
   ) => void;
 }
 
-export const PageElementNavigationContext =
+const PageElementNavigationContext =
   createContext<PageElementNavigationContextType>({
     pageElementNavigation: [],
     popPageElementNavigationTill: () => false,
@@ -127,4 +133,49 @@ export const PageElementNavigationProvider: React.FC<{
       {children}
     </PageElementNavigationContext.Provider>
   );
+};
+
+export const usePageElementNavigation =
+  (): PageElementNavigationContextType => {
+    const context = useContext(PageElementNavigationContext);
+    if (!context) {
+      throw new Error(
+        'usePageElementNavigation must be used within a PageElementNavigationProvider'
+      );
+    }
+    return context;
+  };
+
+export const useStartBreadcrumb = (labelKey: string) => {
+  const navigationCtx = useContext(PageElementNavigationContext);
+
+  useEffect(() => {
+    if (!navigationCtx.popPageElementNavigationTill(labelKey)) {
+      navigationCtx.startPageElementNavigation(labelKey);
+    }
+  }, [navigationCtx, labelKey]);
+};
+
+const emptyArray: string[] = [];
+
+export const useAppendBreadcrumb = (
+  labelKey: string,
+  paramKey?: string | string[],
+  action?: () => void
+) => {
+  const paramKeyArray = useMemo(() => {
+    if (!paramKey) return emptyArray;
+    return Array.isArray(paramKey) ? paramKey : [paramKey];
+  }, [paramKey]);
+
+  const navigationCtx = useContext(PageElementNavigationContext);
+  useEffect(() => {
+    if (!navigationCtx.popPageElementNavigationTill(labelKey, paramKeyArray)) {
+      navigationCtx.appendPageElementNavigation(
+        labelKey,
+        paramKeyArray,
+        action
+      );
+    }
+  }, [navigationCtx, labelKey, action, paramKeyArray]);
 };

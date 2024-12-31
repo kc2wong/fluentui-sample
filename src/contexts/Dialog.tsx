@@ -18,7 +18,7 @@ type NegativeDialogButton = BaseDialogButton & {
   action?: () => void;
 };
 
-export type ConfirmationDialogProps = {
+type ConfirmationDialogProps = {
   // confirmType: 'save' | 'submit' | 'signOut';
   confirmType: string;
   message: string;
@@ -27,7 +27,7 @@ export type ConfirmationDialogProps = {
   tertiaryButton?: NegativeDialogButton;
 };
 
-export type DiscardChangeDialogProps = {
+type DiscardChangeDialogProps = {
   action: () => void;
 };
 
@@ -36,7 +36,7 @@ interface DialogContextType {
   showDiscardChangeDialog: (dialogProps: DiscardChangeDialogProps) => void;
 }
 
-export const DialogContext = createContext<DialogContextType>({
+const DialogContext = createContext<DialogContextType>({
   showConfirmationDialog: () => {},
   showDiscardChangeDialog: () => {},
 });

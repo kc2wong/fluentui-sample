@@ -32,7 +32,7 @@ import {
   WeatherMoonRegular,
   WeatherSunnyRegular,
 } from '@fluentui/react-icons';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Language, UiMode } from '../models/system';
 import { Theme } from '../contexts/Theme';
@@ -40,7 +40,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { entitledSiteAtom } from '../states/entitledSite';
 import { Site } from '../models/site';
-import { MessageContext } from '../contexts/Message';
+import { useMessage } from '../contexts/Message';
 import { useNotification } from '../states/baseState';
 import { useDialog } from '../contexts/Dialog';
 import { useFormDirty } from '../contexts/FormDirty';
@@ -103,11 +103,11 @@ const EnititledSiteSelectionMenu: React.FC<EnititledSiteSelectionMenuProps> = ({
   const [entitledSiteState, action] = useAtom(entitledSiteAtom);
   const [, paymentAction] = useAtom(paymentAtom);
   const [entitledSites, setEntitledSites] = useState<SiteWithSelection[]>([]);
-  const messageCtx = useContext(MessageContext);
+  const { showSpinner, stopSpinner } = useMessage();
 
   useNotification(entitledSiteState, {
-    showSpinner: messageCtx.showSpinner,
-    stopSpinner: messageCtx.stopSpinner,
+    showSpinner: showSpinner,
+    stopSpinner: stopSpinner,
     showOperationResultMessage: () => {},
   });
 
@@ -301,14 +301,14 @@ export const UserProfile: React.FC<UserProfileProps> = ({
   const navigate = useNavigate();
   const { showConfirmationDialog } = useDialog();
   const { isDirty } = useFormDirty();
-  const messageCtx = useContext(MessageContext);
+  const { showSpinner, stopSpinner } = useMessage();
 
   const { user } = login;
 
   const signOut = () => {
-    messageCtx.showSpinner();
+    showSpinner();
     setTimeout(() => {
-      messageCtx.stopSpinner();
+      stopSpinner();
       action({ signOut: {} });
       navigate('/');
     }, 500);

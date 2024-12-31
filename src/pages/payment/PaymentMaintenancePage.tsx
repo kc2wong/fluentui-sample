@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useAtomValue, useAtom } from 'jotai';
 import { paymentAtom } from '../../states/payment';
 import { useTranslation } from 'react-i18next';
-import { MessageContext } from '../../contexts/Message';
+import { useMessage } from '../../contexts/Message';
 import { MessageType } from '../../models/system';
 import { useNotification } from '../../states/baseState';
 import { sharedDataAtom } from '../../states/sharedData';
@@ -15,7 +15,7 @@ import { PaymentSearchPage } from './PaymentSearchPage';
 import { PaymentPairingPage } from './PaymentPairingPage';
 import { PaymentStatus } from '../../models/payment';
 import { PaymentDetailViewPage } from './PaymentDetailViewPage';
-import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
+import { usePageElementNavigation } from '../../contexts/PageElementNavigation';
 import { usePageTransition } from '../../contexts/PageTransition';
 
 type Mode =
@@ -27,29 +27,29 @@ type Mode =
   | 'viewPairing';
 
 const PaymentMaintenancePage: React.FC = () => {
-  const messageCtx = useContext(MessageContext);
-  const navigationCtx = useContext(PageElementNavigationContext);
+  const { showSpinner, stopSpinner, dispatchMessage } = useMessage();
+  const { popPageElementNavigationTill, appendPageElementNavigation } =
+    usePageElementNavigation();
 
   const { t } = useTranslation();
 
   const [sharedDataState, sharedDataAction] = useAtom(sharedDataAtom);
   const paymentState = useAtomValue(paymentAtom);
 
-  // const [mode, setMode] = useState<Mode>('search');
   const mode = useRef<Mode>('search');
   const { startTransition } = usePageTransition();
 
   useNotification(sharedDataState, {
-    showSpinner: messageCtx.showSpinner,
-    stopSpinner: messageCtx.stopSpinner,
+    showSpinner,
+    stopSpinner,
     showOperationResultMessage: (message) => {
       if (message.type === MessageType.Error) {
-        messageCtx.dispatchMessage({
+        dispatchMessage({
           type: message.type,
           text: constructErrorMessage(t, message.key, message.parameters),
         });
       } else {
-        messageCtx.dispatchMessage({
+        dispatchMessage({
           type: message.type,
           text: constructMessage(t, message.key, message.parameters),
         });
@@ -58,16 +58,16 @@ const PaymentMaintenancePage: React.FC = () => {
   });
 
   useNotification(paymentState, {
-    showSpinner: messageCtx.showSpinner,
-    stopSpinner: messageCtx.stopSpinner,
+    showSpinner,
+    stopSpinner,
     showOperationResultMessage: (message) => {
       if (message.type === MessageType.Error) {
-        messageCtx.dispatchMessage({
+        dispatchMessage({
           type: message.type,
           text: constructErrorMessage(t, message.key, message.parameters),
         });
       } else {
-        messageCtx.dispatchMessage({
+        dispatchMessage({
           type: message.type,
           text: constructMessage(t, message.key, message.parameters),
         });
@@ -106,18 +106,10 @@ const PaymentMaintenancePage: React.FC = () => {
             setMode('editPairing', () => {
               const labelKey = 'paymentMaintenance.titleEdit';
               const paramKey = 'system.message.edit';
-              if (
-                !navigationCtx.popPageElementNavigationTill(labelKey, [
-                  paramKey,
-                ])
-              ) {
-                navigationCtx.appendPageElementNavigation(
-                  labelKey,
-                  [paramKey],
-                  () => {
-                    setMode('search');
-                  }
-                );
+              if (!popPageElementNavigationTill(labelKey, [paramKey])) {
+                appendPageElementNavigation(labelKey, [paramKey], () => {
+                  setMode('search');
+                });
               }
               setMode('editPairing');
             });
@@ -214,10 +206,7 @@ const PaymentMaintenancePage: React.FC = () => {
     }
   };
 
-  return (
-    getPage()
-  );
+  return getPage();
 };
 
 export default PaymentMaintenancePage;
-

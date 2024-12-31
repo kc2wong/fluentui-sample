@@ -1,6 +1,6 @@
 import { useAtom, useAtomValue } from 'jotai';
-import { useContext, useEffect, useState } from 'react';
-import { MessageContext } from '../../contexts/Message';
+import { useEffect, useState } from 'react';
+import { useMessage } from '../../contexts/Message';
 import {
   constructErrorMessage,
   constructMessage,
@@ -16,23 +16,23 @@ import { functionGroupAtom } from '../../states/functionGroup';
 type Mode = 'search' | 'add' | 'edit' | 'view';
 
 export const FunctionGroupMaintenancePage: React.FC = () => {
-  const messageCtx = useContext(MessageContext);
+  const { showSpinner, stopSpinner, dispatchMessage } = useMessage();
   const { t } = useTranslation();
 
   const state = useAtomValue(functionGroupAtom);
   const [sharedDataState, sharedDataAction] = useAtom(sharedDataAtom);
 
   useNotification(sharedDataState, {
-    showSpinner: messageCtx.showSpinner,
-    stopSpinner: messageCtx.stopSpinner,
+    showSpinner,
+    stopSpinner,
     showOperationResultMessage: (message) => {
       if (message.type === MessageType.Error) {
-        messageCtx.dispatchMessage({
+        dispatchMessage({
           type: message.type,
           text: constructErrorMessage(t, message.key, message.parameters),
         });
       } else {
-        messageCtx.dispatchMessage({
+        dispatchMessage({
           type: message.type,
           text: constructMessage(t, message.key, message.parameters),
         });
@@ -41,16 +41,16 @@ export const FunctionGroupMaintenancePage: React.FC = () => {
   });
 
   useNotification(state, {
-    showSpinner: messageCtx.showSpinner,
-    stopSpinner: messageCtx.stopSpinner,
+    showSpinner,
+    stopSpinner,
     showOperationResultMessage: (message) => {
       if (message.type === MessageType.Error) {
-        messageCtx.dispatchMessage({
+        dispatchMessage({
           type: message.type,
           text: constructErrorMessage(t, message.key, message.parameters),
         });
       } else {
-        messageCtx.dispatchMessage({
+        dispatchMessage({
           type: message.type,
           text: constructMessage(t, message.key, message.parameters),
         });
@@ -107,5 +107,5 @@ export const FunctionGroupMaintenancePage: React.FC = () => {
     }
     default:
       return <></>;
-  }  
+  }
 };

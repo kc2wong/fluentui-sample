@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Button,
   Combobox,
@@ -47,8 +47,8 @@ import {
 } from '../../utils/stringUtil';
 import { Field } from '../../components/Field';
 import { DetailEditingDrawer } from '../../components/Drawer';
-import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
-import { DialogContext } from '../../contexts/Dialog';
+import { useAppendBreadcrumb } from '../../contexts/PageElementNavigation';
+import { useDialog } from '../../contexts/Dialog';
 import { entitledSiteAtom } from '../../states/entitledSite';
 import { Form, Root } from '../../components/Container';
 import { NumericInput } from '../../components/NumericInput';
@@ -61,7 +61,7 @@ import { DatePicker } from '@fluentui/react-datepicker-compat';
 import { formatDateDDMMYYYY, parseDateMMDDYYYY } from '../../utils/dateUtil';
 import { EmptyCell } from '../../components/EmptyCell';
 import { Account } from '../../models/account';
-import { MessageContext } from '../../contexts/Message';
+import { useMessage } from '../../contexts/Message';
 import { searchAccount } from '../../services/account';
 import { MessageType } from '../../models/system';
 import { Input } from '../../components/Input';
@@ -195,7 +195,7 @@ const AccountSearchDrawer = ({
   const [accountSearchResult, setAccountSearchResult] = useState<
     Account[] | undefined
   >(undefined);
-  const messageCtx = useContext(MessageContext);
+  const { showSpinner, stopSpinner } = useMessage();
   const columns = [
     { columnKey: 'site', label: t('paymentMaintenance.site') },
     { columnKey: 'code', label: t('paymentMaintenance.code') },
@@ -227,13 +227,13 @@ const AccountSearchDrawer = ({
               appearance="primary"
               icon={<SearchRegular />}
               onClick={async () => {
-                messageCtx.showSpinner();
+                showSpinner();
                 const { site, code, name } = getValues();
                 const searchResult = await searchAccount(site, code, name);
                 if (Array.isArray(searchResult)) {
                   setAccountSearchResult(searchResult);
                 }
-                messageCtx.stopSpinner();
+                stopSpinner();
               }}
             >
               {t('system.message.search')}
@@ -447,9 +447,8 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
   const payment = paymentState.activeRecord;
   const isNewPayment = !payment || payment.status === PaymentStatus.New;
 
-  const { markDirty, resetDirty} = useFormDirty();  
-  const dialogCtx = useContext(DialogContext);
-  const navigationCtx = useContext(PageElementNavigationContext);
+  const { markDirty, resetDirty } = useFormDirty();
+  const { showConfirmationDialog } = useDialog();
 
   const paymentToFormData = (payment?: Payment) => {
     return {
@@ -540,17 +539,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
     label: 'paymentMaintenance.titleEdit',
     param: [`system.message.${mode}`],
   };
-
-  useEffect(() => {
-    // append breadcrumb
-    if (!navigationCtx.popPageElementNavigationTill(title.label, title.param)) {
-      navigationCtx.appendPageElementNavigation(
-        title.label,
-        title.param,
-        onBack
-      );
-    }
-  }, [onBack, navigationCtx, title.label, title.param]);
+  useAppendBreadcrumb(title.label, title.param, onBack);
 
   const handleLookupAccount = (accountCode: string, entitledSite: string[]) => {
     paymentAction({
@@ -632,7 +621,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
       appearance="primary"
       disabled={missingRequiredField(getValues())}
       onClick={handleSubmit(() => {
-        dialogCtx.showConfirmationDialog({
+        showConfirmationDialog({
           confirmType: 'save',
           message: t(
             'paymentMaintenance.message.doYouWantToInitiatePaymentRequest'

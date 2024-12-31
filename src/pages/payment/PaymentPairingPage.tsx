@@ -1,5 +1,5 @@
 import React from 'react';
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import {
   Button,
   Combobox,
@@ -37,8 +37,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { emptyStringToUndefined } from '../../utils/objectUtil';
 import { constructMessage, formatNumber } from '../../utils/stringUtil';
 import { Field } from '../../components/Field';
-import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
-import { DialogContext } from '../../contexts/Dialog';
+import {
+  useAppendBreadcrumb,
+} from '../../contexts/PageElementNavigation';
+import { useDialog } from '../../contexts/Dialog';
 import { entitledSiteAtom } from '../../states/entitledSite';
 import { Form, Root } from '../../components/Container';
 import { NumericInput } from '../../components/NumericInput';
@@ -393,8 +395,7 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
   const sharedDataState = useAtomValue(sharedDataAtom);
   const ccyList = sharedDataState.resultSet?.currencies ?? [];
 
-  const dialogCtx = useContext(DialogContext);
-  const navigationCtx = useContext(PageElementNavigationContext);
+  const { showConfirmationDialog } = useDialog();
 
   const {
     control,
@@ -420,17 +421,7 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
   }, [formValues]);
 
   const labelKey = 'paymentMaintenance.pairing.title';
-
-  useEffect(() => {
-    // append breadcrumb
-    if (!navigationCtx.popPageElementNavigationTill(labelKey, [])) {
-      navigationCtx.appendPageElementNavigation(
-        labelKey,
-        [],
-        onBackButtonPress
-      );
-    }
-  }, [onBackButtonPress, navigationCtx]);
+  useAppendBreadcrumb(labelKey, [], onBackButtonPress);
 
   const getInstructionIdPrefix = (site: string): string | undefined => {
     return entitledSiteState.resultSet?.entitledSite.find(
@@ -456,7 +447,7 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
       onClick={handleSubmit(() => {
         if (readOnly) {
         } else {
-          dialogCtx.showConfirmationDialog({
+          showConfirmationDialog({
             confirmType: 'submit',
             message: constructMessage(
               t,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Button,
   SpinButton,
@@ -29,8 +29,10 @@ import { constructMessage } from '../../utils/stringUtil';
 import { Language, MessageType } from '../../models/system';
 import { Field } from '../../components/Field';
 import { DetailEditingDrawer } from '../../components/Drawer';
-import { PageElementNavigationContext } from '../../contexts/PageElementNavigation';
-import { DialogContext } from '../../contexts/Dialog';
+import {
+  useAppendBreadcrumb,
+} from '../../contexts/PageElementNavigation';
+import { useDialog } from '../../contexts/Dialog';
 import { Form, Root } from '../../components/Container';
 import { useFormDirty } from '../../contexts/FormDirty';
 import { EmptyCell } from '../../components/EmptyCell';
@@ -193,8 +195,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
   const [currencyState, action] = useAtom(currencyAtom);
   const initialData = currencyState.activeRecord;
 
-  const dialogCtx = useContext(DialogContext);
-  const navigationCtx = useContext(PageElementNavigationContext);
+  const { showConfirmationDialog } = useDialog();
   const { markDirty, resetDirty } = useFormDirty();
 
   const {
@@ -227,27 +228,16 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
     return () => resetDirty();
   }, [formValues, isDirty, markDirty, resetDirty]);
 
-  useEffect(() => {
-    // append breadcrumb
-    const labelKey = 'currencyMaintenance.titleEdit';
-    const mode = currencyState.activeRecord
-      ? readOnly
-        ? 'system.message.view'
-        : 'system.message.edit'
-      : 'system.message.add';
-    if (!navigationCtx.popPageElementNavigationTill(labelKey, [mode])) {
-      navigationCtx.appendPageElementNavigation(
-        labelKey,
-        [mode],
-        onBackButtonPressed
-      );
-    }
-  }, [
-    currencyState.activeRecord,
-    readOnly,
-    onBackButtonPressed,
-    navigationCtx,
-  ]);
+  const mode = currencyState.activeRecord
+    ? readOnly
+      ? 'system.message.view'
+      : 'system.message.edit'
+    : 'system.message.add';
+  useAppendBreadcrumb(
+    'currencyMaintenance.titleEdit',
+    mode,
+    onBackButtonPressed
+  );
 
   const handleNameFieldChange = (
     fieldName: 'name' | 'shortName',
@@ -314,7 +304,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
       appearance="primary"
       disabled={missingRequiredField(getValues())}
       onClick={handleSubmit(() => {
-        dialogCtx.showConfirmationDialog({
+        showConfirmationDialog({
           confirmType: 'save',
           message: t('system.message.doYouWantToSaveChange'),
           primaryButton: {
