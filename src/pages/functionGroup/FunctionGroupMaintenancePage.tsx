@@ -4,14 +4,14 @@ import { useMessage } from '../../contexts/Message';
 import {
   constructErrorMessage,
   constructMessage,
-} from '../../utils/stringUtil';
+} from '../../utils/string-util';
 import { useTranslation } from 'react-i18next';
-import { useNotification } from '../../states/baseState';
+import { useNotification } from '../../states/base-state';
 import { MessageType } from '../../models/system';
 import { FunctionGroupEditPage } from './FunctionGroupEditPage';
-import { sharedDataAtom } from '../../states/sharedData';
+import { sharedDataAtom } from '../../states/shared-data';
 import { FunctionGroupSearchPage } from './FunctionGroupSearchPage';
-import { functionGroupAtom } from '../../states/functionGroup';
+import { functionGroupAtom } from '../../states/function-group';
 
 type Mode = 'search' | 'add' | 'edit' | 'view';
 

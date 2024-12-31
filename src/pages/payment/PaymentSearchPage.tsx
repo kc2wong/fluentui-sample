@@ -34,7 +34,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   emptyStringToUndefined,
   undefinedToEmptyString,
-} from '../../utils/objectUtil';
+} from '../../utils/object-util';
 import { SearchCriteriaDrawer } from '../../components/Drawer';
 import { useStartBreadcrumb } from '../../contexts/PageElementNavigation';
 import { Form, Root } from '../../components/Container';
@@ -42,8 +42,8 @@ import { Field } from '../../components/Field';
 import { paymentAtom, SearchPaymentPayload } from '../../states/payment';
 import { entitledSiteAtom } from '../../states/entitledSite';
 import { Payment, PaymentDirection, PaymentStatus } from '../../models/payment';
-import { formatNumber } from '../../utils/stringUtil';
-import { formatDateDDMMYYYY } from '../../utils/dateUtil';
+import { formatNumber } from '../../utils/string-util';
+import { formatDateDDMMYYYY } from '../../utils/date-util';
 import { PaymentStatusLabel } from './PaymentStatusComponent';
 
 const searchSchema = z.object({

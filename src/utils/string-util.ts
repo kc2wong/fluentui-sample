@@ -35,38 +35,26 @@ export const formatNumber = (value?: number, numDecimal?: number): string => {
     formattedDecimal = decimal.padEnd(numDecimal, '0').slice(0, numDecimal);
   }
 
-  return formattedDecimal
-    ? `${formattedInteger}.${formattedDecimal}`
-    : formattedInteger;
+  return formattedDecimal ? `${formattedInteger}.${formattedDecimal}` : formattedInteger;
 };
 
-export const constructMessage = (
-  t: TFunction,
-  key: string,
-  param?: string[]
-) => {
+export const constructMessage = (t: TFunction, key: string, param?: string[]) => {
   const baseMsg = t(key);
   return key === baseMsg
     ? key
     : interpolate(
         baseMsg,
-        (param ?? []).map((e) => t(e))
+        (param ?? []).map((e) => t(e)),
       );
 };
 
-export const constructErrorMessage = (
-  t: TFunction,
-  errorCode: string,
-  errorParam?: string[]
-) => {
+export const constructErrorMessage = (t: TFunction, errorCode: string, errorParam?: string[]) => {
   return constructMessage(t, `system.error.${errorCode}`, errorParam);
 };
 
 export const stringToEnum = <T extends Record<string, string>>(
   enumType: T,
-  value: string
+  value: string,
 ): T[keyof T] | undefined => {
-  return Object.values(enumType).includes(value as T[keyof T])
-    ? (value as T[keyof T])
-    : undefined;
+  return Object.values(enumType).includes(value as T[keyof T]) ? (value as T[keyof T]) : undefined;
 };

@@ -1,6 +1,6 @@
 import React, { useState, forwardRef, useRef } from 'react';
 import { Input, InputProps } from '@fluentui/react-components';
-import { formatNumber } from '../utils/stringUtil';
+import { formatNumber } from '../utils/string-util';
 
 export declare type InputOnChangeData = {
   /** Updated input value from the user */

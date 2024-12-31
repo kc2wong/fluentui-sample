@@ -4,12 +4,12 @@ import { paymentAtom } from '../../states/payment';
 import { useTranslation } from 'react-i18next';
 import { useMessage } from '../../contexts/Message';
 import { MessageType } from '../../models/system';
-import { useNotification } from '../../states/baseState';
-import { sharedDataAtom } from '../../states/sharedData';
+import { useNotification } from '../../states/base-state';
+import { sharedDataAtom } from '../../states/shared-data';
 import {
   constructErrorMessage,
   constructMessage,
-} from '../../utils/stringUtil';
+} from '../../utils/string-util';
 import { PaymentDetailEditPage } from './PaymentDetailEditPage';
 import { PaymentSearchPage } from './PaymentSearchPage';
 import { PaymentPairingPage } from './PaymentPairingPage';

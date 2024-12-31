@@ -25,9 +25,7 @@ export const searchCurrency = async (): Promise<Currency[] | Error> => {
   }
 };
 
-export const addCurrency = async (
-  currency: CurrencyBase
-): Promise<Currency | Error> => {
+export const addCurrency = async (currency: CurrencyBase): Promise<Currency | Error> => {
   const url = 'https://demo1029256.mockable.io/currencies';
   const res = await fetch(url, {
     method: 'POST',
@@ -52,9 +50,7 @@ export const addCurrency = async (
   }
 };
 
-export const updateCurrency = async (
-  currency: Currency
-): Promise<Currency | Error> => {
+export const updateCurrency = async (currency: Currency): Promise<Currency | Error> => {
   const url = `https://demo1029256.mockable.io/currencies/${currency.code}`;
   const res = await fetch(url, {
     method: 'PUT',
@@ -85,8 +81,6 @@ export const getCurrency = async (code: string): Promise<Currency | Error> => {
     return searchResult;
   } else {
     const match = searchResult.find((c) => c.code === code);
-    return match
-      ? match
-      : { code: 'NotFound', parameters: ['Currency', `code = ${code}`] };
+    return match ? match : { code: 'NotFound', parameters: ['Currency', `code = ${code}`] };
   }
 };

@@ -4,7 +4,7 @@ import { Error, NotFound, systemError } from '../models/system';
 export const searchAccount = async (
   _site?: string[],
   _accountCode?: string,
-  _accountName?: string
+  _accountName?: string,
 ): Promise<Account[] | Error> => {
   const url = 'https://demo1029256.mockable.io/accounts';
   const res = await fetch(url, {
@@ -31,17 +31,15 @@ export const searchAccount = async (
 
 export const getAccount = async (
   code: string,
-  entitledSite: string[]
+  entitledSite: string[],
 ): Promise<Account[] | Error> => {
   const searchResult = await searchAccount();
   if ('code' in searchResult) {
     return searchResult;
   } else {
     const match = searchResult.filter(
-      (item) => item.code === code && entitledSite.includes(item.site)
+      (item) => item.code === code && entitledSite.includes(item.site),
     );
-    return match.length > 0
-      ? match
-      : new NotFound(['Account', `code = ${code}`]);
+    return match.length > 0 ? match : new NotFound(['Account', `code = ${code}`]);
   }
 };

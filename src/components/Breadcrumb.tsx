@@ -6,10 +6,10 @@ import {
 } from '@fluentui/react-components';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { constructMessage } from '../utils/stringUtil';
+import { constructMessage } from '../utils/string-util';
 import { useLocation } from 'react-router-dom';
 import { MenuItem } from '../models/login';
-import { isEqual } from '../utils/objectUtil';
+import { isEqual } from '../utils/object-util';
 import { getMenuItemIdByPath } from '../pages/common';
 import { PageElement } from '../contexts/PageElementNavigation';
 

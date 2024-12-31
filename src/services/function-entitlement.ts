@@ -1,4 +1,4 @@
-import { FunctionGroup, FunctionGroupBase, FunctionTree } from '../models/functionEntitlement';
+import { FunctionGroup, FunctionGroupBase, FunctionTree } from '../models/function-entitlement';
 import { Error, systemError } from '../models/system';
 
 export const searchFunctionTree = async (): Promise<FunctionTree[] | Error> => {
@@ -50,7 +50,7 @@ export const searchFunctionGroup = async (): Promise<FunctionGroup[] | Error> =>
 };
 
 export const addFunctionGroup = async (
-  functionGroup: FunctionGroupBase
+  functionGroup: FunctionGroupBase,
 ): Promise<FunctionGroup | Error> => {
   const url = 'https://demo1029256.mockable.io/functiongroups';
   const res = await fetch(url, {
@@ -77,7 +77,7 @@ export const addFunctionGroup = async (
 };
 
 export const updateFunctionGroup = async (
-  functionGroup: FunctionGroup
+  functionGroup: FunctionGroup,
 ): Promise<FunctionGroup | Error> => {
   const url = `https://demo1029256.mockable.io/functiongroup/${functionGroup.code}`;
   const res = await fetch(url, {
@@ -109,8 +109,6 @@ export const getFunctionGroup = async (code: string): Promise<FunctionGroup | Er
     return searchResult;
   } else {
     const match = searchResult.find((c) => c.code === code);
-    return match
-      ? match
-      : { code: 'NotFound', parameters: ['Function Group', `code = ${code}`] };
+    return match ? match : { code: 'NotFound', parameters: ['Function Group', `code = ${code}`] };
   }
 };

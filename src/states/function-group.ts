@@ -1,10 +1,16 @@
 import { atom } from 'jotai';
 import { atomWithReset, RESET } from 'jotai/utils';
-import { OneOnly } from '../utils/objectUtil';
-import { BaseState } from './baseState';
+import { OneOnly } from '../utils/object-util';
+import { BaseState } from './base-state';
 import { Message, MessageType, Error } from '../models/system';
-import { FunctionGroupBase, FunctionGroup } from '../models/functionEntitlement';
-import { addFunctionGroup, getFunctionGroup, searchFunctionGroup, updateFunctionGroup } from '../services/functionEntitlement';
+import { FunctionGroupBase, FunctionGroup } from '../models/function-entitlement';
+import {
+  addFunctionGroup,
+  getFunctionGroup,
+  searchFunctionGroup,
+  updateFunctionGroup,
+} from '../services/function-entitlement';
+import { EmptyObject } from '../models/common';
 
 type SearchFunctionGroupPayload = {
   offset: number;
@@ -23,13 +29,13 @@ type SaveFunctionGroupPayload = {
 };
 
 export type FunctionGroupMaintenancePayload = {
-  new: {};
-  discard: {};
+  new: EmptyObject;
+  discard: EmptyObject;
   search: SearchFunctionGroupPayload;
   save: SaveFunctionGroupPayload;
   edit: EditFunctionGroupPayload;
   view: EditFunctionGroupPayload;
-  refresh: {};
+  refresh: EmptyObject;
 };
 
 interface FunctionGroupMaintenanceState extends BaseState {
@@ -57,18 +63,18 @@ const setOperationResult = (
   current: FunctionGroupMaintenanceState,
   set: FunctionGroupMaintenanceAtomSetter,
   operationResult: Message | Error | undefined,
-  additionalState: Partial<FunctionGroupMaintenanceState> = {}
+  additionalState: Partial<FunctionGroupMaintenanceState> = {},
 ) => {
   const message =
     operationResult === undefined
       ? undefined
       : 'code' in operationResult
-      ? {
-          key: operationResult.code,
-          type: MessageType.Error,
-          parameters: operationResult.parameters,
-        }
-      : operationResult;
+        ? {
+            key: operationResult.code,
+            type: MessageType.Error,
+            parameters: operationResult.parameters,
+          }
+        : operationResult;
   set(baseFunctionGroupAtom, {
     ...current,
     operationEndTime: new Date().getTime(),
@@ -81,7 +87,7 @@ const setOperationResult = (
 const handleSearchOrRefresh = async (
   current: FunctionGroupMaintenanceState,
   set: FunctionGroupMaintenanceAtomSetter,
-  search: SearchFunctionGroupPayload | undefined
+  search: SearchFunctionGroupPayload | undefined,
 ) => {
   const beforeState = {
     ...current,
@@ -105,14 +111,14 @@ const handleSearchOrRefresh = async (
           resultSet: result,
           isResultSetDirty: false,
           activeRecord: undefined,
-        }
+        },
   );
 };
 
 const handleSave = async (
   current: FunctionGroupMaintenanceState,
   set: FunctionGroupMaintenanceAtomSetter,
-  save: SaveFunctionGroupPayload
+  save: SaveFunctionGroupPayload,
 ) => {
   const beforeState = {
     ...current,
@@ -141,7 +147,7 @@ const handleSave = async (
 const handleEditOrView = async (
   current: FunctionGroupMaintenanceState,
   set: FunctionGroupMaintenanceAtomSetter,
-  code: string
+  code: string,
 ) => {
   const beforeState = {
     ...current,
@@ -161,57 +167,37 @@ const handleEditOrView = async (
   });
 };
 
-const baseFunctionGroupAtom =
-  atomWithReset<FunctionGroupMaintenanceState>(initialValue);
+const baseFunctionGroupAtom = atomWithReset<FunctionGroupMaintenanceState>(initialValue);
 type FunctionGroupMaintenanceAtomSetter = (
   atom: typeof baseFunctionGroupAtom,
-  state: FunctionGroupMaintenanceState
+  state: FunctionGroupMaintenanceState,
 ) => void;
 
 export const functionGroupAtom = atom<
-FunctionGroupMaintenanceState,
+  FunctionGroupMaintenanceState,
   [OneOnly<FunctionGroupMaintenancePayload> | typeof RESET],
   Promise<void>
 >(
   (get) => get(baseFunctionGroupAtom),
-  async (
-    get,
-    set,
-    payload: OneOnly<FunctionGroupMaintenancePayload> | typeof RESET
-  ) => {
+  async (get, set, payload: OneOnly<FunctionGroupMaintenancePayload> | typeof RESET) => {
     const current = get(baseFunctionGroupAtom);
-    return new Promise<void>(async (resolve) => {
-      if (payload === RESET) {
-        set(baseFunctionGroupAtom, payload);
-      } else {
-        const {
-          search,
-          refresh,
-          save,
-          edit,
-          view,
-          new: newRecord,
-          discard,
-        } = payload;
-        if (search || refresh) {
-          await handleSearchOrRefresh(current, set, payload.search);
-        } else if (save) {
-          await handleSave(current, set, save);
-        } else if (edit || view) {
-          await handleEditOrView(
-            current,
-            set,
-            payload.edit ? payload.edit.code : payload.view.code
-          );
-        } else if (newRecord || discard) {
-          set(baseFunctionGroupAtom, {
-            ...current,
-            activeRecord: undefined,
-            operationResult: undefined,
-          });
-        }
+    if (payload === RESET) {
+      set(baseFunctionGroupAtom, payload);
+    } else {
+      const { search, refresh, save, edit, view, new: newRecord, discard } = payload;
+      if (search || refresh) {
+        await handleSearchOrRefresh(current, set, payload.search);
+      } else if (save) {
+        await handleSave(current, set, save);
+      } else if (edit || view) {
+        await handleEditOrView(current, set, payload.edit ? payload.edit.code : payload.view.code);
+      } else if (newRecord || discard) {
+        set(baseFunctionGroupAtom, {
+          ...current,
+          activeRecord: undefined,
+          operationResult: undefined,
+        });
       }
-      resolve();
-    });
-  }
+    }
+  },
 );

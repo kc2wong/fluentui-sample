@@ -1,19 +1,20 @@
 import { atom } from 'jotai';
 import { atomWithReset, RESET } from 'jotai/utils';
 import { Error, Message, MessageType } from '../models/system';
-import { OneOnly } from '../utils/objectUtil';
+import { OneOnly } from '../utils/object-util';
 import { Site } from '../models/site';
 import { searchSite } from '../services/site';
-import { BaseState } from './baseState';
-import { FunctionTree } from '../models/functionEntitlement';
-import { searchFunctionTree } from '../services/functionEntitlement';
+import { BaseState } from './base-state';
+import { FunctionTree } from '../models/function-entitlement';
+import { searchFunctionTree } from '../services/function-entitlement';
 import { Currency } from '../models/currency';
 import { searchCurrency } from '../services/currency';
+import { EmptyObject } from '../models/common';
 
 export type SharedDataPayload = {
-  getCurrency: {};
-  getSite: {};
-  getFunctionTree: {};
+  getCurrency: EmptyObject;
+  getSite: EmptyObject;
+  getFunctionTree: EmptyObject;
 };
 
 interface SharedDataState extends BaseState {
@@ -35,7 +36,7 @@ const setOperationResult = (
   current: SharedDataState,
   set: SharedDataAtomSetter,
   error?: Error,
-  additionalState: Partial<SharedDataState> = {}
+  additionalState: Partial<SharedDataState> = {},
 ) => {
   const operationResult: Message | undefined = error
     ? { key: error.code, type: MessageType.Error, parameters: error.parameters }
@@ -49,11 +50,8 @@ const setOperationResult = (
   });
 };
 
-const handleSearchCurrency = async (
-  current: SharedDataState,
-  set: SharedDataAtomSetter
-) => {
-  let beforeState = {
+const handleSearchCurrency = async (current: SharedDataState, set: SharedDataAtomSetter) => {
+  const beforeState = {
     ...current,
     operationStartTime: new Date().getTime(),
     version: current.version + 1,
@@ -71,18 +69,15 @@ const handleSearchCurrency = async (
       : {
           resultSet: {
             ...beforeState.resultSet,
-            currencies: searchCurrencyResult
+            currencies: searchCurrencyResult,
           },
           version: beforeState.version + 1,
-        }
+        },
   );
 };
 
-const handleSearchSite = async (
-  current: SharedDataState,
-  set: SharedDataAtomSetter
-) => {
-  let beforeState = {
+const handleSearchSite = async (current: SharedDataState, set: SharedDataAtomSetter) => {
+  const beforeState = {
     ...current,
     operationStartTime: new Date().getTime(),
     version: current.version + 1,
@@ -100,18 +95,15 @@ const handleSearchSite = async (
       : {
           resultSet: {
             ...beforeState.resultSet,
-            sites: searchSiteResult
+            sites: searchSiteResult,
           },
           version: beforeState.version + 1,
-        }
+        },
   );
 };
 
-const handleSearchFunctionTree = async (
-  current: SharedDataState,
-  set: SharedDataAtomSetter
-) => {
-  let beforeState = {
+const handleSearchFunctionTree = async (current: SharedDataState, set: SharedDataAtomSetter) => {
+  const beforeState = {
     ...current,
     operationStartTime: new Date().getTime(),
   };
@@ -131,15 +123,12 @@ const handleSearchFunctionTree = async (
             ...beforeState.resultSet,
             functionTree: searchFunctionTreeResult,
           },
-        }
+        },
   );
 };
 
 const baseSharedDataAtom = atomWithReset<SharedDataState>(initialValue);
-type SharedDataAtomSetter = (
-  atom: typeof baseSharedDataAtom,
-  state: SharedDataState
-) => void;
+type SharedDataAtomSetter = (atom: typeof baseSharedDataAtom, state: SharedDataState) => void;
 
 export const sharedDataAtom = atom<
   SharedDataState,
@@ -149,20 +138,17 @@ export const sharedDataAtom = atom<
   (get) => get(baseSharedDataAtom),
   async (get, set, payload: OneOnly<SharedDataPayload> | typeof RESET) => {
     const current = get(baseSharedDataAtom);
-    return new Promise<void>(async (resolve) => {
-      if (payload === RESET) {
-        set(baseSharedDataAtom, payload);
-      } else {
-        const { getCurrency, getSite, getFunctionTree } = payload;
-        if (getCurrency) {
-          await handleSearchCurrency(current, set);
-        } else if (getSite) {
-          await handleSearchSite(current, set);
-        } else if (getFunctionTree) {
-          await handleSearchFunctionTree(current, set);
-        }
+    if (payload === RESET) {
+      set(baseSharedDataAtom, payload);
+    } else {
+      const { getCurrency, getSite, getFunctionTree } = payload;
+      if (getCurrency) {
+        await handleSearchCurrency(current, set);
+      } else if (getSite) {
+        await handleSearchSite(current, set);
+      } else if (getFunctionTree) {
+        await handleSearchFunctionTree(current, set);
       }
-      resolve();
-    });
-  }
+    }
+  },
 );

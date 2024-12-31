@@ -1,10 +1,5 @@
-import {
-  makeStyles,
-  shorthands,
-  tokens,
-  typographyStyles,
-} from '@fluentui/react-components';
-import pathMappingJson from './pathMapping.json'
+import { makeStyles, shorthands, tokens, typographyStyles } from '@fluentui/react-components';
+import pathMappingJson from './pathMapping.json';
 
 export const useStyles = makeStyles({
   root: {
@@ -43,16 +38,21 @@ export const useStyles = makeStyles({
   },
 });
 
-const idToPathRecord = Object.entries(pathMappingJson).reduce((obj, [key, value]) => {
-  obj[key] = value;
-  return obj;
-}, {} as Record<string, string>)
+const idToPathRecord = Object.entries(pathMappingJson).reduce(
+  (obj, [key, value]) => {
+    obj[key] = value;
+    return obj;
+  },
+  {} as Record<string, string>,
+);
 
-const pathToIdRecord = Object.entries(pathMappingJson).reduce((obj, [key, value]) => {
-  obj[value] = key;
-  return obj;
-}, {} as Record<string, string>)
-
+const pathToIdRecord = Object.entries(pathMappingJson).reduce(
+  (obj, [key, value]) => {
+    obj[value] = key;
+    return obj;
+  },
+  {} as Record<string, string>,
+);
 
 export const getMenuItemIdByPath = (path: string): string | undefined => {
   return pathToIdRecord[path];

@@ -1,7 +1,7 @@
 import { atom } from 'jotai';
 import { atomWithReset, RESET } from 'jotai/utils';
-import { OneOnly } from '../utils/objectUtil';
-import { BaseState } from './baseState';
+import { OneOnly } from '../utils/object-util';
+import { BaseState } from './base-state';
 import { Message, MessageType, Error, isNotFound } from '../models/system';
 import {
   addMemo,
@@ -17,6 +17,7 @@ import { getAccount } from '../services/account';
 import { Deal } from '../models/deal';
 import { searchDeal } from '../services/deal';
 import { searchProductValueDate } from '../services/product';
+import { EmptyObject } from '../models/common';
 
 export type SearchPaymentPayload = {
   offset: number;
@@ -40,7 +41,7 @@ type SearchDealPayload = {
   entitledSite: string[];
 };
 
-type PopulateDealPayload = {};
+type PopulateDealPayload = EmptyObject;
 
 type SavePaymentPayload = {
   payment: PaymentBase;
@@ -69,7 +70,7 @@ type SubmitPaymentPayload = OneOnly<{
   };
 };
 
-type SearchProductPayload = {};
+type SearchProductPayload = EmptyObject;
 
 type GetPaymentPayload = {
   site: string;
@@ -81,9 +82,9 @@ type AddMemoPayload = {
 };
 
 export type PaymentPayload = {
-  newPayment: {};
+  newPayment: EmptyObject;
   searchPayment: SearchPaymentPayload;
-  refresh: {};
+  refresh: EmptyObject;
   searchAccount: LookupAccountPayload;
   selectAccount: SelectAccountPayload;
   searchDeal: SearchDealPayload;
@@ -133,18 +134,18 @@ const setOperationResult = (
   current: PaymentState,
   set: PaymentDataAtomSetter,
   operationResult: Message | Error | undefined,
-  additionalState: Partial<PaymentState> = {}
+  additionalState: Partial<PaymentState> = {},
 ) => {
   const message =
     operationResult === undefined
       ? undefined
       : 'code' in operationResult
-      ? {
-          key: operationResult.code,
-          type: MessageType.Error,
-          parameters: operationResult.parameters,
-        }
-      : operationResult;
+        ? {
+            key: operationResult.code,
+            type: MessageType.Error,
+            parameters: operationResult.parameters,
+          }
+        : operationResult;
   set(basePaymentAtom, {
     ...current,
     operationEndTime: new Date().getTime(),
@@ -157,15 +158,10 @@ const setOperationResult = (
 const handleSearchOrRefresh = async (
   current: PaymentState,
   set: PaymentDataAtomSetter,
-  search: SearchPaymentPayload | undefined
+  search: SearchPaymentPayload | undefined,
 ) => {
-  const {
-    version,
-    operationStartTime,
-    operationEndTime,
-    operationResult,
-    ...backupState
-  } = current;
+  const { version, operationStartTime, operationEndTime, operationResult, ...backupState } =
+    current;
 
   const beforeState = {
     ...current,
@@ -189,14 +185,11 @@ const handleSearchOrRefresh = async (
           resultSet: result,
           isResultSetDirty: false,
           activeRecord: undefined,
-        }
+        },
   );
 };
 
-const handleNewPayment = async (
-  current: PaymentState,
-  set: PaymentDataAtomSetter
-) => {
+const handleNewPayment = async (current: PaymentState, set: PaymentDataAtomSetter) => {
   const currentTime = new Date().getTime();
   setOperationResult(current, set, undefined, {
     operationStartTime: currentTime,
@@ -213,15 +206,10 @@ const handleNewPayment = async (
 const handleGetPayment = async (
   current: PaymentState,
   set: PaymentDataAtomSetter,
-  payload: GetPaymentPayload
+  payload: GetPaymentPayload,
 ) => {
-  const {
-    version,
-    operationStartTime,
-    operationEndTime,
-    operationResult,
-    ...backupState
-  } = current;
+  const { version, operationStartTime, operationEndTime, operationResult, ...backupState } =
+    current;
 
   const beforeState = {
     ...current,
@@ -246,14 +234,10 @@ const handleGetPayment = async (
     setOperationResult(
       beforeState,
       set,
-      isPaymentError
-        ? paymentResult
-        : isAccountError
-        ? accountResult
-        : undefined,
+      isPaymentError ? paymentResult : isAccountError ? accountResult : undefined,
       {
         ...backupState,
-      }
+      },
     );
   } else {
     setOperationResult(beforeState, set, undefined, {
@@ -266,7 +250,7 @@ const handleGetPayment = async (
 const handleSavePayment = async (
   current: PaymentState,
   set: PaymentDataAtomSetter,
-  save: SavePaymentPayload
+  save: SavePaymentPayload,
 ) => {
   const beforeState = {
     ...current,
@@ -295,7 +279,7 @@ const handleSavePayment = async (
 const handleSubmitPayment = async (
   current: PaymentState,
   set: PaymentDataAtomSetter,
-  submit: SubmitPaymentPayload
+  submit: SubmitPaymentPayload,
 ) => {
   const payment = current.activeRecord;
   if (payment) {
@@ -314,7 +298,7 @@ const handleSubmitPayment = async (
         return await bookDeal(
           payment,
           submit.bookDealPayload.product,
-          submit.bookDealPayload.valueDate
+          submit.bookDealPayload.valueDate,
         );
       }
     };
@@ -338,7 +322,7 @@ const handleSubmitPayment = async (
 const handleSearchDeal = async (
   current: PaymentState,
   set: PaymentDataAtomSetter,
-  { entitledSite, fxRef }: SearchDealPayload
+  _payload: SearchDealPayload,
 ) => {
   const beforeState = {
     ...current,
@@ -354,14 +338,14 @@ const handleSearchDeal = async (
     beforeState,
     set,
     isError ? result : undefined,
-    isError ? {} : { potentialMatchDeal: result }
+    isError ? {} : { potentialMatchDeal: result },
   );
 };
 
 const handleSearchProduct = async (
   current: PaymentState,
   set: PaymentDataAtomSetter,
-  _payload: SearchProductPayload
+  _payload: SearchProductPayload,
 ) => {
   const beforeState = {
     ...current,
@@ -382,7 +366,7 @@ const isErrorResult = (result: Account[] | Error): result is Error => {
 const handleSearchAccount = async (
   current: PaymentState,
   set: PaymentDataAtomSetter,
-  { code, entitledSite }: LookupAccountPayload
+  { code, entitledSite }: LookupAccountPayload,
 ) => {
   if (code !== current.accountCode) {
     if (code.length > 0 && code !== current.accountCode) {
@@ -402,7 +386,7 @@ const handleSearchAccount = async (
         beforeState,
         set,
         isError && !isNotFound(result) ? result : undefined,
-        isError ? { account: beforeState.account } : { account: result }
+        isError ? { account: beforeState.account } : { account: result },
       );
     } else {
       setOperationResult(current, set, undefined, { account: [] });
@@ -413,7 +397,7 @@ const handleSearchAccount = async (
 const handleSelectAccount = async (
   current: PaymentState,
   set: PaymentDataAtomSetter,
-  { account }: SelectAccountPayload
+  { account }: SelectAccountPayload,
 ) => {
   set(basePaymentAtom, {
     ...current,
@@ -426,7 +410,7 @@ const handleSelectAccount = async (
 const handleAddMemo = async (
   current: PaymentState,
   set: PaymentDataAtomSetter,
-  payload: AddMemoPayload
+  payload: AddMemoPayload,
 ) => {
   const beforeState = {
     ...current,
@@ -445,20 +429,14 @@ const handleAddMemo = async (
     set(basePaymentAtom, beforeState);
     const result = await addMemo(current.activeRecord, payload.memo);
     const isError = 'code' in result;
-    setOperationResult(
-      beforeState,
-      set,
-      isError && !isNotFound(result) ? result : undefined,
-      { activeRecord: isError ? beforeState.activeRecord : result }
-    );
+    setOperationResult(beforeState, set, isError && !isNotFound(result) ? result : undefined, {
+      activeRecord: isError ? beforeState.activeRecord : result,
+    });
   }
 };
 
 const basePaymentAtom = atomWithReset<PaymentState>(initialValue);
-type PaymentDataAtomSetter = (
-  atom: typeof basePaymentAtom,
-  state: PaymentState
-) => void;
+type PaymentDataAtomSetter = (atom: typeof basePaymentAtom, state: PaymentState) => void;
 
 export const paymentAtom = atom<
   PaymentState,
@@ -468,48 +446,45 @@ export const paymentAtom = atom<
   (get) => get(basePaymentAtom),
   async (get, set, payload) => {
     const current = get(basePaymentAtom);
-    return new Promise<void>(async (resolve) => {
-      if (payload === RESET) {
-        set(basePaymentAtom, payload);
-      } else {
-        const {
-          searchPayment,
-          refresh,
-          searchAccount,
-          selectAccount,
-          searchDeal,
-          savePayment,
-          searchProduct,
-          newPayment,
-          getPayment,
-          submitPayment,
-          addMemo,
-        } = payload;
-        if (searchPayment) {
-          await handleSearchOrRefresh(current, set, searchPayment);
-        } else if (refresh) {
-          await handleSearchOrRefresh(current, set, undefined);
-        } else if (newPayment) {
-          await handleNewPayment(current, set);
-        } else if (getPayment) {
-          await handleGetPayment(current, set, getPayment);
-        } else if (searchAccount) {
-          await handleSearchAccount(current, set, searchAccount);
-        } else if (selectAccount) {
-          await handleSelectAccount(current, set, selectAccount);
-        } else if (searchDeal) {
-          await handleSearchDeal(current, set, searchDeal);
-        } else if (savePayment) {
-          await handleSavePayment(current, set, savePayment);
-        } else if (submitPayment) {
-          await handleSubmitPayment(current, set, submitPayment);
-        } else if (searchProduct) {
-          await handleSearchProduct(current, set, searchProduct);
-        } else if (addMemo) {
-          await handleAddMemo(current, set, addMemo);
-        }
+    if (payload === RESET) {
+      set(basePaymentAtom, payload);
+    } else {
+      const {
+        searchPayment,
+        refresh,
+        searchAccount,
+        selectAccount,
+        searchDeal,
+        savePayment,
+        searchProduct,
+        newPayment,
+        getPayment,
+        submitPayment,
+        addMemo,
+      } = payload;
+      if (searchPayment) {
+        await handleSearchOrRefresh(current, set, searchPayment);
+      } else if (refresh) {
+        await handleSearchOrRefresh(current, set, undefined);
+      } else if (newPayment) {
+        await handleNewPayment(current, set);
+      } else if (getPayment) {
+        await handleGetPayment(current, set, getPayment);
+      } else if (searchAccount) {
+        await handleSearchAccount(current, set, searchAccount);
+      } else if (selectAccount) {
+        await handleSelectAccount(current, set, selectAccount);
+      } else if (searchDeal) {
+        await handleSearchDeal(current, set, searchDeal);
+      } else if (savePayment) {
+        await handleSavePayment(current, set, savePayment);
+      } else if (submitPayment) {
+        await handleSubmitPayment(current, set, submitPayment);
+      } else if (searchProduct) {
+        await handleSearchProduct(current, set, searchProduct);
+      } else if (addMemo) {
+        await handleAddMemo(current, set, addMemo);
       }
-      resolve();
-    });
-  }
+    }
+  },
 );

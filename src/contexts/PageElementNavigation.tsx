@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { isEqual } from '../utils/objectUtil';
+import { isEqual } from '../utils/object-util';
 
 export type PageElement = {
   labelKey: string;

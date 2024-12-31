@@ -1,14 +1,15 @@
 import { atom } from 'jotai';
 import { atomWithReset, RESET } from 'jotai/utils';
 import { Error, Message, MessageType } from '../models/system';
-import { OneOnly } from '../utils/objectUtil';
+import { OneOnly } from '../utils/object-util';
 import { searchSite } from '../services/site';
-import { BaseState } from './baseState';
+import { BaseState } from './base-state';
 import { Site } from '../models/site';
-import { delay } from '../utils/dateUtil';
+import { delay } from '../utils/date-util';
+import { EmptyObject } from '../models/common';
 
 type EntitledSitePayload = {
-  get: {};
+  get: EmptyObject;
   selectEntitledSite: { siteCode: string[] };
 };
 
@@ -36,7 +37,7 @@ const setOperationResult = (
   current: EntitledSiteState,
   set: SiteMaintenanceAtomSetter,
   error?: Error,
-  additionalState: Partial<EntitledSiteState> = {}
+  additionalState: Partial<EntitledSiteState> = {},
 ) => {
   const operationResult: Message | undefined = error
     ? { key: error.code, type: MessageType.Error, parameters: error.parameters }
@@ -52,17 +53,16 @@ const setOperationResult = (
 
 const handleSearchOrRefresh = async (
   current: EntitledSiteState,
-  set: SiteMaintenanceAtomSetter
+  set: SiteMaintenanceAtomSetter,
 ) => {
-  let beforeState = {
+  const beforeState = {
     ...current,
     operationStartTime: new Date().getTime(),
     version: current.version + 1,
   };
   set(baseEntitledSiteAtom, beforeState);
 
-  const entitledSiteResult =
-    beforeState.resultSet?.entitledSite ?? (await searchSite());
+  const entitledSiteResult = beforeState.resultSet?.entitledSite ?? (await searchSite());
   const isError = 'code' in entitledSiteResult;
   setOperationResult(
     beforeState,
@@ -81,16 +81,16 @@ const handleSearchOrRefresh = async (
             }),
           },
           isResultSetDirty: false,
-        }
+        },
   );
 };
 
 const handleSelectEntitledSite = async (
   current: EntitledSiteState,
   set: SiteMaintenanceAtomSetter,
-  siteCode: string[]
+  siteCode: string[],
 ) => {
-  let beforeState = {
+  const beforeState = {
     ...current,
     operationStartTime: new Date().getTime(),
     version: current.version + 1,
@@ -101,9 +101,7 @@ const handleSelectEntitledSite = async (
 
   const siteCodeSet = new Set<string>(siteCode);
   const newEntitledSite = [...(current.resultSet?.entitledSite ?? [])];
-  newEntitledSite.forEach(
-    (item) => (item.selected = siteCodeSet.has(item.site.code))
-  );
+  newEntitledSite.forEach((item) => (item.selected = siteCodeSet.has(item.site.code)));
   setOperationResult(beforeState, set, undefined, {
     resultSet: { entitledSite: newEntitledSite },
   });
@@ -112,7 +110,7 @@ const handleSelectEntitledSite = async (
 const baseEntitledSiteAtom = atomWithReset<EntitledSiteState>(initialValue);
 type SiteMaintenanceAtomSetter = (
   atom: typeof baseEntitledSiteAtom,
-  state: EntitledSiteState
+  state: EntitledSiteState,
 ) => void;
 
 export const entitledSiteAtom = atom<
@@ -123,18 +121,15 @@ export const entitledSiteAtom = atom<
   (get) => get(baseEntitledSiteAtom),
   async (get, set, payload: OneOnly<EntitledSitePayload> | typeof RESET) => {
     const current = get(baseEntitledSiteAtom);
-    return new Promise<void>(async (resolve) => {
-      if (payload === RESET) {
-        set(baseEntitledSiteAtom, payload);
-      } else {
-        const { get, selectEntitledSite } = payload;
-        if (get) {
-          await handleSearchOrRefresh(current, set);
-        } else if (selectEntitledSite) {
-          handleSelectEntitledSite(current, set, selectEntitledSite.siteCode);
-        }
+    if (payload === RESET) {
+      set(baseEntitledSiteAtom, payload);
+    } else {
+      const { get, selectEntitledSite } = payload;
+      if (get) {
+        await handleSearchOrRefresh(current, set);
+      } else if (selectEntitledSite) {
+        handleSelectEntitledSite(current, set, selectEntitledSite.siteCode);
       }
-      resolve();
-    });
-  }
+    }
+  },
 );

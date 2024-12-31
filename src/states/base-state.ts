@@ -17,12 +17,7 @@ type UseNotificationProps<T extends BaseState> = {
 
 export function useNotification<T extends BaseState>(
   state: T,
-  {
-    showSpinner,
-    stopSpinner,
-    showOperationResultMessage,
-    additionAction,
-  }: UseNotificationProps<T>
+  { showSpinner, stopSpinner, showOperationResultMessage, additionAction }: UseNotificationProps<T>,
 ) {
   const stateVersion = useRef(0);
 
@@ -44,11 +39,5 @@ export function useNotification<T extends BaseState>(
       }
       stateVersion.current = state.version;
     }
-  }, [
-    state,
-    showSpinner,
-    stopSpinner,
-    showOperationResultMessage,
-    additionAction,
-  ]);
+  }, [state, showSpinner, stopSpinner, showOperationResultMessage, additionAction]);
 }

@@ -41,7 +41,7 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { entitledSiteAtom } from '../states/entitledSite';
 import { Site } from '../models/site';
 import { useMessage } from '../contexts/Message';
-import { useNotification } from '../states/baseState';
+import { useNotification } from '../states/base-state';
 import { useDialog } from '../contexts/Dialog';
 import { useFormDirty } from '../contexts/FormDirty';
 import { Login } from '../models/login';

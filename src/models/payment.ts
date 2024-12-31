@@ -33,23 +33,22 @@ interface DebitAmountInterface {
 // Combine the two shapes into a single interface
 type AmountInterfaceType = CreditAmountInterface | DebitAmountInterface;
 
-interface PaymentBase
-  extends Omit<
-    AmountInterfaceType & {
-      site: string;
-      account: string;
-      direction: PaymentDirection;
-      executeDate?: Date;
-      instructionId?: string;
-      fxRef?: string;
-      status: PaymentStatus;
-      product?: string;
-      valueDate?: Date;
-      pairedAmount?: number;
-      pairedFxRef?: string;
-    },
-    ''
-  > {}
+type PaymentBase = Omit<
+  AmountInterfaceType & {
+    site: string;
+    account: string;
+    direction: PaymentDirection;
+    executeDate?: Date;
+    instructionId?: string;
+    fxRef?: string;
+    status: PaymentStatus;
+    product?: string;
+    valueDate?: Date;
+    pairedAmount?: number;
+    pairedFxRef?: string;
+  },
+  ''
+>;
 
 interface Payment extends Omit<PaymentBase, 'executeDate' | 'instructionId'> {
   instructionId: string;

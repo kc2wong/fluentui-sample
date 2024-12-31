@@ -13,7 +13,7 @@ import { AddRegular } from '@fluentui/react-icons';
 import { Memo as M } from '../../models/payment';
 
 import { useState } from 'react';
-import { formatDateDDMMYYYYHHMISS } from '../../utils/dateUtil';
+import { formatDateDDMMYYYYHHMISS } from '../../utils/date-util';
 import { useTranslation } from 'react-i18next';
 
 const useStyles = makeStyles({

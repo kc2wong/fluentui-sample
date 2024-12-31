@@ -1,15 +1,11 @@
 import { atom } from 'jotai';
 import { atomWithReset, RESET } from 'jotai/utils';
-import {
-  addCurrency,
-  getCurrency,
-  searchCurrency,
-  updateCurrency,
-} from '../services/currency';
-import { OneOnly } from '../utils/objectUtil';
-import { BaseState } from './baseState';
+import { addCurrency, getCurrency, searchCurrency, updateCurrency } from '../services/currency';
+import { OneOnly } from '../utils/object-util';
+import { BaseState } from './base-state';
 import { Message, MessageType, Error } from '../models/system';
 import { Currency, CurrencyBase } from '../models/currency';
+import { EmptyObject } from '../models/common';
 
 type SearchCurrencyPayload = {
   offset: number;
@@ -32,13 +28,13 @@ type SaveCurrencyPayload = {
 };
 
 export type CurrencyMaintenancePayload = {
-  new: {};
-  discard: {};
+  new: EmptyObject;
+  discard: EmptyObject;
   search: SearchCurrencyPayload;
   save: SaveCurrencyPayload;
   edit: EditCurrencyPayload;
   view: EditCurrencyPayload;
-  refresh: {};
+  refresh: EmptyObject;
 };
 
 // State of the currency maintenance function
@@ -67,18 +63,18 @@ const setOperationResult = (
   current: CurrencyMaintenanceState,
   set: CurrencyMaintenanceAtomSetter,
   operationResult: Message | Error | undefined,
-  additionalState: Partial<CurrencyMaintenanceState> = {}
+  additionalState: Partial<CurrencyMaintenanceState> = {},
 ) => {
   const message =
     operationResult === undefined
       ? undefined
       : 'code' in operationResult
-      ? {
-          key: operationResult.code,
-          type: MessageType.Error,
-          parameters: operationResult.parameters,
-        }
-      : operationResult;
+        ? {
+            key: operationResult.code,
+            type: MessageType.Error,
+            parameters: operationResult.parameters,
+          }
+        : operationResult;
   set(baseCurrencyAtom, {
     ...current,
     operationEndTime: new Date().getTime(),
@@ -91,7 +87,7 @@ const setOperationResult = (
 const handleSearchOrRefresh = async (
   current: CurrencyMaintenanceState,
   set: CurrencyMaintenanceAtomSetter,
-  search: SearchCurrencyPayload | undefined
+  search: SearchCurrencyPayload | undefined,
 ) => {
   const beforeState = {
     ...current,
@@ -115,14 +111,14 @@ const handleSearchOrRefresh = async (
           resultSet: result,
           isResultSetDirty: false,
           activeRecord: undefined,
-        }
+        },
   );
 };
 
 const handleSave = async (
   current: CurrencyMaintenanceState,
   set: CurrencyMaintenanceAtomSetter,
-  save: SaveCurrencyPayload
+  save: SaveCurrencyPayload,
 ) => {
   const beforeState = {
     ...current,
@@ -150,13 +146,12 @@ const handleSave = async (
   if (!isError && save.onSaveSuccess.callback) {
     save.onSaveSuccess.callback(result);
   }
-
 };
 
 const handleEditOrView = async (
   current: CurrencyMaintenanceState,
   set: CurrencyMaintenanceAtomSetter,
-  code: string
+  code: string,
 ) => {
   const beforeState = {
     ...current,
@@ -176,11 +171,10 @@ const handleEditOrView = async (
   });
 };
 
-const baseCurrencyAtom =
-  atomWithReset<CurrencyMaintenanceState>(initialValue);
+const baseCurrencyAtom = atomWithReset<CurrencyMaintenanceState>(initialValue);
 type CurrencyMaintenanceAtomSetter = (
   atom: typeof baseCurrencyAtom,
-  state: CurrencyMaintenanceState
+  state: CurrencyMaintenanceState,
 ) => void;
 
 export const currencyAtom = atom<
@@ -189,44 +183,28 @@ export const currencyAtom = atom<
   Promise<void>
 >(
   (get) => get(baseCurrencyAtom),
-  async (
-    get,
-    set,
-    payload: OneOnly<CurrencyMaintenancePayload> | typeof RESET
-  ) => {
+  async (get, set, payload: OneOnly<CurrencyMaintenancePayload> | typeof RESET) => {
     const current = get(baseCurrencyAtom);
-    return new Promise<void>(async (resolve) => {
-      if (payload === RESET) {
-        set(baseCurrencyAtom, payload);
-      } else {
-        const {
-          search,
-          refresh,
-          save,
-          edit,
-          view,
-          new: newRecord,
-          discard,
-        } = payload;
-        if (search || refresh) {
-          await handleSearchOrRefresh(current, set, payload.search);
-        } else if (save) {
-          await handleSave(current, set, save);
-        } else if (edit || view) {
-          await handleEditOrView(
-            current,
-            set,
-            payload.edit ? payload.edit.code : payload.view.code
-          );
-        } else if (newRecord || discard) {
-          set(baseCurrencyAtom, {
-            ...current,
-            activeRecord: undefined,
-            operationResult: undefined,
-          });
-        }
-      }
-      resolve();
-    });
-  }
+
+    if (payload === RESET) {
+      set(baseCurrencyAtom, payload);
+      return;
+    }
+
+    const { search, refresh, save, edit, view, new: newRecord, discard } = payload;
+
+    if (search || refresh) {
+      await handleSearchOrRefresh(current, set, payload.search);
+    } else if (save) {
+      await handleSave(current, set, save);
+    } else if (edit || view) {
+      await handleEditOrView(current, set, payload.edit ? payload.edit.code : payload.view.code);
+    } else if (newRecord || discard) {
+      set(baseCurrencyAtom, {
+        ...current,
+        activeRecord: undefined,
+        operationResult: undefined,
+      });
+    }
+  },
 );

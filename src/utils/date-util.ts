@@ -5,7 +5,7 @@ export const getCurrentDate = () => {
   rtn.setSeconds(0);
   rtn.setMilliseconds(0);
   return rtn;
-}
+};
 
 export const formatDateDDMMYYYY = (date?: Date): string => {
   if (date) {
@@ -16,9 +16,8 @@ export const formatDateDDMMYYYY = (date?: Date): string => {
       return `${day}/${month}/${year}`;
     } else {
       return date;
-    }  
-  }
-  else {
+    }
+  } else {
     return '';
   }
 };
@@ -35,9 +34,8 @@ export const formatDateDDMMYYYYHHMISS = (date?: Date): string => {
       return `${day}/${month}/${year} ${hour}:${minute}:${second}`;
     } else {
       return date;
-    }  
-  }
-  else {
+    }
+  } else {
     return '';
   }
 };
@@ -49,12 +47,8 @@ export const parseDateMMDDYYYY = (dateStr: string): Date | undefined => {
   }
   const date = new Date(year, month - 1, day);
   const isValid =
-    date.getFullYear() === year &&
-    date.getMonth() === month - 1 &&
-    date.getDate() === day;
+    date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
   return isValid ? date : undefined;
 };
 
 export const delay = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-

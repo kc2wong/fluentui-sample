@@ -1,5 +1,5 @@
 export interface Account {
-    site: string;
-    code: string;
-    name: string;
+  site: string;
+  code: string;
+  name: string;
 }

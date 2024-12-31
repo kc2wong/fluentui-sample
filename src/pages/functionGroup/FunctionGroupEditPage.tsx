@@ -35,15 +35,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   emptyStringToUndefined,
   undefinedToEmptyString,
-} from '../../utils/objectUtil';
-import { constructMessage } from '../../utils/stringUtil';
+} from '../../utils/object-util';
+import { constructMessage } from '../../utils/string-util';
 import { Language } from '../../models/system';
 import { Field } from '../../components/Field';
 import { useAppendBreadcrumb } from '../../contexts/PageElementNavigation';
 import { Site } from '../../models/site';
-import { sharedDataAtom } from '../../states/sharedData';
-import { FunctionAccess, FunctionTree } from '../../models/functionEntitlement';
-import { functionGroupAtom } from '../../states/functionGroup';
+import { sharedDataAtom } from '../../states/shared-data';
+import { FunctionAccess, FunctionTree } from '../../models/function-entitlement';
+import { functionGroupAtom } from '../../states/function-group';
 import { Form, Root } from '../../components/Container';
 import { useFormDirty } from '../../contexts/FormDirty';
 import { Input } from '../../components/Input';

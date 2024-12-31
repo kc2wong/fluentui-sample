@@ -24,14 +24,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   emptyStringToUndefined,
   undefinedToEmptyString,
-} from '../../utils/objectUtil';
-import { constructMessage } from '../../utils/stringUtil';
+} from '../../utils/object-util';
+import { constructMessage } from '../../utils/string-util';
 import { Language, MessageType } from '../../models/system';
 import { Field } from '../../components/Field';
 import { DetailEditingDrawer } from '../../components/Drawer';
-import {
-  useAppendBreadcrumb,
-} from '../../contexts/PageElementNavigation';
+import { useAppendBreadcrumb } from '../../contexts/PageElementNavigation';
 import { useDialog } from '../../contexts/Dialog';
 import { Form, Root } from '../../components/Container';
 import { useFormDirty } from '../../contexts/FormDirty';

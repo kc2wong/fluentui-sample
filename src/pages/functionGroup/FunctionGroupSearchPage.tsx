@@ -32,10 +32,10 @@ import { TFunction } from 'i18next';
 import { atom, useAtom } from 'jotai';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { emptyStringToUndefined } from '../../utils/objectUtil';
+import { emptyStringToUndefined } from '../../utils/object-util';
 import { SearchCriteriaDrawer } from '../../components/Drawer';
 import { useStartBreadcrumb } from '../../contexts/PageElementNavigation';
-import { functionGroupAtom } from '../../states/functionGroup';
+import { functionGroupAtom } from '../../states/function-group';
 import { Form, Root } from '../../components/Container';
 import { Field } from '../../components/Field';
 

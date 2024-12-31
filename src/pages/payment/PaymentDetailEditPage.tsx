@@ -39,12 +39,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   emptyStringToUndefined,
   undefinedToEmptyString,
-} from '../../utils/objectUtil';
+} from '../../utils/object-util';
 import {
   constructErrorMessage,
   constructMessage,
   stringToEnum,
-} from '../../utils/stringUtil';
+} from '../../utils/string-util';
 import { Field } from '../../components/Field';
 import { DetailEditingDrawer } from '../../components/Drawer';
 import { useAppendBreadcrumb } from '../../contexts/PageElementNavigation';
@@ -56,9 +56,9 @@ import { Row } from '../../components/Row';
 import { Currency } from '../../models/currency';
 import { Payment, PaymentDirection, PaymentStatus } from '../../models/payment';
 import { paymentAtom } from '../../states/payment';
-import { sharedDataAtom } from '../../states/sharedData';
+import { sharedDataAtom } from '../../states/shared-data';
 import { DatePicker } from '@fluentui/react-datepicker-compat';
-import { formatDateDDMMYYYY, parseDateMMDDYYYY } from '../../utils/dateUtil';
+import { formatDateDDMMYYYY, parseDateMMDDYYYY } from '../../utils/date-util';
 import { EmptyCell } from '../../components/EmptyCell';
 import { Account } from '../../models/account';
 import { useMessage } from '../../contexts/Message';

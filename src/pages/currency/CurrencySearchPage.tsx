@@ -29,7 +29,7 @@ import { currencyAtom } from '../../states/currency';
 import { atom, useAtom } from 'jotai';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { emptyStringToUndefined } from '../../utils/objectUtil';
+import { emptyStringToUndefined } from '../../utils/object-util';
 import { Language } from '../../models/system';
 import { SearchCriteriaDrawer } from '../../components/Drawer';
 import { useStartBreadcrumb } from '../../contexts/PageElementNavigation';

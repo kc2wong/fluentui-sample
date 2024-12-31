@@ -3,7 +3,7 @@ import { CheckmarkRegular, DismissRegular } from '@fluentui/react-icons';
 import { Dialog, DialogProps } from '../components/Dialog';
 import { useTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
-import { constructMessage } from '../utils/stringUtil';
+import { constructMessage } from '../utils/string-util';
 
 type BaseDialogButton = {
   label: string;

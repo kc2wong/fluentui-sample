@@ -1,13 +1,14 @@
 import { Memo, Payment, PaymentBase, PaymentStatus } from '../models/payment';
 import { Error, systemError } from '../models/system';
-import { delay, getCurrentDate } from '../utils/dateUtil';
+import { delay, getCurrentDate } from '../utils/date-util';
 
-type MemoEntity = Omit<Memo, 'createDatetime'> & {createDatetime: number}
-type PaymentEntity = Omit<Payment, 'executeDate' | 'memo'> & {executeDate: number, memo: MemoEntity[]}
+type MemoEntity = Omit<Memo, 'createDatetime'> & { createDatetime: number };
+type PaymentEntity = Omit<Payment, 'executeDate' | 'memo'> & {
+  executeDate: number;
+  memo: MemoEntity[];
+};
 
-export const searchPayment = async (
-  site?: string[]
-): Promise<Payment[] | Error> => {
+export const searchPayment = async (site?: string[]): Promise<Payment[] | Error> => {
   const url = 'https://demo1029256.mockable.io/payments';
   const res = await fetch(url, {
     method: 'GET',
@@ -44,9 +45,7 @@ export const searchPayment = async (
   }
 };
 
-export const addPayment = async (
-  payment: PaymentBase
-): Promise<Payment | Error> => {
+export const addPayment = async (payment: PaymentBase): Promise<Payment | Error> => {
   const { executeDate, ...others } = payment;
   const savedPayment: Payment = {
     ...others,
@@ -59,10 +58,7 @@ export const addPayment = async (
   return Promise.resolve(savedPayment);
 };
 
-export const matchDeal = async (
-  payment: Payment,
-  _fxRef: string
-): Promise<Payment | Error> => {
+export const matchDeal = async (payment: Payment, _fxRef: string): Promise<Payment | Error> => {
   const savedPayment: Payment = {
     ...payment,
     status: PaymentStatus.Submitted,
@@ -74,7 +70,7 @@ export const matchDeal = async (
 export const bookDeal = async (
   payment: Payment,
   _product: string,
-  _executeDate: Date
+  _executeDate: Date,
 ): Promise<Payment | Error> => {
   const savedPayment: Payment = {
     ...payment,
@@ -84,17 +80,12 @@ export const bookDeal = async (
   return Promise.resolve(savedPayment);
 };
 
-export const getPayment = async (
-  site: string,
-  instructionId: string
-): Promise<Payment | Error> => {
+export const getPayment = async (site: string, instructionId: string): Promise<Payment | Error> => {
   const searchResult = await searchPayment();
   if ('code' in searchResult) {
     return searchResult;
   } else {
-    const match = searchResult.find(
-      (p) => p.site === site && p.instructionId === instructionId
-    );
+    const match = searchResult.find((p) => p.site === site && p.instructionId === instructionId);
     return match
       ? match
       : {
@@ -104,10 +95,7 @@ export const getPayment = async (
   }
 };
 
-export const addMemo = async (
-  payment: Payment,
-  message: string
-): Promise<Payment | Error> => {
+export const addMemo = async (payment: Payment, message: string): Promise<Payment | Error> => {
   const { memo, ...others } = payment;
   const savedPayment: Payment = {
     ...others,

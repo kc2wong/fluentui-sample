@@ -1,9 +1,10 @@
 import { atom } from 'jotai';
 import { Login } from '../models/login';
 import { signIn as signApi } from '../services/authentication';
-import { OneOnly } from '../utils/objectUtil';
-import { BaseState } from './baseState';
+import { OneOnly } from '../utils/object-util';
+import { BaseState } from './base-state';
 import { Message, MessageType } from '../models/system';
+import { EmptyObject } from '../models/common';
 
 type OptionalLogin = Login | undefined;
 
@@ -30,8 +31,8 @@ type SignInPayload = {
 
 export type AuthenticationPayload = {
   signIn: SignInPayload;
-  acknowledgeSignIn: {};
-  signOut: {};
+  acknowledgeSignIn: EmptyObject;
+  signOut: EmptyObject;
 };
 
 export const authentication = atom<
@@ -40,54 +41,47 @@ export const authentication = atom<
   Promise<void>
 >(
   (get) => get(authenticationAtom),
-  async (
-    get,
-    set,
-    { signIn, acknowledgeSignIn, signOut }: OneOnly<AuthenticationPayload>
-  ) => {
+  async (get, set, { signIn, acknowledgeSignIn, signOut }: OneOnly<AuthenticationPayload>) => {
     const current = get(authenticationAtom);
-    return new Promise<void>(async (resolve) => {
-      if (signIn) {
-        const beforeState = {
-          ...current,
-          operationStartTime: new Date().getTime(),
-          version: current.version + 1,
-          operationResult: undefined,
-          login: undefined,
-          acknowledge: false,
-        };
-        set(authenticationAtom, beforeState);
-        const result = await signApi(signIn.id, signIn.password);
-        const operationResult: Message = {
-          key: 'login.success',
-          type: MessageType.Success,
-          parameters: undefined,
-        };
-        const afterState = {
-          ...beforeState,
-          operationEndTime: new Date().getTime(),
-          version: beforeState.version + 1,
-          operationResult,
-          login: result,
-        };
-        set(authenticationAtom, afterState);
-      } else if (acknowledgeSignIn) {
-        set(authenticationAtom, {
-          ...current,
-          version: current.version + 1,
-          operationResult: undefined,
-          acknowledge: true,
-        });
-      } else if (signOut) {
-        set(authenticationAtom, {
-          ...current,
-          version: current.version + 1,
-          operationResult: undefined,
-          login: undefined,
-          acknowledge: false,
-        });
-      }
-      resolve();
-    });
-  }
+    if (signIn) {
+      const beforeState = {
+        ...current,
+        operationStartTime: new Date().getTime(),
+        version: current.version + 1,
+        operationResult: undefined,
+        login: undefined,
+        acknowledge: false,
+      };
+      set(authenticationAtom, beforeState);
+      const result = await signApi(signIn.id, signIn.password);
+      const operationResult: Message = {
+        key: 'login.success',
+        type: MessageType.Success,
+        parameters: undefined,
+      };
+      const afterState = {
+        ...beforeState,
+        operationEndTime: new Date().getTime(),
+        version: beforeState.version + 1,
+        operationResult,
+        login: result,
+      };
+      set(authenticationAtom, afterState);
+    } else if (acknowledgeSignIn) {
+      set(authenticationAtom, {
+        ...current,
+        version: current.version + 1,
+        operationResult: undefined,
+        acknowledge: true,
+      });
+    } else if (signOut) {
+      set(authenticationAtom, {
+        ...current,
+        version: current.version + 1,
+        operationResult: undefined,
+        login: undefined,
+        acknowledge: false,
+      });
+    }
+  },
 );

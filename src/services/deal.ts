@@ -1,16 +1,13 @@
 import { Deal } from '../models/deal';
 import { Error, NotFound, systemError } from '../models/system';
 
-export const getDeal = async (
-  entitledSite: string[],
-  fxRef: string
-): Promise<Deal | NotFound> => {
+export const getDeal = async (entitledSite: string[], fxRef: string): Promise<Deal | NotFound> => {
   const searchResult = await searchDeal();
   if ('code' in searchResult) {
     return searchResult;
   } else {
     const match = searchResult.find(
-      (item) => entitledSite.includes(item.site) && fxRef === item.fxRef
+      (item) => entitledSite.includes(item.site) && fxRef === item.fxRef,
     );
     return match ? match : new NotFound(['Deal', `fxRef = ${fxRef}`]);
   }
