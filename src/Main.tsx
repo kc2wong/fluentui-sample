@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HamburgerMenu from './components/HamburgerMenu';
 import { OverlayMenu } from './components/OverlayMenu';
@@ -79,10 +79,7 @@ export const Main: React.FC = () => {
   const { showDiscardChangeDialog } = useDialog();
   const login = useAtomValue(authentication).login;
 
-  const findMenuItemById = (
-    menuItem: MenuItem,
-    id: string
-  ): MenuItem | undefined => {
+  const findMenuItemById = (menuItem: MenuItem, id: string): MenuItem | undefined => {
     if (menuItem.id === id) {
       return menuItem;
     } else {
@@ -95,9 +92,12 @@ export const Main: React.FC = () => {
 
   const defaultUiMode = (): UiMode => {
     const pathname = window.location.pathname;
-    const menu = login?.menu.find(
-      (m) => findMenuItemById(m, getMenuItemIdByPath(pathname)!) !== undefined
-    );
+    const id = getMenuItemIdByPath(pathname);
+    const menu = id
+      ? login?.menu.find((m) => {
+          return findMenuItemById(m, id) !== undefined;
+        })
+      : undefined;
     if (menu) {
       switch (menu.id) {
         case 'administrator':
@@ -113,8 +113,7 @@ export const Main: React.FC = () => {
   const [uiMode, setUiMode] = useState<UiMode>(defaultUiMode());
 
   const isLightTheme = theme === 'light';
-  const selectedLanguage =
-    i18n.language === 'en' ? Language.English : Language.TraditionalChinese;
+  const selectedLanguage = i18n.language === 'en' ? Language.English : Language.TraditionalChinese;
 
   const menuData = uiMode === 'administrator' ? login?.menu[0] : login?.menu[1];
 
@@ -151,56 +150,50 @@ export const Main: React.FC = () => {
           <div className={styles.headerMenu}>
             <HamburgerMenu toggleMenu={() => setIsMenuOpen(!isMenuOpen)} />
             {menuData && (
-              <Breadcrumb
-                menuData={menuData}
-                pageElements={enrichedPageElementNavigation}
-              />
+              <Breadcrumb menuData={menuData} pageElements={enrichedPageElementNavigation} />
             )}
           </div>
           <div className={styles.headerItem}>
             <SystemToolbar
-              mode={uiMode}
-              onSetMode={(mode) => {
-                if (uiMode !== mode) {
-                  setUiMode(mode);
-                }
-              }}
               language={
                 selectedLanguage === Language.English
                   ? Language.English
                   : Language.TraditionalChinese
               }
+              mode={uiMode}
               onSetLanguage={(value) => {
                 i18n.changeLanguage(value === 'zhHant' ? 'zhHant' : 'en');
               }}
-              theme={isLightTheme ? 'light' : 'dark'}
+              onSetMode={(mode) => {
+                if (uiMode !== mode) {
+                  setUiMode(mode);
+                }
+              }}
               onSetTheme={(theme) => {
                 setTheme(theme);
               }}
+              theme={isLightTheme ? 'light' : 'dark'}
             />
           </div>
         </header>
 
         {menuData && isMenuOpen && (
           <OverlayMenu
-            menuData={menuData}
             closeMenu={() => setIsMenuOpen(false)}
             isOpen={isMenuOpen}
+            menuData={menuData}
             openMenu={() => setIsMenuOpen(true)}
           />
         )}
 
         <PageTransitionProvider>
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/services" element={<ServicesPage />} />
-            <Route path="/currency" element={<CurrencyMaintenancePage />} />
-            <Route
-              path="/functiongroup"
-              element={<FunctionGroupMaintenancePage />}
-            />
-            <Route path="/payment" element={<PaymentMaintenancePage />} />
+            <Route element={<HomePage />} path="/" />
+            <Route element={<AboutPage />} path="/about" />
+            <Route element={<ServicesPage />} path="/services" />
+            <Route element={<CurrencyMaintenancePage />} path="/currency" />
+            <Route element={<FunctionGroupMaintenancePage />} path="/functiongroup" />
+            <Route element={<PaymentMaintenancePage />} path="/payment" />
           </Routes>
         </PageTransitionProvider>
       </div>

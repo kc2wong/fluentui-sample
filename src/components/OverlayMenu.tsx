@@ -48,7 +48,7 @@ const TreeBranch: React.FC<{
       <TreeItemLayout>{label}</TreeItemLayout>
       <Tree>
         {children.map((c) => (
-          <TreeBranch key={c.id} t={t} node={c} onLeafClick={onLeafClick} />
+          <TreeBranch key={c.id} node={c} onLeafClick={onLeafClick} t={t} />
         ))}
       </Tree>
     </TreeItem>
@@ -84,12 +84,7 @@ const Menu: React.FC<{
       {/* Tree Component */}
       <Tree aria-label="mainMenu">
         {(data.children ?? []).map((branch) => (
-          <TreeBranch
-            key={branch.id}
-            node={branch}
-            t={t}
-            onLeafClick={onMenuItemClick}
-          />
+          <TreeBranch key={branch.id} node={branch} onLeafClick={onMenuItemClick} t={t} />
         ))}
       </Tree>
     </div>
@@ -129,10 +124,10 @@ export const OverlayMenu: React.FC<OverlayMenuProps> = ({
   return (
     <Drawer
       {...restoreFocusSourceAttributes}
-      type="overlay"
-      separator
-      open={isOpen}
       onOpenChange={() => (isOpen ? closeMenu() : openMenu())}
+      open={isOpen}
+      separator
+      type="overlay"
     >
       <DrawerHeader>
         <DrawerHeaderTitle

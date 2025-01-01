@@ -23,11 +23,7 @@ import {
   TableColumnDefinition,
   useTableFeatures,
 } from '@fluentui/react-components';
-import {
-  ArrowTurnUpLeftRegular,
-  CheckmarkRegular,
-  DismissRegular,
-} from '@fluentui/react-icons';
+import { ArrowTurnUpLeftRegular, CheckmarkRegular, DismissRegular } from '@fluentui/react-icons';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { TFunction } from 'i18next';
@@ -37,22 +33,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { emptyStringToUndefined } from '../../utils/object-util';
 import { constructMessage, formatNumber } from '../../utils/string-util';
 import { Field } from '../../components/Field';
-import {
-  useAppendBreadcrumb,
-} from '../../contexts/PageElementNavigation';
+import { useAppendBreadcrumb } from '../../contexts/PageElementNavigation';
 import { useDialog } from '../../contexts/Dialog';
-import { entitledSiteAtom } from '../../states/entitledSite';
+import { entitledSiteAtom } from '../../states/entitled-site';
 import { Form, Root } from '../../components/Container';
 import { NumericInput } from '../../components/NumericInput';
 import { Currency } from '../../models/currency';
 import { PaymentDirection } from '../../models/payment';
 import { paymentAtom } from '../../states/payment';
 import { sharedDataAtom } from '../../states/shared-data';
-import {
-  formatDateDDMMYYYY,
-  getCurrentDate,
-  parseDateMMDDYYYY,
-} from '../../utils/date-util';
+import { formatDateDDMMYYYY, getCurrentDate, parseDateMMDDYYYY } from '../../utils/date-util';
 import { EmptyCell } from '../../components/EmptyCell';
 import { Account } from '../../models/account';
 import { Input } from '../../components/Input';
@@ -80,10 +70,7 @@ const useStyles = makeStyles({
   },
 });
 
-const getAccountName = (
-  account: Account[],
-  site?: string
-): string | undefined => {
+const getAccountName = (account: Account[], site?: string): string | undefined => {
   switch (account.length) {
     case 0:
       return undefined;
@@ -143,8 +130,7 @@ type FormData = z.infer<typeof schema>;
 const missingRequiredField = (formValues: FormData): boolean => {
   const validationResult = schema.safeParse(emptyStringToUndefined(formValues));
   const missingRequiredFieldIssue = validationResult.error?.issues.find(
-    (i) =>
-      ['invalid_type', 'custom'].includes(i.code) && i.message === 'Required'
+    (i) => ['invalid_type', 'custom'].includes(i.code) && i.message === 'Required',
   );
   return missingRequiredFieldIssue !== undefined;
 };
@@ -156,13 +142,7 @@ type MatchingTabProps = {
   ccyList: Currency[];
   t: TFunction;
 };
-const MatchingTab: React.FC<MatchingTabProps> = ({
-  control,
-  setValue,
-  site,
-  ccyList,
-  t,
-}) => {
+const MatchingTab: React.FC<MatchingTabProps> = ({ control, setValue, site, ccyList, t }) => {
   const [paymentState, paymentAction] = useAtom(paymentAtom);
   useEffect(() => {
     if (!paymentState.potentialMatchDeal) {
@@ -227,14 +207,14 @@ const MatchingTab: React.FC<MatchingTabProps> = ({
 
   return (
     <Controller
-      name="matchFxRef"
       control={control}
+      name="matchFxRef"
       render={({ field }) => {
         return (
           <Table arial-label="Default table" style={{ minWidth: '510px' }}>
             <TableHeader>
               <TableRow style={{ background: tokens.colorNeutralBackground2 }}>
-                <TableSelectionCell type="radio" invisible />
+                <TableSelectionCell invisible type="radio" />
                 {columns.map((column) => (
                   <TableHeaderCell key={column.columnId}>
                     <TableCellLayout appearance="primary">
@@ -250,25 +230,22 @@ const MatchingTab: React.FC<MatchingTabProps> = ({
               {rows(field.value).map(({ item, selected, appearance }) => (
                 <TableRow
                   key={item.fxRef}
-                  onClick={() => setValue('matchFxRef', item.fxRef)}
-                  aria-selected={selected}
                   appearance={appearance}
+                  aria-selected={selected}
+                  onClick={() => setValue('matchFxRef', item.fxRef)}
                 >
                   <TableSelectionCell checked={selected} type="radio" />
                   <TableCell>{item.fxRef}</TableCell>
                   <TableCell>{item.dealCcy}</TableCell>
                   <TableCell>
-                    {formatNumber(
-                      item.dealAmount,
-                      getCcyPrecision(ccyList, item.dealCcy)
-                    )}
+                    {formatNumber(item.dealAmount, getCcyPrecision(ccyList, item.dealCcy))}
                   </TableCell>
                   <TableCell>{formatDateDDMMYYYY(item.valueDate)}</TableCell>
                   <TableCell>{item.remainingCcy}</TableCell>
                   <TableCell>
                     {formatNumber(
                       item.remainingAmount,
-                      getCcyPrecision(ccyList, item.remainingCcy)
+                      getCcyPrecision(ccyList, item.remainingCcy),
                     )}
                   </TableCell>
                 </TableRow>
@@ -287,17 +264,10 @@ type BookingTabProps = {
   productCode?: string;
   t: TFunction;
 };
-const BookingTab: React.FC<BookingTabProps> = ({
-  control,
-  setValue,
-  productCode,
-  t,
-}) => {
+const BookingTab: React.FC<BookingTabProps> = ({ control, setValue, productCode }) => {
   const getProductValueDate = (productCode?: string): string[] => {
     return paymentState.productValueDate && productCode
-      ? paymentState.productValueDate[productCode].map((i) =>
-          formatDateDDMMYYYY(i)
-        )
+      ? paymentState.productValueDate[productCode].map((i) => formatDateDDMMYYYY(i))
       : [];
   };
 
@@ -319,8 +289,8 @@ const BookingTab: React.FC<BookingTabProps> = ({
       }}
     >
       <Controller
-        name="productCode"
         control={control}
+        name="productCode"
         render={({ field }) => {
           return (
             <Field label="Produuct">
@@ -331,8 +301,8 @@ const BookingTab: React.FC<BookingTabProps> = ({
                   }
                   setValue('valueDate', undefined);
                 }}
-                value={field.value ?? ''}
                 selectedOptions={field.value ? [field.value] : []}
+                value={field.value ?? ''}
               >
                 {productCodeList.map((item) => (
                   <Option key={item}>{item}</Option>
@@ -344,8 +314,8 @@ const BookingTab: React.FC<BookingTabProps> = ({
       />
 
       <Controller
-        name="valueDate"
         control={control}
+        name="valueDate"
         render={({ field }) => {
           return (
             <Field label="Value Date">
@@ -355,10 +325,8 @@ const BookingTab: React.FC<BookingTabProps> = ({
                     setValue('valueDate', parseDateMMDDYYYY(data.optionValue));
                   }
                 }}
+                selectedOptions={field.value ? [formatDateDDMMYYYY(field.value)] : []}
                 value={formatDateDDMMYYYY(field.value)}
-                selectedOptions={
-                  field.value ? [formatDateDDMMYYYY(field.value)] : []
-                }
               >
                 {getProductValueDate(productCode).map((item) => (
                   <Option key={item} value={item}>
@@ -390,7 +358,8 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
 
   const entitledSiteState = useAtomValue(entitledSiteAtom);
   const [paymentState, paymentAction] = useAtom(paymentAtom);
-  const payment = paymentState.activeRecord!;
+  // payment should always has a value
+  const payment = paymentState.activeRecord;
 
   const sharedDataState = useAtomValue(sharedDataAtom);
   const ccyList = sharedDataState.resultSet?.currencies ?? [];
@@ -424,9 +393,8 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
   useAppendBreadcrumb(labelKey, [], onBackButtonPress);
 
   const getInstructionIdPrefix = (site: string): string | undefined => {
-    return entitledSiteState.resultSet?.entitledSite.find(
-      (s) => s.site.code === site
-    )?.site.instructionIdPrefix;
+    return entitledSiteState.resultSet?.entitledSite.find((s) => s.site.code === site)?.site
+      .instructionIdPrefix;
   };
 
   const handleAddMemo = (memo: string) => {
@@ -444,9 +412,9 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
     <Button
       appearance="primary"
       disabled={missingRequiredField(getValues())}
+      icon={<CheckmarkRegular />}
       onClick={handleSubmit(() => {
-        if (readOnly) {
-        } else {
+        if (!readOnly) {
           showConfirmationDialog({
             confirmType: 'submit',
             message: constructMessage(
@@ -458,10 +426,7 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
               }`,
               activeTabValue === TabPageType.Matching
                 ? [formValues.matchFxRef ?? '']
-                : [
-                    formValues.productCode ?? '',
-                    formatDateDDMMYYYY(formValues.valueDate),
-                  ]
+                : [formValues.productCode ?? '', formatDateDDMMYYYY(formValues.valueDate)],
             ),
             primaryButton: {
               label: t('system.message.submit'),
@@ -475,9 +440,7 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
                         message: {
                           key: 'paymentMaintenance.message.submitRequestSuccess',
                           type: MessageType.Success,
-                          parameters: [
-                            'paymentMaintenance.pairing.value.matching',
-                          ],
+                          parameters: ['paymentMaintenance.pairing.value.matching'],
                         },
                         callback: onSubmit,
                       },
@@ -494,9 +457,7 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
                         message: {
                           key: 'paymentMaintenance.message.submitRequestSuccess',
                           type: MessageType.Success,
-                          parameters: [
-                            'paymentMaintenance.pairing.value.booking',
-                          ],
+                          parameters: ['paymentMaintenance.pairing.value.booking'],
                         },
                         callback: onSubmit,
                       },
@@ -512,7 +473,6 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
           });
         }
       })}
-      icon={<CheckmarkRegular />}
     >
       {t('system.message.submit')}
     </Button>
@@ -521,19 +481,19 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
   const errorMessageKey =
     activeTabValue === TabPageType.Matching
       ? errors.matchFxRef?.message
-      : errors.productCode?.message ?? errors.valueDate?.message;
+      : (errors.productCode?.message ?? errors.valueDate?.message);
   return (
     <Root>
       <Form
-        styles={{ minWidth: '700px', maxWidth: '50vw' }}
-        numColumn={2}
         buttons={readOnly ? [backButton] : [backButton, submitButton]}
+        numColumn={2}
+        styles={{ minWidth: '700px', maxWidth: '50vw' }}
         title={constructMessage(t, 'paymentMaintenance.pairing.title')}
         toolbarSlot={payment ? <PaymentStatusBar payment={payment} /> : <></>}
       >
         <Field
-          label={t('paymentMaintenance.account')}
           infoMessage={getAccountName(paymentState.account, payment?.site)}
+          label={t('paymentMaintenance.account')}
         >
           <Input readOnly value={payment?.account ?? ''} />
         </Field>
@@ -547,12 +507,12 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
         <Field label={t('paymentMaintenance.direction.label')}>
           <RadioGroup layout="horizontal" value={payment?.direction ?? ''}>
             <Radio
-              value={PaymentDirection.Incoming}
               label={t('paymentMaintenance.direction.value.incoming')}
+              value={PaymentDirection.Incoming}
             />
             <Radio
-              value={PaymentDirection.Outgoing}
               label={t('paymentMaintenance.direction.value.outgoing')}
+              value={PaymentDirection.Outgoing}
             />
           </RadioGroup>
         </Field>
@@ -560,35 +520,28 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
 
         <Field label={t('paymentMaintenance.bankBuy')}>
           <NumericInput
-            contentBefore={
-              <Text weight="bold">{payment?.creditAmount.ccy}&nbsp;</Text>
-            }
-            value={paymentState.activeRecord?.creditAmount.value}
-            decimalPlaces={getCcyPrecision(
-              ccyList,
-              paymentState.activeRecord?.creditAmount.ccy
-            )}
+            contentBefore={<Text weight="bold">{payment?.creditAmount.ccy}&nbsp;</Text>}
+            decimalPlaces={getCcyPrecision(ccyList, paymentState.activeRecord?.creditAmount.ccy)}
             readOnly
+            value={paymentState.activeRecord?.creditAmount.value}
           />
         </Field>
 
         <Field label={t('paymentMaintenance.bankSell')}>
           <NumericInput
-            contentBefore={
-              <Text weight="bold">{payment?.debitAmount.ccy}&nbsp;</Text>
-            }
-            value={paymentState.activeRecord?.debitAmount.value}
+            contentBefore={<Text weight="bold">{payment?.debitAmount.ccy}&nbsp;</Text>}
             decimalPlaces={getCcyPrecision(ccyList, payment?.debitAmount.ccy)}
             readOnly
+            value={paymentState.activeRecord?.debitAmount.value}
           />
         </Field>
 
         <Field label={t('paymentMaintenance.instructionId')}>
           <Input
             contentBefore={
-              <Text weight="bold">
-                {getInstructionIdPrefix(payment?.site)}&nbsp;
-              </Text>
+              payment?.site ? (
+                <Text weight="bold">{getInstructionIdPrefix(payment?.site)}&nbsp;</Text>
+              ) : undefined
             }
             readOnly
             value={payment?.instructionId ?? ''}
@@ -597,17 +550,13 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
 
         <Field label={t('paymentMaintenance.executeDate')}>
           <Input
-            value={
-              payment?.executeDate
-                ? formatDateDDMMYYYY(payment?.executeDate)
-                : ''
-            }
             readOnly
+            value={payment?.executeDate ? formatDateDDMMYYYY(payment?.executeDate) : ''}
           />
         </Field>
 
         <Field label={t('paymentMaintenance.fxRef')}>
-          <Input value={payment?.fxRef ?? ''} readOnly />
+          <Input readOnly value={payment?.fxRef ?? ''} />
         </Field>
         <EmptyCell />
 
@@ -624,7 +573,6 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
           <div className={styles.tab}>
             <TabList
               appearance="subtle"
-              size="small"
               onTabSelect={(_ev, data) => {
                 reset({
                   activeTab: data.value as TabPageType,
@@ -634,25 +582,18 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
                 });
               }}
               selectedValue={activeTabValue}
+              size="small"
               style={{ width: '100px' }}
             >
               <Tab
+                className={activeTabValue === TabPageType.Matching ? 'activeTab' : undefined}
                 value={TabPageType.Matching}
-                className={
-                  activeTabValue === TabPageType.Matching
-                    ? 'activeTab'
-                    : undefined
-                }
               >
                 {t('paymentMaintenance.pairing.value.matching')}
               </Tab>
               <Tab
+                className={activeTabValue === TabPageType.Booking ? 'activeTab' : undefined}
                 value={TabPageType.Booking}
-                className={
-                  activeTabValue === TabPageType.Booking
-                    ? 'activeTab'
-                    : undefined
-                }
               >
                 {t('paymentMaintenance.pairing.value.booking')}
               </Tab>
@@ -661,19 +602,18 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
             <div className={styles.panels}>
               {activeTabValue === TabPageType.Matching && payment ? (
                 <MatchingTab
-                  control={control}
-                  // potentialMatchDeal={paymentState.potentialMatchDeal}
-                  site={payment.site}
                   ccyList={ccyList}
-                  t={t}
+                  control={control}
                   setValue={setValue}
+                  site={payment.site}
+                  t={t}
                 ></MatchingTab>
               ) : (
                 <BookingTab
                   control={control}
-                  t={t}
-                  setValue={setValue}
                   productCode={formValues.productCode}
+                  setValue={setValue}
+                  t={t}
                 ></BookingTab>
               )}
             </div>
@@ -681,11 +621,7 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
         </Field>
       </Form>
       <div style={{ flex: 1 }}>
-        <Memo
-          historyMemo={payment?.memo}
-          onAddMemo={handleAddMemo}
-          readOnly={false}
-        />
+        <Memo historyMemo={payment?.memo} onAddMemo={handleAddMemo} readOnly={false} />
       </div>
     </Root>
   );

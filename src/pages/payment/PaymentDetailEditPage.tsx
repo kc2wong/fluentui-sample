@@ -36,20 +36,13 @@ import { TFunction } from 'i18next';
 import { useAtom, useAtomValue } from 'jotai';
 import { Control, Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  emptyStringToUndefined,
-  undefinedToEmptyString,
-} from '../../utils/object-util';
-import {
-  constructErrorMessage,
-  constructMessage,
-  stringToEnum,
-} from '../../utils/string-util';
+import { emptyStringToUndefined, undefinedToEmptyString } from '../../utils/object-util';
+import { constructErrorMessage, constructMessage, stringToEnum } from '../../utils/string-util';
 import { Field } from '../../components/Field';
 import { DetailEditingDrawer } from '../../components/Drawer';
 import { useAppendBreadcrumb } from '../../contexts/PageElementNavigation';
 import { useDialog } from '../../contexts/Dialog';
-import { entitledSiteAtom } from '../../states/entitledSite';
+import { entitledSiteAtom } from '../../states/entitled-site';
 import { Form, Root } from '../../components/Container';
 import { NumericInput } from '../../components/NumericInput';
 import { Row } from '../../components/Row';
@@ -115,8 +108,8 @@ const BankBuySell: React.FC<BankBuySellProps> = (props: BankBuySellProps) => {
     <Field label={label} required validationMessage={validationMessage}>
       <Row>
         <Controller
-          name={`${creditDebit}Ccy`}
           control={control}
+          name={`${creditDebit}Ccy`}
           render={({ field }) => (
             <Combobox
               {...field}
@@ -140,18 +133,18 @@ const BankBuySell: React.FC<BankBuySellProps> = (props: BankBuySellProps) => {
         />
 
         <Controller
-          name={`${creditDebit}Amount`}
           control={control}
+          name={`${creditDebit}Amount`}
           render={({ field }) => {
             return (
               <NumericInput
                 ref={ref}
                 className={styles.bankBuySellAmount}
-                value={field.value}
                 decimalPlaces={precision}
                 onChange={(_ev, data) => {
                   onAmountChange(data.value);
                 }}
+                value={field.value}
               />
             );
           }}
@@ -187,14 +180,11 @@ const AccountSearchDrawer = ({
   title,
   t,
 }: AccountSearchDrawerProps) => {
-  const { control, getValues, setValue, reset } =
-    useForm<AccountSearchFormData>({
-      defaultValues: accountSearchSchema.parse({}),
-      resolver: zodResolver(accountSearchSchema),
-    });
-  const [accountSearchResult, setAccountSearchResult] = useState<
-    Account[] | undefined
-  >(undefined);
+  const { control, getValues, setValue, reset } = useForm<AccountSearchFormData>({
+    defaultValues: accountSearchSchema.parse({}),
+    resolver: zodResolver(accountSearchSchema),
+  });
+  const [accountSearchResult, setAccountSearchResult] = useState<Account[] | undefined>(undefined);
   const { showSpinner, stopSpinner } = useMessage();
   const columns = [
     { columnKey: 'site', label: t('paymentMaintenance.site') },
@@ -210,20 +200,15 @@ const AccountSearchDrawer = ({
   const getRowKey = (account: Account) => `${account.site}_${account.code}`;
 
   return (
-    <DetailEditingDrawer
-      isOpen={isOpen}
-      onCloseDrawer={onDrawerClose}
-      title={title}
-      t={t}
-    >
+    <DetailEditingDrawer isOpen={isOpen} onCloseDrawer={onDrawerClose} t={t} title={title}>
       <div style={{ maxWidth: '40vw' }}>
         <Form
-          numColumn={2}
           buttons={[
-            <Button icon={<EraserRegular />} onClick={handleReset}>
+            <Button key="resetBtn" icon={<EraserRegular />} onClick={handleReset}>
               {t('system.message.reset')}
             </Button>,
             <Button
+              key="searchBtn"
               appearance="primary"
               icon={<SearchRegular />}
               onClick={async () => {
@@ -239,10 +224,11 @@ const AccountSearchDrawer = ({
               {t('system.message.search')}
             </Button>,
           ]}
+          numColumn={2}
         >
           <Controller
-            name="site"
             control={control}
+            name="site"
             render={({ field }) => {
               return (
                 <Field label={t('paymentMaintenance.site')}>
@@ -266,8 +252,8 @@ const AccountSearchDrawer = ({
           <EmptyCell />
 
           <Controller
-            name="code"
             control={control}
+            name="code"
             render={({ field }) => {
               return (
                 <Field label={t('paymentMaintenance.code')}>
@@ -279,14 +265,11 @@ const AccountSearchDrawer = ({
           <EmptyCell />
 
           <Controller
-            name="name"
             control={control}
+            name="name"
             render={({ field }) => {
               return (
-                <Field
-                  style={{ gridColumn: 'span 2' }}
-                  label={t('paymentMaintenance.name')}
-                >
+                <Field label={t('paymentMaintenance.name')} style={{ gridColumn: 'span 2' }}>
                   <Input {...field} />
                 </Field>
               );
@@ -338,10 +321,7 @@ const AccountSearchDrawer = ({
   );
 };
 
-const getAccountName = (
-  account: Account[],
-  site?: string
-): string | undefined => {
+const getAccountName = (account: Account[], site?: string): string | undefined => {
   switch (account.length) {
     case 0:
       return undefined;
@@ -356,10 +336,7 @@ const getCcyPrevision = (currencyList: Currency[], ccy?: string) => {
   return currencyList.find((item) => item.code === ccy)?.precision;
 };
 
-const getErrorMessage = (
-  t: TFunction,
-  key: (string | undefined)[]
-): string | undefined => {
+const getErrorMessage = (t: TFunction, key: (string | undefined)[]): string | undefined => {
   return key
     .map((item) => {
       if (item) {
@@ -381,10 +358,7 @@ const getErrorMessage = (
 const maxAccountLength = 12;
 const schema = z
   .object({
-    account: z.preprocess(
-      (val) => emptyStringToUndefined(val),
-      z.string().max(maxAccountLength)
-    ),
+    account: z.preprocess((val) => emptyStringToUndefined(val), z.string().max(maxAccountLength)),
     site: z.preprocess((val) => emptyStringToUndefined(val), z.string()),
     direction: z.nativeEnum(PaymentDirection),
     creditCcy: z.string(),
@@ -419,8 +393,7 @@ type FormData = z.infer<typeof schema>;
 const missingRequiredField = (formValues: FormData): boolean => {
   const validationResult = schema.safeParse(emptyStringToUndefined(formValues));
   const missingRequiredFieldIssue = validationResult.error?.issues.find(
-    (i) =>
-      ['invalid_type', 'custom'].includes(i.code) && i.message === 'Required'
+    (i) => ['invalid_type', 'custom'].includes(i.code) && i.message === 'Required',
   );
   return missingRequiredFieldIssue !== undefined;
 };
@@ -524,7 +497,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
 
   useEffect(() => {
     const unPopuldatedDeal = (paymentState.potentialMatchDeal ?? []).find(
-      (deal) => deal.fxRef === fxRefValue
+      (deal) => deal.fxRef === fxRefValue,
     );
     if (unPopuldatedDeal && unPopuldatedDeal.fxRef !== populatedDeal.current) {
       setValue('creditCcy', unPopuldatedDeal.dealAmount.ccy);
@@ -541,7 +514,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
   };
   useAppendBreadcrumb(title.label, title.param, onBack);
 
-  const handleLookupAccount = (accountCode: string, entitledSite: string[]) => {
+  const handleLookupAccount = (accountCode: string) => {
     paymentAction({
       searchAccount: {
         code: accountCode,
@@ -563,9 +536,8 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
 
   const getInstructionIdPrefix = (): string | undefined => {
     if (siteValue.length > 0) {
-      return entitledSiteState.resultSet?.entitledSite.find(
-        (s) => s.site.code === siteValue
-      )?.site.instructionIdPrefix;
+      return entitledSiteState.resultSet?.entitledSite.find((s) => s.site.code === siteValue)?.site
+        .instructionIdPrefix;
     } else {
       return undefined;
     }
@@ -620,52 +592,47 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
     <Button
       appearance="primary"
       disabled={missingRequiredField(getValues())}
+      icon={<CheckmarkRegular />}
       onClick={handleSubmit(() => {
         showConfirmationDialog({
           confirmType: 'save',
-          message: t(
-            'paymentMaintenance.message.doYouWantToInitiatePaymentRequest'
-          ),
+          message: t('paymentMaintenance.message.doYouWantToInitiatePaymentRequest'),
           primaryButton: {
             label: t('system.message.save'),
             icon: <CheckmarkRegular />,
             action: () => {
-              const {
-                creditCcy,
-                creditAmount,
-                debitCcy,
-                debitAmount,
-                executeDate,
-                ...others
-              } = getValues();
-              paymentAction({
-                savePayment: {
-                  payment: {
-                    ...others,
-                    creditAmount: {
-                      ccy: creditCcy,
-                      value: creditAmount,
+              const { creditCcy, creditAmount, debitCcy, debitAmount, executeDate, ...others } =
+                getValues();
+              if (executeDate) {
+                paymentAction({
+                  savePayment: {
+                    payment: {
+                      ...others,
+                      creditAmount: {
+                        ccy: creditCcy,
+                        value: creditAmount,
+                      },
+                      debitAmount: {
+                        ccy: debitCcy,
+                        value: debitAmount,
+                      },
+                      executeDate: executeDate,
+                      status: PaymentStatus.New,
                     },
-                    debitAmount: {
-                      ccy: debitCcy,
-                      value: debitAmount,
-                    },
-                    executeDate: executeDate!,
-                    status: PaymentStatus.New,
-                  },
-                  onSaveSuccess: {
-                    message: {
-                      key: 'paymentMaintenance.message.initiatePaymentSuccess',
-                      type: MessageType.Success,
-                      parameters: ['Payment', ''],
-                    },
-                    callback: (_payment) => {
-                      resetDirty();
-                      onSave();
+                    onSaveSuccess: {
+                      message: {
+                        key: 'paymentMaintenance.message.initiatePaymentSuccess',
+                        type: MessageType.Success,
+                        parameters: ['Payment', ''],
+                      },
+                      callback: (_payment) => {
+                        resetDirty();
+                        onSave();
+                      },
                     },
                   },
-                },
-              });
+                });
+              }
             },
           },
           secondaryButton: {
@@ -674,7 +641,6 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
           },
         });
       })}
-      icon={<CheckmarkRegular />}
     >
       {paymentState.activeRecord?.status === PaymentStatus.New
         ? t('system.message.start')
@@ -685,52 +651,44 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
   return (
     <Root>
       <Form
-        styles={{ minWidth: '700px', maxWidth: '50vw' }}
+        buttons={isNewPayment ? [backButton, saveButton] : [backButton, nextButton, saveButton]}
         numColumn={2}
-        buttons={
-          isNewPayment
-            ? [backButton, saveButton]
-            : [backButton, nextButton, saveButton]
-        }
+        styles={{ minWidth: '700px', maxWidth: '50vw' }}
         title={constructMessage(t, title.label, title.param)}
         toolbarSlot={<PaymentStatusBar payment={paymentState.activeRecord} />}
       >
         <Controller
-          name="account"
           control={control}
+          name="account"
           render={({ field }) => {
             return (
               <Field
+                infoMessage={getAccountName(paymentState.account, siteValue)}
                 label={t('paymentMaintenance.account')}
                 required
                 validationMessage={errors?.account?.message}
-                infoMessage={getAccountName(paymentState.account, siteValue)}
               >
                 {isNewPayment ? (
                   <Input
                     {...field}
+                    contentAfter={
+                      <Button
+                        appearance="transparent"
+                        icon={
+                          isAccountDrawerOpen ? <ArrowCircleLeftRegular /> : <PeopleSearchRegular />
+                        }
+                        id={accountLookupIconId}
+                        onClick={() => toggleDrawer('account')}
+                        size="small"
+                        tabIndex={-1}
+                      ></Button>
+                    }
                     disabled={isAccountDrawerOpen}
                     onBlur={(ev) => {
                       if (ev.relatedTarget?.id !== accountLookupIconId) {
-                        handleLookupAccount(field.value, entitledSiteCode);
+                        handleLookupAccount(field.value);
                       }
                     }}
-                    contentAfter={
-                      <Button
-                        id={accountLookupIconId}
-                        appearance="transparent"
-                        size="small"
-                        icon={
-                          isAccountDrawerOpen ? (
-                            <ArrowCircleLeftRegular />
-                          ) : (
-                            <PeopleSearchRegular />
-                          )
-                        }
-                        tabIndex={-1}
-                        onClick={() => toggleDrawer('account')}
-                      ></Button>
-                    }
                   />
                 ) : (
                   <Input disabled value={field.value}></Input>
@@ -742,8 +700,8 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
         <EmptyCell />
 
         <Controller
-          name="site"
           control={control}
+          name="site"
           render={({ field }) => {
             return (
               <Field
@@ -763,8 +721,8 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
                         setValue('site', data.optionValue);
                       }
                     }}
-                    value={field.value}
                     selectedOptions={[field.value]}
+                    value={field.value}
                   >
                     {getSiteOptions().map((item) => (
                       <Option key={item}>{item}</Option>
@@ -780,8 +738,8 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
         <EmptyCell />
 
         <Controller
-          name="direction"
           control={control}
+          name="direction"
           render={({ field }) => (
             <Field
               label={t('paymentMaintenance.direction.label')}
@@ -799,12 +757,12 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
                 value={field.value ?? ''}
               >
                 <Radio
-                  value={PaymentDirection.Incoming}
                   label={t('paymentMaintenance.direction.value.incoming')}
+                  value={PaymentDirection.Incoming}
                 />
                 <Radio
-                  value={PaymentDirection.Outgoing}
                   label={t('paymentMaintenance.direction.value.outgoing')}
+                  value={PaymentDirection.Outgoing}
                 />
               </RadioGroup>
             </Field>
@@ -813,15 +771,13 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
         <EmptyCell />
 
         <BankBuySell
+          ccyList={ccyList}
           control={control}
           creditDebit="credit"
-          validationMessage={getErrorMessage(t, [
-            errors?.creditCcy?.message,
-            errors?.creditAmount?.message,
-          ])}
           label={t('paymentMaintenance.bankBuy')}
-          ccyList={ccyList}
-          precision={getCcyPrevision(ccyList, creditCcyValue)}
+          onAmountChange={(value) => {
+            setValue('creditAmount', value);
+          }}
           onCcyChange={(value) => {
             if (value) {
               setValue('creditCcy', value);
@@ -830,20 +786,21 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
               }
             }
           }}
-          onAmountChange={(value) => {
-            setValue('creditAmount', value);
-          }}
+          precision={getCcyPrevision(ccyList, creditCcyValue)}
+          validationMessage={getErrorMessage(t, [
+            errors?.creditCcy?.message,
+            errors?.creditAmount?.message,
+          ])}
         />
 
         <BankBuySell
+          ccyList={ccyList}
           control={control}
           creditDebit="debit"
-          validationMessage={
-            errors?.debitCcy?.message ?? errors?.debitCcy?.message
-          }
           label={t('paymentMaintenance.bankSell')}
-          ccyList={ccyList}
-          precision={getCcyPrevision(ccyList, debitCcyValue)}
+          onAmountChange={(value) => {
+            setValue('debitAmount', value);
+          }}
           onCcyChange={(value) => {
             if (value) {
               setValue('debitCcy', value);
@@ -852,14 +809,13 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
               }
             }
           }}
-          onAmountChange={(value) => {
-            setValue('debitAmount', value);
-          }}
+          precision={getCcyPrevision(ccyList, debitCcyValue)}
+          validationMessage={errors?.debitCcy?.message ?? errors?.debitCcy?.message}
         />
 
         <Controller
-          name="instructionId"
           control={control}
+          name="instructionId"
           render={({ field }) => (
             <Field
               label={t('paymentMaintenance.instructionId')}
@@ -867,13 +823,8 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
             >
               <Input
                 {...field}
-                contentBefore={
-                  <Text weight="bold">{getInstructionIdPrefix()}&nbsp;</Text>
-                }
-                disabled={
-                  siteValue.length === 0 ||
-                  paymentState.activeRecord !== undefined
-                }
+                contentBefore={<Text weight="bold">{getInstructionIdPrefix()}&nbsp;</Text>}
+                disabled={siteValue.length === 0 || paymentState.activeRecord !== undefined}
                 maxLength={maxAccountLength}
               />
             </Field>
@@ -881,8 +832,8 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
         />
 
         <Controller
-          name="executeDate"
           control={control}
+          name="executeDate"
           render={({ field }) => (
             <Field
               label={t('paymentMaintenance.executeDate')}
@@ -890,17 +841,17 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
             >
               <DatePicker
                 {...field}
+                disabled={paymentState.activeRecord !== undefined}
                 formatDate={formatDateDDMMYYYY}
                 parseDateFromString={(str) => parseDateMMDDYYYY(str) ?? null}
-                disabled={paymentState.activeRecord !== undefined}
               />
             </Field>
           )}
         />
 
         <Controller
-          name="fxRef"
           control={control}
+          name="fxRef"
           render={({ field }) => (
             <Field
               label={t('paymentMaintenance.fxRef')}
@@ -911,21 +862,17 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
                 contentAfter={
                   <Button
                     appearance="transparent"
-                    size="small"
-                    disabled={fxRefValue?.length === 0}
+                    disabled={field.value?.length === 0}
                     icon={<DocumentSearchRegular />}
-                    onClick={() =>
-                      handlePopulateDeal(
-                        field.value!,
-                        siteValue ? [siteValue] : entitledSiteCode
-                      )
-                    }
+                    onClick={() => {
+                      if (field.value) {
+                        handlePopulateDeal(field.value, siteValue ? [siteValue] : entitledSiteCode);
+                      }
+                    }}
+                    size="small"
                   ></Button>
                 }
-                disabled={
-                  siteValue.length === 0 ||
-                  paymentState.activeRecord !== undefined
-                }
+                disabled={siteValue.length === 0 || paymentState.activeRecord !== undefined}
               />
             </Field>
           )}
@@ -936,26 +883,22 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
         {isNewPayment ? (
           <></>
         ) : (
-          <Memo
-            historyMemo={payment?.memo}
-            onAddMemo={handleAddMemo}
-            readOnly={false}
-          />
+          <Memo historyMemo={payment?.memo} onAddMemo={handleAddMemo} readOnly={false} />
         )}
       </div>
 
       <AccountSearchDrawer
-        siteList={entitledSiteCode}
         isOpen={isAccountDrawerOpen}
-        onDrawerClose={() => toggleDrawer('account')}
         onAccountSelect={(account) => {
           setValue('account', account.code);
           setValue('site', account.site);
           paymentAction({ selectAccount: { account } });
           toggleDrawer('account');
         }}
-        title={t('paymentMaintenance.account')}
+        onDrawerClose={() => toggleDrawer('account')}
+        siteList={entitledSiteCode}
         t={t}
+        title={t('paymentMaintenance.account')}
       />
     </Root>
   );

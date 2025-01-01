@@ -6,10 +6,7 @@ import { useMessage } from '../../contexts/Message';
 import { MessageType } from '../../models/system';
 import { useNotification } from '../../states/base-state';
 import { sharedDataAtom } from '../../states/shared-data';
-import {
-  constructErrorMessage,
-  constructMessage,
-} from '../../utils/string-util';
+import { constructErrorMessage, constructMessage } from '../../utils/string-util';
 import { PaymentDetailEditPage } from './PaymentDetailEditPage';
 import { PaymentSearchPage } from './PaymentSearchPage';
 import { PaymentPairingPage } from './PaymentPairingPage';
@@ -18,18 +15,11 @@ import { PaymentDetailViewPage } from './PaymentDetailViewPage';
 import { usePageElementNavigation } from '../../contexts/PageElementNavigation';
 import { usePageTransition } from '../../contexts/PageTransition';
 
-type Mode =
-  | 'search'
-  | 'addDetail'
-  | 'editDetail'
-  | 'editPairing'
-  | 'viewDetail'
-  | 'viewPairing';
+type Mode = 'search' | 'addDetail' | 'editDetail' | 'editPairing' | 'viewDetail' | 'viewPairing';
 
 const PaymentMaintenancePage: React.FC = () => {
   const { showSpinner, stopSpinner, dispatchMessage } = useMessage();
-  const { popPageElementNavigationTill, appendPageElementNavigation } =
-    usePageElementNavigation();
+  const { popPageElementNavigationTill, appendPageElementNavigation } = usePageElementNavigation();
 
   const { t } = useTranslation();
 
@@ -143,11 +133,11 @@ const PaymentMaintenancePage: React.FC = () => {
   const editDetailPage = (
     <PaymentDetailEditPage
       mode={'edit'}
-      onNext={() => {
-        setMode('editPairing');
-      }}
       onBack={() => {
         setMode('search');
+      }}
+      onNext={() => {
+        setMode('editPairing');
       }}
       onSave={() => {
         setMode('editPairing');
@@ -165,25 +155,25 @@ const PaymentMaintenancePage: React.FC = () => {
 
   const editPairingPage = (
     <PaymentPairingPage
-      readOnly={false}
       onBackButtonPress={() => {
         setMode('editDetail');
       }}
       onSubmit={() => {
         setMode('search');
       }}
+      readOnly={false}
     />
   );
 
   const viewPairingPage = (
     <PaymentPairingPage
-      readOnly={true}
       onBackButtonPress={() => {
         setMode('viewDetail');
       }}
       onSubmit={() => {
         setMode('search');
       }}
+      readOnly={true}
     />
   );
 

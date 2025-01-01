@@ -31,16 +31,13 @@ import { TFunction } from 'i18next';
 import { atom, useAtom, useAtomValue } from 'jotai';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  emptyStringToUndefined,
-  undefinedToEmptyString,
-} from '../../utils/object-util';
+import { emptyStringToUndefined, undefinedToEmptyString } from '../../utils/object-util';
 import { SearchCriteriaDrawer } from '../../components/Drawer';
 import { useStartBreadcrumb } from '../../contexts/PageElementNavigation';
 import { Form, Root } from '../../components/Container';
 import { Field } from '../../components/Field';
 import { paymentAtom, SearchPaymentPayload } from '../../states/payment';
-import { entitledSiteAtom } from '../../states/entitledSite';
+import { entitledSiteAtom } from '../../states/entitled-site';
 import { Payment, PaymentDirection, PaymentStatus } from '../../models/payment';
 import { formatNumber } from '../../utils/string-util';
 import { formatDateDDMMYYYY } from '../../utils/date-util';
@@ -48,20 +45,11 @@ import { PaymentStatusLabel } from './PaymentStatusComponent';
 
 const searchSchema = z.object({
   site: z.array(z.string()).default([]),
-  account: z.preprocess(
-    (val) => emptyStringToUndefined(val),
-    z.string().default('')
-  ),
+  account: z.preprocess((val) => emptyStringToUndefined(val), z.string().default('')),
   executeDateFrom: z.date().optional(),
   executeDateTo: z.date().optional(),
-  instructionId: z.preprocess(
-    (val) => emptyStringToUndefined(val),
-    z.string().default('')
-  ),
-  fxRef: z.preprocess(
-    (val) => emptyStringToUndefined(val),
-    z.string().default('')
-  ),
+  instructionId: z.preprocess((val) => emptyStringToUndefined(val), z.string().default('')),
+  fxRef: z.preprocess((val) => emptyStringToUndefined(val), z.string().default('')),
 });
 
 const emptyObject = searchSchema.parse({});
@@ -75,12 +63,7 @@ type SearchDrawerProps = {
   t: TFunction;
 };
 
-const SearchDrawer = ({
-  t,
-  isOpen,
-  siteList,
-  onOpenChange,
-}: SearchDrawerProps) => {
+const SearchDrawer = ({ t, isOpen, siteList, onOpenChange }: SearchDrawerProps) => {
   const [{ payload }, action] = useAtom(paymentAtom);
 
   const payloadToFormData = (payload?: SearchPaymentPayload) => {
@@ -101,11 +84,10 @@ const SearchDrawer = ({
     };
   };
 
-  const { control, reset, getValues, handleSubmit, setValue } =
-    useForm<SearchFormData>({
-      defaultValues: payloadToFormData(payload),
-      resolver: zodResolver(searchSchema),
-    });
+  const { control, reset, getValues, handleSubmit, setValue } = useForm<SearchFormData>({
+    defaultValues: payloadToFormData(payload),
+    resolver: zodResolver(searchSchema),
+  });
 
   useEffect(() => {
     reset(payloadToFormData(payload));
@@ -114,8 +96,8 @@ const SearchDrawer = ({
   return (
     <SearchCriteriaDrawer
       isOpen={isOpen}
-      onDrawerClose={() => onOpenChange(false)}
       onClear={() => reset(emptyObject)}
+      onDrawerClose={() => onOpenChange(false)}
       onSearch={handleSubmit(() => {
         const formData = getValues();
         action({
@@ -125,18 +107,18 @@ const SearchDrawer = ({
       t={t}
     >
       <Controller
-        name="site"
         control={control}
+        name="site"
         render={({ field }) => (
           <Field label={t('paymentMaintenance.site')}>
             <Combobox
               {...field}
-              value={(field.value ?? []).join(',')}
               multiselect
-              selectedOptions={field.value}
               onOptionSelect={(_ev, data) => {
                 setValue(field.name, data.selectedOptions);
               }}
+              selectedOptions={field.value}
+              value={(field.value ?? []).join(',')}
             >
               {siteList.map((item) => (
                 <Option key={item}>{item}</Option>
@@ -147,8 +129,8 @@ const SearchDrawer = ({
       />
 
       <Controller
-        name="account"
         control={control}
+        name="account"
         render={({ field }) => {
           return (
             <Field label={t('paymentMaintenance.account')}>
@@ -159,8 +141,8 @@ const SearchDrawer = ({
       />
 
       <Controller
-        name="instructionId"
         control={control}
+        name="instructionId"
         render={({ field }) => {
           return (
             <Field label={t('paymentMaintenance.instructionId')}>
@@ -241,13 +223,13 @@ type PaymentSearchPageProps = {
 const drawerOpenAtom = atom(false);
 
 export const PaymentSearchPage: React.FC<PaymentSearchPageProps> = (
-  props: PaymentSearchPageProps
+  props: PaymentSearchPageProps,
 ) => {
   const [isDrawerOpen, setIsDrawerOpen] = useAtom(drawerOpenAtom);
   const entitledSiteState = useAtomValue(entitledSiteAtom);
   const [state, action] = useAtom(paymentAtom);
   const [selectedPayment, setSelectedPayment] = useState<Item | undefined>(
-    state.activeRecord ? paymentToItem(state.activeRecord) : undefined
+    state.activeRecord ? paymentToItem(state.activeRecord) : undefined,
   );
   const { t } = useTranslation();
 
@@ -262,8 +244,7 @@ export const PaymentSearchPage: React.FC<PaymentSearchPageProps> = (
     const selected = selectedPayment?.instructionId === row.item.instructionId;
     return {
       ...row,
-      onClick: (e: React.MouseEvent) =>
-        setSelectedPayment(selected ? undefined : row.item),
+      onClick: (_ev: React.MouseEvent) => setSelectedPayment(selected ? undefined : row.item),
       selected,
       appearance: selected ? ('brand' as const) : ('none' as const),
     };
@@ -317,9 +298,7 @@ export const PaymentSearchPage: React.FC<PaymentSearchPageProps> = (
       aria-label="Edit"
       disabled={
         selectedPayment === undefined ||
-        ![PaymentStatus.New, PaymentStatus.Started].includes(
-          selectedPayment.status
-        )
+        ![PaymentStatus.New, PaymentStatus.Started].includes(selectedPayment.status)
       }
       icon={<EditRegular />}
       onClick={() => {
@@ -385,7 +364,7 @@ export const PaymentSearchPage: React.FC<PaymentSearchPageProps> = (
           <Table arial-label="Default table" style={{ minWidth: '510px' }}>
             <TableHeader>
               <TableRow style={{ background: tokens.colorNeutralBackground2 }}>
-                <TableSelectionCell type="radio" invisible />
+                <TableSelectionCell invisible type="radio" />
                 {columns.map((column) => (
                   <TableHeaderCell key={column.columnId}>
                     <TableCellLayout appearance="primary">
@@ -402,9 +381,9 @@ export const PaymentSearchPage: React.FC<PaymentSearchPageProps> = (
               {rows.map(({ item, selected, onClick, appearance }) => (
                 <TableRow
                   key={item.instructionId}
-                  onClick={onClick}
-                  aria-selected={selected}
                   appearance={appearance}
+                  aria-selected={selected}
+                  onClick={onClick}
                 >
                   <TableSelectionCell checked={selected} type="radio" />
                   <TableCell>{item.site}</TableCell>
@@ -415,9 +394,7 @@ export const PaymentSearchPage: React.FC<PaymentSearchPageProps> = (
                   </TableCell>
                   <TableCell>{formatDateDDMMYYYY(item.executeDate)}</TableCell>
                   <TableCell>
-                    {t(
-                      `paymentMaintenance.direction.value.${item.direction.toString()}`
-                    )}
+                    {t(`paymentMaintenance.direction.value.${item.direction.toString()}`)}
                   </TableCell>
                   <TableCell>{item.creditCcy}</TableCell>
                   <TableCell>{formatNumber(item.creditAmount)}</TableCell>

@@ -1,10 +1,4 @@
-import {
-  makeStyles,
-  Body1,
-  Button,
-  Input,
-  tokens,
-} from '@fluentui/react-components';
+import { makeStyles, Body1, Button, Input, tokens } from '@fluentui/react-components';
 import { PersonPasskeyRegular } from '@fluentui/react-icons';
 import { Card, CardHeader, CardPreview } from '@fluentui/react-components';
 import { ButtonPanel } from '../components/ButtonPanel';
@@ -21,7 +15,7 @@ import { emptyStringToUndefined } from '../utils/object-util';
 import { useNotification } from '../states/base-state';
 import { constructErrorMessage, constructMessage } from '../utils/string-util';
 import { MessageType } from '../models/system';
-import { entitledSiteAtom } from '../states/entitledSite';
+import { entitledSiteAtom } from '../states/entitled-site';
 import { useResetAtom } from 'jotai/utils';
 import { currencyAtom } from '../states/currency';
 
@@ -53,7 +47,7 @@ const useStyles = makeStyles({
 const schema = z.object({
   email: z.preprocess(
     (val) => emptyStringToUndefined(val),
-    z.string().email('Invalid email address')
+    z.string().email('Invalid email address'),
   ),
   password: z.preprocess((val) => emptyStringToUndefined(val), z.string()),
 });
@@ -133,11 +127,7 @@ export const LoginPage = () => {
         <CardPreview className={styles.box}>
           <div>
             <div className={styles.form}>
-              <Field
-                label={t('login.email')}
-                required
-                validationMessage={errors.email?.message}
-              >
+              <Field label={t('login.email')} required validationMessage={errors.email?.message}>
                 <Input type="email" {...register('email')} />
               </Field>
               <Field

@@ -37,7 +37,7 @@ const useStyles = makeStyles({
 });
 
 type FieldProps = Omit<FlientUiFieldProps, 'children'> & {
-  children: ReactNode,
+  children: ReactNode;
   horizontal?: boolean;
   infoMessage?: string;
   label: string;
@@ -70,12 +70,12 @@ export const Field: React.FC<FieldProps> = ({
     ) : undefined;
     return (
       <FluentUiField
+        className={styles.hint}
         hint={hint}
         label={label}
         orientation="horizontal"
-        validationMessage={validationMessage}
-        className={styles.hint}
         style={mergedStyle}
+        validationMessage={validationMessage}
         {...others}
       >
         {children}

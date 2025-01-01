@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useRef,
-  useCallback,
-} from 'react';
+import React, { createContext, useContext, useState, useRef, useCallback } from 'react';
 import { Transition, TransitionStatus } from 'react-transition-group';
 
 type TransitionStyles = {
@@ -18,6 +12,7 @@ interface PageTransitionContextType {
 const defaultDuration = 300;
 
 const PageTransitionContext = createContext<PageTransitionContextType>({
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   startTransition: () => {},
 });
 
@@ -60,12 +55,7 @@ export const PageTransitionProvider: React.FC<{
 
   return (
     <PageTransitionContext.Provider value={{ startTransition }}>
-      <Transition
-        nodeRef={nodeRef}
-        in={show}
-        timeout={duration}
-        onExited={handleExited}
-      >
+      <Transition in={show} nodeRef={nodeRef} onExited={handleExited} timeout={duration}>
         {(state) => (
           <div
             ref={nodeRef}

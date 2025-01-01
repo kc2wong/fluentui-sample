@@ -6,10 +6,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <FluentUiInput
         {...others}
+        ref={ref}
         appearance={readOnly ? 'underline' : appearance}
         readOnly={readOnly}
-        ref={ref}
       />
     );
-  }
+  },
 );
+
+// Set the display name
+Input.displayName = 'Input';

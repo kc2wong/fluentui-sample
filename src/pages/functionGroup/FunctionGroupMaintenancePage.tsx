@@ -1,10 +1,7 @@
 import { useAtom, useAtomValue } from 'jotai';
 import { useEffect, useState } from 'react';
 import { useMessage } from '../../contexts/Message';
-import {
-  constructErrorMessage,
-  constructMessage,
-} from '../../utils/string-util';
+import { constructErrorMessage, constructMessage } from '../../utils/string-util';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../../states/base-state';
 import { MessageType } from '../../models/system';
@@ -66,11 +63,7 @@ export const FunctionGroupMaintenancePage: React.FC = () => {
     if (sharedDataState.resultSet?.functionTree === undefined) {
       sharedDataAction({ getFunctionTree: {} });
     }
-  }, [
-    sharedDataAction,
-    sharedDataState.resultSet?.sites,
-    sharedDataState.resultSet?.functionTree,
-  ]);
+  }, [sharedDataAction, sharedDataState.resultSet?.sites, sharedDataState.resultSet?.functionTree]);
 
   const searchPage = (
     <FunctionGroupSearchPage

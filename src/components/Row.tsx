@@ -1,9 +1,4 @@
-import {
-  makeStyles,
-  shorthands,
-  tokens,
-  typographyStyles,
-} from '@fluentui/react-components';
+import { makeStyles } from '@fluentui/react-components';
 import { ReactElement } from 'react';
 
 const useStyles = makeStyles({

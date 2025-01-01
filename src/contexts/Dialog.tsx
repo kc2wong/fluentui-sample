@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import React, { createContext, useContext, useState } from 'react';
 import { CheckmarkRegular, DismissRegular } from '@fluentui/react-icons';
 import { Dialog, DialogProps } from '../components/Dialog';
@@ -64,9 +65,6 @@ export const DialogProvider: React.FC<{
     }
     buttonList.push({ ...primaryButton, isCta: true });
     setDialogProps({
-      // title: constructMessage(t, 'system.message.confirmAction', [
-      //   t(`system.message.${confirmType}`),
-      // ]),
       title: constructMessage(t, 'system.message.confirmAction', [confirmType]),
       message,
       buttons: buttonList,
@@ -75,10 +73,7 @@ export const DialogProvider: React.FC<{
     });
   };
 
-  const handleShowDiscardChangeDialog = (
-    t: TFunction,
-    dialogProps: DiscardChangeDialogProps
-  ) => {
+  const handleShowDiscardChangeDialog = (t: TFunction, dialogProps: DiscardChangeDialogProps) => {
     setDialogProps({
       title: t('system.message.discardChange'),
       message: t('system.message.doYouWantToDiscardChange'),
@@ -113,16 +108,12 @@ export const DialogProvider: React.FC<{
     <DialogContext.Provider
       value={{
         showConfirmationDialog: handleShowConfirmationDialog,
-        showDiscardChangeDialog: (props) =>
-          handleShowDiscardChangeDialog(t, props),
+        showDiscardChangeDialog: (props) => handleShowDiscardChangeDialog(t, props),
       }}
     >
       {children}
       {dialogProps && (
         <Dialog
-          title={dialogProps.title}
-          message={dialogProps.message}
-          open={dialogProps.openTime > dialogProps.closeTime}
           buttons={dialogProps.buttons.map(({ action, ...others }) => {
             return {
               ...others,
@@ -134,6 +125,9 @@ export const DialogProvider: React.FC<{
               },
             };
           })}
+          message={dialogProps.message}
+          open={dialogProps.openTime > dialogProps.closeTime}
+          title={dialogProps.title}
         ></Dialog>
       )}
     </DialogContext.Provider>

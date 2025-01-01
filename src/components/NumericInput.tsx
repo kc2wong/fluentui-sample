@@ -10,10 +10,7 @@ export declare type InputOnChangeData = {
 type NumericInputProps = Omit<InputProps, 'type' | 'value' | 'onChange'> & {
   value?: number;
   decimalPlaces?: number; // Maximum decimal places allowed
-  onChange?: (
-    ev: React.ChangeEvent<HTMLInputElement>,
-    data: InputOnChangeData
-  ) => void;
+  onChange?: (ev: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => void;
 };
 
 export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(
@@ -51,11 +48,7 @@ export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(
       // Prevent exceeding allowed decimal places
       if (currentValue.includes('.') && key >= '0' && key <= '9') {
         const [, decimalPart] = currentValue.split('.');
-        if (
-          decimalPlaces &&
-          decimalPart &&
-          decimalPart.length >= decimalPlaces
-        ) {
+        if (decimalPlaces && decimalPart && decimalPart.length >= decimalPlaces) {
           e.preventDefault();
         }
       }
@@ -66,26 +59,12 @@ export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(
         {...others}
         ref={ref}
         appearance={readOnly ? 'underline' : appearance}
-        value={
-          value === undefined
-            ? ''
-            : isFocused && readOnly !== true
-            ? `${value.toString()}${isToAppendDecimal.current ? '.' : ''}`
-            : formatNumber(value, decimalPlaces)
-        }
-        onFocus={(ev) => {
-          setIsFocused(true);
-          if (onFocus) {
-            onFocus(ev);
-          }
-        }}
         onBlur={(ev) => {
           setIsFocused(false);
           if (onBlur) {
             onBlur(ev);
           }
         }}
-        onKeyDown={handleInput}
         onChange={(ev, data) => {
           const value = data.value;
           const isEndWithDecimal = value.endsWith('.');
@@ -93,10 +72,7 @@ export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(
           if (onChange) {
             if (isEndWithDecimal) {
               onChange(ev, {
-                value:
-                  value.length === 1
-                    ? 0
-                    : parseFloat(value.substring(0, value.length - 1)),
+                value: value.length === 1 ? 0 : parseFloat(value.substring(0, value.length - 1)),
               });
             } else {
               onChange(ev, {
@@ -105,7 +81,24 @@ export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(
             }
           }
         }}
+        onFocus={(ev) => {
+          setIsFocused(true);
+          if (onFocus) {
+            onFocus(ev);
+          }
+        }}
+        onKeyDown={handleInput}
+        value={
+          value === undefined
+            ? ''
+            : isFocused && readOnly !== true
+              ? `${value.toString()}${isToAppendDecimal.current ? '.' : ''}`
+              : formatNumber(value, decimalPlaces)
+        }
       />
     );
-  }
+  },
 );
+
+// Set the display name
+NumericInput.displayName = 'NumericInput';

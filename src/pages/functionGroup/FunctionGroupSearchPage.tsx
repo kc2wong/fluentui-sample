@@ -46,14 +46,8 @@ const useStyles = makeStyles({
 });
 
 const searchSchema = z.object({
-  code: z.preprocess(
-    (val) => emptyStringToUndefined(val),
-    z.string().default('')
-  ),
-  name: z.preprocess(
-    (val) => emptyStringToUndefined(val),
-    z.string().default('')
-  ),
+  code: z.preprocess((val) => emptyStringToUndefined(val), z.string().default('')),
+  name: z.preprocess((val) => emptyStringToUndefined(val), z.string().default('')),
 });
 
 const emptyObject = searchSchema.parse({});
@@ -77,8 +71,8 @@ const SearchDrawer = ({ t, isOpen, onOpenChange }: SearchDrawerProps) => {
   return (
     <SearchCriteriaDrawer
       isOpen={isOpen}
-      onDrawerClose={() => onOpenChange(false)}
       onClear={() => reset(emptyObject)}
+      onDrawerClose={() => onOpenChange(false)}
       onSearch={handleSubmit(() => {
         const formData = getValues();
         action({
@@ -94,26 +88,20 @@ const SearchDrawer = ({ t, isOpen, onOpenChange }: SearchDrawerProps) => {
     >
       {/* <div className={commonStyles.form}> */}
       <Controller
-        name="code"
         control={control}
+        name="code"
         render={({ field }) => (
-          <Field
-            label={t('functionGroupMaintenance.code')}
-            orientation="horizontal"
-          >
+          <Field label={t('functionGroupMaintenance.code')} orientation="horizontal">
             <Input {...field} />
           </Field>
         )}
       />
 
       <Controller
-        name="name"
         control={control}
+        name="name"
         render={({ field }) => (
-          <Field
-            label={t('functionGroupMaintenance.name')}
-            orientation="horizontal"
-          >
+          <Field label={t('functionGroupMaintenance.name')} orientation="horizontal">
             <Input {...field} />
           </Field>
         )}
@@ -171,13 +159,13 @@ type FunctionGroupSearchPageProps = {
 const drawerOpenAtom = atom(false);
 
 export const FunctionGroupSearchPage: React.FC<FunctionGroupSearchPageProps> = (
-  props: FunctionGroupSearchPageProps
+  props: FunctionGroupSearchPageProps,
 ) => {
   const styles = useStyles();
   const [isDrawerOpen, setIsDrawerOpen] = useAtom(drawerOpenAtom);
   const [state, action] = useAtom(functionGroupAtom);
   const [selectedCcyCode, setSelectedCcyCode] = useState<string | undefined>(
-    state.activeRecord?.code
+    state.activeRecord?.code,
   );
   const { t } = useTranslation();
 
@@ -201,15 +189,14 @@ export const FunctionGroupSearchPage: React.FC<FunctionGroupSearchPageProps> = (
         columnSizingOptions,
         autoFitColumns: false,
       }),
-    ]
+    ],
   );
 
   const rows = getRows((row) => {
     const selected = selectedCcyCode === row.item.code;
     return {
       ...row,
-      onClick: (e: React.MouseEvent) =>
-        setSelectedCcyCode(selected ? undefined : row.item.code),
+      onClick: (_ev: React.MouseEvent) => setSelectedCcyCode(selected ? undefined : row.item.code),
       selected,
       appearance: selected ? ('brand' as const) : ('none' as const),
     };
@@ -279,11 +266,7 @@ export const FunctionGroupSearchPage: React.FC<FunctionGroupSearchPageProps> = (
 
   return (
     <Root>
-      <SearchDrawer
-        isOpen={isDrawerOpen}
-        onOpenChange={(open) => setIsDrawerOpen(open)}
-        t={t}
-      />
+      <SearchDrawer isOpen={isDrawerOpen} onOpenChange={(open) => setIsDrawerOpen(open)} t={t} />
 
       <Form
         numColumn={1}
@@ -298,20 +281,18 @@ export const FunctionGroupSearchPage: React.FC<FunctionGroupSearchPageProps> = (
       >
         {state.resultSet ? (
           <Table
+            ref={tableRef}
             arial-label="Default table"
             style={{ minWidth: '500px' }}
-            ref={tableRef}
             {...columnSizing_unstable.getTableProps()}
           >
             <TableHeader>
               <TableRow style={{ background: tokens.colorNeutralBackground2 }}>
-                <TableSelectionCell type="radio" invisible />
+                <TableSelectionCell invisible type="radio" />
                 {columns.map((column) => (
                   <TableHeaderCell
                     key={column.columnId}
-                    {...columnSizing_unstable.getTableHeaderCellProps(
-                      column.columnId
-                    )}
+                    {...columnSizing_unstable.getTableHeaderCellProps(column.columnId)}
                   >
                     <TableCellLayout appearance="primary" truncate>
                       <span style={{ color: tokens.colorBrandForeground1 }}>
@@ -326,33 +307,21 @@ export const FunctionGroupSearchPage: React.FC<FunctionGroupSearchPageProps> = (
               {rows.map(({ item, selected, onClick, appearance }) => (
                 <TableRow
                   key={item.code}
-                  onClick={onClick}
-                  aria-selected={selected}
                   appearance={appearance}
+                  aria-selected={selected}
+                  onClick={onClick}
                 >
                   <TableSelectionCell checked={selected} type="radio" />
-                  <TableCell
-                    {...columnSizing_unstable.getTableCellProps('code')}
-                  >
+                  <TableCell {...columnSizing_unstable.getTableCellProps('code')}>
                     {item.code}
                   </TableCell>
-                  <TableCell
-                    {...columnSizing_unstable.getTableCellProps('name')}
-                  >
+                  <TableCell {...columnSizing_unstable.getTableCellProps('name')}>
                     {item.name}
                   </TableCell>
-                  <TableCell
-                    {...columnSizing_unstable.getTableCellProps(
-                      'entitlement.site'
-                    )}
-                  >
+                  <TableCell {...columnSizing_unstable.getTableCellProps('entitlement.site')}>
                     {item.sites}
                   </TableCell>
-                  <TableCell
-                    {...columnSizing_unstable.getTableCellProps(
-                      'entitlement.function'
-                    )}
-                  >
+                  <TableCell {...columnSizing_unstable.getTableCellProps('entitlement.function')}>
                     <Tooltip
                       content={{
                         children: item.funtions.replaceAll(', ', '\u000a'),

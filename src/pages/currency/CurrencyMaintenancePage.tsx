@@ -4,10 +4,7 @@ import { CurrencySearchPage } from './CurrencySearchPage';
 import { CurrencyEditPage } from './CurrencyEditPage';
 import { useEffect, useState } from 'react';
 import { useMessage } from '../../contexts/Message';
-import {
-  constructErrorMessage,
-  constructMessage,
-} from '../../utils/string-util';
+import { constructErrorMessage, constructMessage } from '../../utils/string-util';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../../states/base-state';
 import { MessageType } from '../../models/system';

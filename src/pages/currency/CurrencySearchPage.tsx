@@ -37,14 +37,8 @@ import { Form, Root } from '../../components/Container';
 import { Field } from '../../components/Field';
 
 const searchSchema = z.object({
-  code: z.preprocess(
-    (val) => emptyStringToUndefined(val),
-    z.string().default('')
-  ),
-  name: z.preprocess(
-    (val) => emptyStringToUndefined(val),
-    z.string().default('')
-  ),
+  code: z.preprocess((val) => emptyStringToUndefined(val), z.string().default('')),
+  name: z.preprocess((val) => emptyStringToUndefined(val), z.string().default('')),
 });
 
 const emptyObject = searchSchema.parse({});
@@ -68,8 +62,8 @@ const SearchDrawer = ({ t, isOpen, onOpenChange }: SearchDrawerProps) => {
   return (
     <SearchCriteriaDrawer
       isOpen={isOpen}
-      onDrawerClose={() => onOpenChange(false)}
       onClear={() => reset(emptyObject)}
+      onDrawerClose={() => onOpenChange(false)}
       onSearch={handleSubmit(() => {
         const formData = getValues();
         action({
@@ -84,8 +78,8 @@ const SearchDrawer = ({ t, isOpen, onOpenChange }: SearchDrawerProps) => {
       t={t}
     >
       <Controller
-        name="code"
         control={control}
+        name="code"
         render={({ field }) => (
           <Field label={t('currencyMaintenance.code')} orientation="horizontal">
             <Input {...field} />
@@ -94,8 +88,8 @@ const SearchDrawer = ({ t, isOpen, onOpenChange }: SearchDrawerProps) => {
       />
 
       <Controller
-        name="name"
         control={control}
+        name="name"
         render={({ field }) => (
           <Field label={t('currencyMaintenance.name')} orientation="horizontal">
             <Input {...field} />
@@ -137,12 +131,12 @@ type CurrencySearchPageProps = {
 const drawerOpenAtom = atom(false);
 
 export const CurrencySearchPage: React.FC<CurrencySearchPageProps> = (
-  props: CurrencySearchPageProps
+  props: CurrencySearchPageProps,
 ) => {
   const [isDrawerOpen, setIsDrawerOpen] = useAtom(drawerOpenAtom);
   const [state, action] = useAtom(currencyAtom);
   const [selectedCcyCode, setSelectedCcyCode] = useState<string | undefined>(
-    state.activeRecord?.code
+    state.activeRecord?.code,
   );
   const { t } = useTranslation();
 
@@ -162,8 +156,7 @@ export const CurrencySearchPage: React.FC<CurrencySearchPageProps> = (
     const selected = selectedCcyCode === row.item.code;
     return {
       ...row,
-      onClick: (e: React.MouseEvent) =>
-        setSelectedCcyCode(selected ? undefined : row.item.code),
+      onClick: (_e: React.MouseEvent) => setSelectedCcyCode(selected ? undefined : row.item.code),
       selected,
       appearance: selected ? ('brand' as const) : ('none' as const),
     };
@@ -237,11 +230,7 @@ export const CurrencySearchPage: React.FC<CurrencySearchPageProps> = (
 
   return (
     <Root>
-      <SearchDrawer
-        isOpen={isDrawerOpen}
-        onOpenChange={(open) => setIsDrawerOpen(open)}
-        t={t}
-      />
+      <SearchDrawer isOpen={isDrawerOpen} onOpenChange={(open) => setIsDrawerOpen(open)} t={t} />
 
       <Form
         numColumn={1}
@@ -258,7 +247,7 @@ export const CurrencySearchPage: React.FC<CurrencySearchPageProps> = (
           <Table arial-label="Default table" style={{ minWidth: '510px' }}>
             <TableHeader>
               <TableRow style={{ background: tokens.colorNeutralBackground2 }}>
-                <TableSelectionCell type="radio" invisible />
+                <TableSelectionCell invisible type="radio" />
                 {columns.map((column) => (
                   <TableHeaderCell key={column.columnId}>
                     <TableCellLayout appearance="primary">
@@ -274,9 +263,9 @@ export const CurrencySearchPage: React.FC<CurrencySearchPageProps> = (
               {rows.map(({ item, selected, onClick, appearance }) => (
                 <TableRow
                   key={item.code}
-                  onClick={onClick}
-                  aria-selected={selected}
                   appearance={appearance}
+                  aria-selected={selected}
+                  onClick={onClick}
                 >
                   <TableSelectionCell
                     checked={selected}

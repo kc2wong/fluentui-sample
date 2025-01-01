@@ -1,16 +1,13 @@
 import React from 'react';
 import { Button, Text, Radio, RadioGroup } from '@fluentui/react-components';
-import {
-  ArrowTurnUpLeftRegular,
-  CheckmarkStarburstRegular,
-} from '@fluentui/react-icons';
+import { ArrowTurnUpLeftRegular, CheckmarkStarburstRegular } from '@fluentui/react-icons';
 import { useTranslation } from 'react-i18next';
 import { useAtomValue } from 'jotai';
 import { undefinedToEmptyString } from '../../utils/object-util';
 import { constructMessage } from '../../utils/string-util';
 import { Field } from '../../components/Field';
 import { useAppendBreadcrumb } from '../../contexts/PageElementNavigation';
-import { entitledSiteAtom } from '../../states/entitledSite';
+import { entitledSiteAtom } from '../../states/entitled-site';
 import { Form, Root } from '../../components/Container';
 import { NumericInput } from '../../components/NumericInput';
 import { Currency } from '../../models/currency';
@@ -24,10 +21,7 @@ import { Input } from '../../components/Input';
 import { PaymentStatusBar } from './PaymentStatusComponent';
 import { Memo } from './Memo';
 
-const getAccountName = (
-  account: Account[],
-  site?: string
-): string | undefined => {
+const getAccountName = (account: Account[], site?: string): string | undefined => {
   switch (account.length) {
     case 0:
       return undefined;
@@ -64,9 +58,8 @@ export const PaymentDetailViewPage: React.FC<PaymentDetailPageProps> = ({
   const getInstructionIdPrefix = (): string | undefined => {
     const siteValue = payment?.site;
     if (siteValue) {
-      return entitledSiteState.resultSet?.entitledSite.find(
-        (s) => s.site.code === siteValue
-      )?.site.instructionIdPrefix;
+      return entitledSiteState.resultSet?.entitledSite.find((s) => s.site.code === siteValue)?.site
+        .instructionIdPrefix;
     } else {
       return undefined;
     }
@@ -84,9 +77,9 @@ export const PaymentDetailViewPage: React.FC<PaymentDetailPageProps> = ({
   return (
     <Root>
       <Form
-        styles={{ minWidth: '700px', maxWidth: '50vw' }}
-        numColumn={2}
         buttons={[backButton]}
+        numColumn={2}
+        styles={{ minWidth: '700px', maxWidth: '50vw' }}
         title={constructMessage(t, 'paymentMaintenance.titleEdit', [mode])}
         toolbarSlot={payment ? <PaymentStatusBar payment={payment} /> : <></>}
       >
@@ -96,8 +89,8 @@ export const PaymentDetailViewPage: React.FC<PaymentDetailPageProps> = ({
         <EmptyCell />
 
         <Field
-          label={t('paymentMaintenance.account')}
           infoMessage={getAccountName(paymentState.account, payment?.site)}
+          label={t('paymentMaintenance.account')}
         >
           <Input readOnly value={undefinedToEmptyString(payment?.account)} />
         </Field>
@@ -106,12 +99,12 @@ export const PaymentDetailViewPage: React.FC<PaymentDetailPageProps> = ({
         <Field label={t('paymentMaintenance.direction.label')}>
           <RadioGroup layout="horizontal" value={payment?.direction ?? ''}>
             <Radio
-              value={PaymentDirection.Incoming}
               label={t('paymentMaintenance.direction.value.incoming')}
+              value={PaymentDirection.Incoming}
             />
             <Radio
-              value={PaymentDirection.Outgoing}
               label={t('paymentMaintenance.direction.value.outgoing')}
+              value={PaymentDirection.Outgoing}
             />
           </RadioGroup>
         </Field>
@@ -119,17 +112,14 @@ export const PaymentDetailViewPage: React.FC<PaymentDetailPageProps> = ({
 
         <Field label={t('paymentMaintenance.bankBuy')}>
           <NumericInput
-            readOnly
             contentAfter={
-              payment?.status === PaymentStatus.Paired &&
-              !payment?.creditAmount.value ? (
+              payment?.status === PaymentStatus.Paired && !payment?.creditAmount.value ? (
                 <CheckmarkStarburstRegular />
               ) : undefined
             }
-            contentBefore={
-              <Text weight="bold">{payment?.creditAmount.ccy}&nbsp;</Text>
-            }
+            contentBefore={<Text weight="bold">{payment?.creditAmount.ccy}&nbsp;</Text>}
             decimalPlaces={getCcyPrevision(ccyList, payment?.creditAmount.ccy)}
+            readOnly
             value={payment?.creditAmount.value ?? payment?.pairedAmount}
           />
         </Field>
@@ -137,14 +127,11 @@ export const PaymentDetailViewPage: React.FC<PaymentDetailPageProps> = ({
         <Field label={t('paymentMaintenance.bankSell')}>
           <NumericInput
             contentAfter={
-              payment?.status === PaymentStatus.Paired &&
-              !payment?.debitAmount.value ? (
+              payment?.status === PaymentStatus.Paired && !payment?.debitAmount.value ? (
                 <CheckmarkStarburstRegular />
               ) : undefined
             }
-            contentBefore={
-              <Text weight="bold">{payment?.debitAmount?.ccy}&nbsp;</Text>
-            }
+            contentBefore={<Text weight="bold">{payment?.debitAmount?.ccy}&nbsp;</Text>}
             decimalPlaces={getCcyPrevision(ccyList, payment?.debitAmount.ccy)}
             readOnly
             value={payment?.debitAmount.value ?? payment?.pairedAmount}
@@ -153,19 +140,14 @@ export const PaymentDetailViewPage: React.FC<PaymentDetailPageProps> = ({
 
         <Field label={t('paymentMaintenance.instructionId')}>
           <Input
-            contentBefore={
-              <Text weight="bold">{getInstructionIdPrefix()}&nbsp;</Text>
-            }
+            contentBefore={<Text weight="bold">{getInstructionIdPrefix()}&nbsp;</Text>}
             readOnly
             value={undefinedToEmptyString(payment?.instructionId)}
           />
         </Field>
 
         <Field label={t('paymentMaintenance.executeDate')}>
-          <Input
-            readOnly
-            value={formatDateDDMMYYYY(payment?.executeDate ?? undefined)}
-          />
+          <Input readOnly value={formatDateDDMMYYYY(payment?.executeDate ?? undefined)} />
         </Field>
 
         <Field
@@ -174,31 +156,20 @@ export const PaymentDetailViewPage: React.FC<PaymentDetailPageProps> = ({
               payment?.status === PaymentStatus.Paired
                 ? 'paymentMaintenance.pairedFxRef'
                 : 'paymentMaintenance.fxRef'
-            }`
+            }`,
           )}
         >
-          <Input
-            readOnly
-            value={undefinedToEmptyString(
-              payment?.pairedFxRef ?? payment?.fxRef
-            )}
-          />
+          <Input readOnly value={undefinedToEmptyString(payment?.pairedFxRef ?? payment?.fxRef)} />
         </Field>
         <EmptyCell />
 
         {payment?.status === PaymentStatus.Paired ? (
           <>
             <Field label={t('paymentMaintenance.product')}>
-              <Input
-                readOnly
-                value={undefinedToEmptyString(payment?.product)}
-              />
+              <Input readOnly value={undefinedToEmptyString(payment?.product)} />
             </Field>
             <Field label={t('paymentMaintenance.valueDate')}>
-              <Input
-                readOnly
-                value={formatDateDDMMYYYY(payment?.valueDate ?? undefined)}
-              />
+              <Input readOnly value={formatDateDDMMYYYY(payment?.valueDate ?? undefined)} />
             </Field>
           </>
         ) : (

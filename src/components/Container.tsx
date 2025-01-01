@@ -61,17 +61,13 @@ const useStyles = makeStyles({
 type FormProps = {
   numColumn: 1 | 2 | 3 | 4;
   buttons?: React.ReactElement<typeof Button>[];
-  toolbarSlot?:
-    | React.ReactElement<typeof ToolbarButton>[]
-    | React.ReactElement<typeof MessageBar>;
+  toolbarSlot?: React.ReactElement<typeof ToolbarButton>[] | React.ReactElement<typeof MessageBar>;
   styles?: React.CSSProperties;
   title?: string;
   children: ReactElement | ReactElement[];
 };
 
-export const Root: React.FC<{ children: ReactElement | ReactElement[] }> = ({
-  children,
-}) => {
+export const Root: React.FC<{ children: ReactElement | ReactElement[] }> = ({ children }) => {
   const styles = useStyles();
   return <div className={styles.root}>{children}</div>;
 };
@@ -102,12 +98,7 @@ export const Form: React.FC<FormProps> = ({
   }
   const toolBar = toolbarSlot ? (
     Array.isArray(toolbarSlot) ? (
-      <Toolbar>
-        {' '}
-        {toolbarSlot.map((btn, index) =>
-          React.cloneElement(btn, { key: index })
-        )}
-      </Toolbar>
+      <Toolbar> {toolbarSlot.map((btn, index) => React.cloneElement(btn, { key: index }))}</Toolbar>
     ) : (
       toolbarSlot
     )
@@ -130,9 +121,7 @@ export const Form: React.FC<FormProps> = ({
         {children}
         {buttons ? (
           <div className={`${styles.buttonPanel} ${buttonClass}`}>
-            {buttons.map((btn, index) =>
-              React.cloneElement(btn, { key: index })
-            )}
+            {buttons.map((btn, index) => React.cloneElement(btn, { key: index }))}
           </div>
         ) : (
           <></>

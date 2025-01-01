@@ -7,11 +7,7 @@ import {
   InlineDrawer,
   makeStyles,
 } from '@fluentui/react-components';
-import {
-  Dismiss24Regular,
-  EraserRegular,
-  SearchRegular,
-} from '@fluentui/react-icons';
+import { Dismiss24Regular, EraserRegular, SearchRegular } from '@fluentui/react-icons';
 import { ReactElement } from 'react';
 import { Form } from './Container';
 
@@ -38,19 +34,10 @@ const DrawerComponent: React.FC<DrawerComponentProps> = ({
   noPadding,
   title,
   className,
-  // actionButtons,
 }) => {
-  const styles = noPadding
-    ? { paddingLeft: 'unset', paddingTop: '6px' }
-    : { paddingTop: '6px' };
+  const styles = noPadding ? { paddingLeft: 'unset', paddingTop: '6px' } : { paddingTop: '6px' };
   return (
-    <InlineDrawer
-      className={className}
-      separator
-      open={isOpen}
-      position={position}
-      size="large"
-    >
+    <InlineDrawer className={className} open={isOpen} position={position} separator size="large">
       <DrawerHeader style={styles}>
         <DrawerHeaderTitle
           action={
@@ -94,33 +81,30 @@ export const SearchCriteriaDrawer: React.FC<SearchCriteriaDrawerProps> = ({
 
   const searchForm = (
     <Form
-      numColumn={1}
       buttons={[
-        <Button icon={<EraserRegular />} onClick={onClear}>
+        <Button key="resetBtn" icon={<EraserRegular />} onClick={onClear}>
           {t('system.message.reset')}
         </Button>,
-        <Button
-          appearance="primary"
-          icon={<SearchRegular />}
-          onClick={onSearch}
-        >
+        <Button key="searchBtn" appearance="primary" icon={<SearchRegular />} onClick={onSearch}>
           {t('system.message.search')}
         </Button>,
       ]}
+      numColumn={1}
     >
       {children}
     </Form>
   );
   return (
     <DrawerComponent
-      children={searchForm}
+      className={stylesDrawer.drawerSsearchCriteria}
       isOpen={isOpen}
+      noPadding={true}
       onClose={onDrawerClose}
       position="start"
-      noPadding={true}
       title={title ?? t('system.message.searchCriteria')}
-      className={stylesDrawer.drawerSsearchCriteria}
-    />
+    >
+      {searchForm}
+    </DrawerComponent>
   );
 };
 
@@ -142,13 +126,14 @@ export const DetailEditingDrawer: React.FC<DetailEditingDrawerProps> = ({
 
   return (
     <DrawerComponent
-      children={children}
+      className={stylesDrawer.drawerSupplementInfo}
       isOpen={isOpen}
+      noPadding={false}
       onClose={onCloseDrawer}
       position="end"
-      noPadding={false}
       title={title}
-      className={stylesDrawer.drawerSupplementInfo}
-    />
+    >
+      {children}
+    </DrawerComponent>
   );
 };

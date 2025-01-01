@@ -53,11 +53,7 @@ type MemoProps = {
   onAddMemo?: (memo: string) => void;
   readOnly: boolean;
 };
-export const Memo: React.FC<MemoProps> = ({
-  historyMemo,
-  onAddMemo,
-  readOnly,
-}) => {
+export const Memo: React.FC<MemoProps> = ({ historyMemo, onAddMemo, readOnly }) => {
   const styles = useStyles();
   const { t } = useTranslation();
   const [newMemo, setNewMemo] = useState<string>('');
@@ -68,9 +64,7 @@ export const Memo: React.FC<MemoProps> = ({
       <div className={styles.readContent}>
         {(historyMemo ?? []).map((m, index) => (
           <div key={index} style={{ marginBottom: tokens.spacingVerticalS }}>
-            <Caption1 italic>
-              {formatDateDDMMYYYYHHMISS(m.createDatetime)}
-            </Caption1>
+            <Caption1 italic>{formatDateDDMMYYYYHHMISS(m.createDatetime)}</Caption1>
             <br />
             <Body1>{m.message}</Body1>
           </div>
@@ -88,8 +82,8 @@ export const Memo: React.FC<MemoProps> = ({
           <Button
             className={styles.button}
             disabled={newMemo.length === 0}
-            onClick={() => onAddMemo(newMemo)}
             icon={<AddRegular />}
+            onClick={() => onAddMemo(newMemo)}
           >
             {t('system.message.add')}
           </Button>

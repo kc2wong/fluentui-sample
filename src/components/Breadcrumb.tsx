@@ -17,7 +17,7 @@ import { PageElement } from '../contexts/PageElementNavigation';
 const findPath = (
   tree: MenuItem,
   targetId: string,
-  path: MenuItem[] = []
+  path: MenuItem[] = [],
 ): MenuItem[] | undefined => {
   const currentPath = [...path, tree];
   if (tree.id === targetId) {
@@ -87,10 +87,7 @@ export const Breadcrumb: React.FC<BreadcrumbNavigationProps> = ({
       {pageNavigation.map((node) => (
         <React.Fragment key={node.labelKey}>
           <BreadcrumbItem>
-            <BreadcrumbButton
-              current={lastBreadcrumbItem === node}
-              onClick={node.action}
-            >
+            <BreadcrumbButton current={lastBreadcrumbItem === node} onClick={node.action}>
               <span>
                 &nbsp;{constructMessage(t, node.labelKey, node.labelParams)}
                 &nbsp;

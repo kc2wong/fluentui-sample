@@ -32,10 +32,7 @@ import { TFunction } from 'i18next';
 import { useAtomValue } from 'jotai';
 import { Control, Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  emptyStringToUndefined,
-  undefinedToEmptyString,
-} from '../../utils/object-util';
+import { emptyStringToUndefined, undefinedToEmptyString } from '../../utils/object-util';
 import { constructMessage } from '../../utils/string-util';
 import { Language } from '../../models/system';
 import { Field } from '../../components/Field';
@@ -107,11 +104,7 @@ const FunctionEntitlementTree: React.FC<{
     <TreeItem itemType="branch" value={node.id}>
       <TreeItemLayout
         expandIcon={
-          expandedNode.includes(node.id) ? (
-            <SubtractSquare16Regular />
-          ) : (
-            <AddSquareRegular />
-          )
+          expandedNode.includes(node.id) ? <SubtractSquare16Regular /> : <AddSquareRegular />
         }
       >
         {label}
@@ -126,8 +119,8 @@ const FunctionEntitlementTree: React.FC<{
                   return (
                     <Controller
                       key={funcId}
-                      name={functionTreeId}
                       control={control}
+                      name={functionTreeId}
                       render={({ field }) => (
                         <Checkbox
                           checked={field.value.includes(funcId)}
@@ -140,9 +133,7 @@ const FunctionEntitlementTree: React.FC<{
                                   if (data.checked === true) {
                                     field.onChange([...field.value, funcId]);
                                   } else {
-                                    field.onChange(
-                                      field.value.filter((v) => v !== funcId)
-                                    );
+                                    field.onChange(field.value.filter((v) => v !== funcId));
                                   }
                                 }
                           }
@@ -160,11 +151,11 @@ const FunctionEntitlementTree: React.FC<{
               <FunctionEntitlementTree
                 key={c.id}
                 control={control}
-                t={t}
-                node={c as FunctionTree}
-                functionTreeId={functionTreeId}
                 expandedNode={expandedNode}
+                functionTreeId={functionTreeId}
+                node={c as FunctionTree}
                 readOnly={readOnly}
+                t={t}
               />
             ))}
           </>
@@ -182,44 +173,37 @@ const FunctionEntitlementAccordion: React.FC<{
   onTreeNodeClick: (item: TreeItemValue, open: boolean) => void;
   control: Control<FormData>;
   readOnly: boolean;
-}> = ({
-  functionTreeId,
-  openedTreeNode,
-  onTreeNodeClick,
-  control,
-  readOnly,
-}) => {
+}> = ({ functionTreeId, openedTreeNode, onTreeNodeClick, control, readOnly }) => {
   const { t } = useTranslation();
   const sharedDataState = useAtomValue(sharedDataAtom);
   const treeNode = sharedDataState.resultSet?.functionTree?.find(
-    (item: { id: string }) => item.id === functionTreeId
+    (item: { id: string }) => item.id === functionTreeId,
   );
 
   if (treeNode) {
-    const children =
-      treeNode && 'children' in treeNode ? treeNode.children : [];
+    const children = treeNode && 'children' in treeNode ? treeNode.children : [];
     return (
       <AccordionPanel>
         <Tree
           aria-label="mainMenu"
-          openItems={openedTreeNode}
           onOpenChange={(_ev, data) => {
             onTreeNodeClick(data.value, data.open);
           }}
+          openItems={openedTreeNode}
         >
           {children.map((item) => (
             <FunctionEntitlementTree
-              t={t}
               key={item.id}
-              node={item as FunctionTree}
+              control={control}
+              expandedNode={openedTreeNode}
               functionTreeId={
                 functionTreeId === 'administrator'
                   ? 'administratorFunctionIds'
                   : 'operatorFunctionIds'
               }
-              expandedNode={openedTreeNode}
-              control={control}
+              node={item as FunctionTree}
               readOnly={readOnly}
+              t={t}
             />
           ))}
         </Tree>
@@ -265,24 +249,21 @@ const EntitlementTabPage: React.FC<{
 
     siteEntlAccordion = (
       <AccordionItem value="1">
-        <AccordionHeader>
-          {t('functionGroupMaintenance.entitlement.site')}
-        </AccordionHeader>
+        <AccordionHeader>{t('functionGroupMaintenance.entitlement.site')}</AccordionHeader>
         <AccordionPanel>
           <div>
             {Object.entries(siteGroupedByRegion).map((e) => {
               return (
                 <div key={`region_${e}`} className={styles.regionColumn}>
                   <Controller
-                    name="operatorSites"
                     control={control}
+                    name="operatorSites"
                     render={({ field }) => (
                       <>
                         <Switch
                           checked={e[1].reduce<boolean>(
-                            (acc, item) =>
-                              acc && field.value.includes(item.code),
-                            true
+                            (acc, item) => acc && field.value.includes(item.code),
+                            true,
                           )}
                           label={e[0]}
                           labelPosition="after"
@@ -291,16 +272,12 @@ const EntitlementTabPage: React.FC<{
                               ? undefined
                               : (_ev, data) => {
                                   const siteOfRegion =
-                                    siteGroupedByRegion[e[0]].map(
-                                      (s) => s.code
-                                    ) ?? [];
+                                    siteGroupedByRegion[e[0]].map((s) => s.code) ?? [];
                                   const newValue = field.value.filter(
-                                    (s) => !siteOfRegion.includes(s)
+                                    (s) => !siteOfRegion.includes(s),
                                   );
                                   if (data.checked) {
-                                    siteOfRegion.forEach((s) =>
-                                      newValue.push(s)
-                                    );
+                                    siteOfRegion.forEach((s) => newValue.push(s));
                                   }
                                   field.onChange(newValue);
                                 }
@@ -326,26 +303,19 @@ const EntitlementTabPage: React.FC<{
                                 key={`checkbox_${s.code}`}
                                 checked={field.value.includes(s.code)}
                                 className={styles.cell}
-                                value={s.code}
+                                label={siteLabel}
                                 onChange={
                                   readOnly
                                     ? undefined
                                     : (_ev, data) => {
                                         if (data.checked === true) {
-                                          field.onChange([
-                                            ...field.value,
-                                            s.code,
-                                          ]);
+                                          field.onChange([...field.value, s.code]);
                                         } else {
-                                          field.onChange(
-                                            field.value.filter(
-                                              (v) => v !== s.code
-                                            )
-                                          );
+                                          field.onChange(field.value.filter((v) => v !== s.code));
                                         }
                                       }
                                 }
-                                label={siteLabel}
+                                value={s.code}
                               />
                             );
                           })}
@@ -364,17 +334,14 @@ const EntitlementTabPage: React.FC<{
 
   const functionEntlAccordion = functionEntitlementConfig ? (
     <AccordionItem value="2">
-      <AccordionHeader>
-        {t('functionGroupMaintenance.entitlement.function')}
-      </AccordionHeader>
+      <AccordionHeader>{t('functionGroupMaintenance.entitlement.function')}</AccordionHeader>
       <FunctionEntitlementAccordion
         control={control}
         functionTreeId={functionEntitlementConfig.functionTreeId}
-        // treeNode={functionEntitlementConfig.treeNode}
-        openedAccordion={openedAccordion}
         onAccordionClick={toggleAccordionOpen}
-        openedTreeNode={functionEntitlementConfig.openedTreeNode}
         onTreeNodeClick={functionEntitlementConfig.toggleTreeNodeOpen}
+        openedAccordion={openedAccordion}
+        openedTreeNode={functionEntitlementConfig.openedTreeNode}
         readOnly={readOnly}
       />
     </AccordionItem>
@@ -384,14 +351,14 @@ const EntitlementTabPage: React.FC<{
 
   return (
     <Accordion
-      openItems={openedAccordion}
+      collapsible
+      multiple
       onToggle={(_ev, data) => {
         const openedItems = data.openItems;
         const selectedItem = data.value as string;
         toggleAccordionOpen(selectedItem, openedItems.includes(selectedItem));
       }}
-      multiple
-      collapsible
+      openItems={openedAccordion}
     >
       {siteEntlAccordion}
       {functionEntlAccordion}
@@ -405,26 +372,18 @@ const maxNameLength = 50;
 const missingFunctionIdErrorMessage = 'Function entitlement is required';
 const schema = z
   .object({
-    code: z.preprocess(
-      (val) => emptyStringToUndefined(val),
-      z.string().max(maxCodeLength)
-    ),
-    name: z.preprocess(
-      (val) => emptyStringToUndefined(val),
-      z.string().max(maxNameLength)
-    ),
+    code: z.preprocess((val) => emptyStringToUndefined(val), z.string().max(maxCodeLength)),
+    name: z.preprocess((val) => emptyStringToUndefined(val), z.string().max(maxNameLength)),
     operatorSites: z.array(z.string()),
     operatorFunctionIds: z.array(z.string()),
     administratorFunctionIds: z.array(z.string()),
   })
   .refine(
-    (data) =>
-      data.operatorFunctionIds.length > 0 ||
-      data.administratorFunctionIds.length > 0,
+    (data) => data.operatorFunctionIds.length > 0 || data.administratorFunctionIds.length > 0,
     {
       message: missingFunctionIdErrorMessage,
       path: ['administratorFunctionIds'],
-    }
+    },
   );
 
 type FormData = z.infer<typeof schema>;
@@ -434,19 +393,15 @@ const missingRequiredField = (formValues: FormData): boolean => {
   const validationResult = schema.safeParse(emptyStringToUndefined(formValues));
   const missingRequiredFieldIssue = validationResult.error?.issues.find(
     (i) =>
-      (['invalid_type', 'custom'].includes(i.code) &&
-        i.message === 'Required') ||
-      (['custom'].includes(i.code) &&
-        i.message === missingFunctionIdErrorMessage)
+      (['invalid_type', 'custom'].includes(i.code) && i.message === 'Required') ||
+      (['custom'].includes(i.code) && i.message === missingFunctionIdErrorMessage),
   );
   return missingRequiredFieldIssue !== undefined;
 };
 
 const collectLowestFunctionTrees = (tree: FunctionTree): FunctionAccess[] => {
   // Helper function to check if all children are FunctionAccess
-  const allChildrenAreFunctionAccess = (
-    children: (FunctionTree | FunctionAccess)[]
-  ): boolean => {
+  const allChildrenAreFunctionAccess = (children: (FunctionTree | FunctionAccess)[]): boolean => {
     return children.every((child) => 'action' in child);
   };
 
@@ -459,8 +414,7 @@ const collectLowestFunctionTrees = (tree: FunctionTree): FunctionAccess[] => {
   return (
     tree.children
       ?.filter((child) => 'children' in child) // Only process FunctionTree nodes
-      .flatMap((child) => collectLowestFunctionTrees(child as FunctionTree)) ||
-    []
+      .flatMap((child) => collectLowestFunctionTrees(child as FunctionTree)) || []
   );
 };
 
@@ -475,39 +429,30 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
 }: FunctionGroupEditPageProps) => {
   const styles = useStyles();
   const { t, i18n } = useTranslation();
-  const selectedLanguage =
-    i18n.language === 'en' ? Language.English : Language.TraditionalChinese;
+  const selectedLanguage = i18n.language === 'en' ? Language.English : Language.TraditionalChinese;
   const sharedDataState = useAtomValue(sharedDataAtom);
 
   const [activeTabPage, setActiveTabPage] = useState<TabValue>('administrator');
   // opened accordion in each tab
-  const [openedAdminAccordion, setOpenedAdminAccordion] = useState<string[]>(
-    []
-  );
-  const [openedOperatorAccordion, setOpenedOperatorAccordion] = useState<
-    string[]
-  >([]);
+  const [openedAdminAccordion, setOpenedAdminAccordion] = useState<string[]>([]);
+  const [openedOperatorAccordion, setOpenedOperatorAccordion] = useState<string[]>([]);
 
   // expanded function entitlement node in each tab
-  const [openedAdminFuncEntl, setOpenedAdminFuncEntl] = useState<
-    TreeItemValue[]
-  >([]);
-  const [openedOperatorFuncEntl, setOpenedOperatorFuncEntl] = useState<
-    TreeItemValue[]
-  >([]);
+  const [openedAdminFuncEntl, setOpenedAdminFuncEntl] = useState<TreeItemValue[]>([]);
+  const [openedOperatorFuncEntl, setOpenedOperatorFuncEntl] = useState<TreeItemValue[]>([]);
 
   const functionGroupState = useAtomValue(functionGroupAtom);
   const administratorFunctionAccess = useRef<string[]>(
     (sharedDataState.resultSet?.functionTree ?? [])
       .filter((item) => item.id === 'administrator')
       .flatMap((item) => collectLowestFunctionTrees(item))
-      .map((node) => node.id)
+      .map((node) => node.id),
   );
   const operatorFunctionAccess = useRef<string[]>(
     (sharedDataState.resultSet?.functionTree ?? [])
       .filter((item) => item.id === 'operator')
       .flatMap((item) => collectLowestFunctionTrees(item))
-      .map((node) => node.id)
+      .map((node) => node.id),
   );
 
   const activeRecord = functionGroupState.activeRecord;
@@ -557,16 +502,16 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
   }, [formValues, isDirty, markDirty, resetDirty]);
 
   const mode = functionGroupState.activeRecord
-  ? readOnly
-    ? 'system.message.view'
-    : 'system.message.edit'
-  : 'system.message.add';
+    ? readOnly
+      ? 'system.message.view'
+      : 'system.message.edit'
+    : 'system.message.add';
   useAppendBreadcrumb('functionGroupMaintenance.titleEdit', mode, onBackButtonPressed);
 
   const toggleAccordion = (
     id: string,
     checked: boolean,
-    setter: React.Dispatch<React.SetStateAction<string[]>>
+    setter: React.Dispatch<React.SetStateAction<string[]>>,
   ) => {
     setter(checked ? [id] : []);
   };
@@ -575,7 +520,7 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
     toggledNode: TreeItemValue,
     open: boolean,
     openedNode: TreeItemValue[],
-    setter: React.Dispatch<React.SetStateAction<TreeItemValue[]>>
+    setter: React.Dispatch<React.SetStateAction<TreeItemValue[]>>,
   ) => {
     const newOpenedNode = open
       ? [...openedNode, toggledNode]
@@ -602,19 +547,11 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
     }, {});
 
   const onSubmit = (data: FormData) => {
-    const errorMessage = t(
-      `system.error.functionGroupMaintenance.siteFunctionEntitlementRequired`
-    );
-    if (
-      data.operatorFunctionIds.length > 0 &&
-      data.operatorSites.length === 0
-    ) {
+    const errorMessage = t('system.error.functionGroupMaintenance.siteFunctionEntitlementRequired');
+    if (data.operatorFunctionIds.length > 0 && data.operatorSites.length === 0) {
       setError('operatorSites', { type: 'required', message: errorMessage });
       return;
-    } else if (
-      data.operatorSites.length > 0 &&
-      data.operatorFunctionIds.length === 0
-    ) {
+    } else if (data.operatorSites.length > 0 && data.operatorFunctionIds.length === 0) {
       setError('operatorFunctionIds', {
         type: 'required',
         message: errorMessage,
@@ -632,8 +569,8 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
     <Button
       appearance="primary"
       disabled={missingRequiredField(getValues())}
-      onClick={handleSubmit(onSubmit)}
       icon={<SaveRegular />}
+      onClick={handleSubmit(onSubmit)}
     >
       {t('system.message.save')}
     </Button>
@@ -650,8 +587,8 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
         ])}
       >
         <Controller
-          name="code"
           control={control}
+          name="code"
           render={({ field }) => (
             <Field
               label={t('functionGroupMaintenance.code')}
@@ -660,8 +597,8 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
             >
               <Input
                 {...field}
-                readOnly={readOnly || activeRecord !== undefined}
                 maxLength={maxCodeLength}
+                readOnly={readOnly || activeRecord !== undefined}
               />
             </Field>
           )}
@@ -669,8 +606,8 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
         <EmptyCell colSpan={2} />
 
         <Controller
-          name="name"
           control={control}
+          name="name"
           render={({ field }) => {
             return (
               <Field
@@ -679,19 +616,15 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
                 required
                 validationMessage={errors?.name?.message}
               >
-                <Input
-                  {...field}
-                  readOnly={readOnly}
-                  maxLength={maxNameLength}
-                />
+                <Input {...field} maxLength={maxNameLength} readOnly={readOnly} />
               </Field>
             );
           }}
         />
 
         <Field
-          label={t('functionGroupMaintenance.entitlement.base')}
           colSpan={3}
+          label={t('functionGroupMaintenance.entitlement.base')}
           required
           validationMessage={
             errors?.administratorFunctionIds?.message ??
@@ -702,24 +635,20 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
           <div className={styles.tab}>
             <TabList
               appearance="subtle"
-              size="small"
               onTabSelect={(_ev, data) => setActiveTabPage(data.value)}
               selectedValue={activeTabPage}
+              size="small"
               style={{ width: '100px' }}
             >
               <Tab
+                className={activeTabPage === 'administrator' ? 'activeTab' : undefined}
                 value="administrator"
-                className={
-                  activeTabPage === 'administrator' ? 'activeTab' : undefined
-                }
               >
                 {t('system.mode.value.administrator')}
               </Tab>
               <Tab
+                className={activeTabPage === 'operator' ? 'activeTab' : undefined}
                 value="operator"
-                className={
-                  activeTabPage === 'operator' ? 'activeTab' : undefined
-                }
               >
                 {t('system.mode.value.operator')}
               </Tab>
@@ -729,35 +658,22 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
               {activeTabPage === 'administrator' && (
                 <EntitlementTabPage
                   control={control}
-                  openedAccordion={openedAdminAccordion}
-                  toggleAccordionOpen={(id, checked) =>
-                    toggleAccordion(id, checked, setOpenedAdminAccordion)
-                  }
                   functionEntitlementConfig={{
                     functionTreeId: 'administrator',
                     openedTreeNode: openedAdminFuncEntl,
                     toggleTreeNodeOpen: (node, open) =>
-                      toggleOpenedTreeNode(
-                        node,
-                        open,
-                        openedAdminFuncEntl,
-                        setOpenedAdminFuncEntl
-                      ),
+                      toggleOpenedTreeNode(node, open, openedAdminFuncEntl, setOpenedAdminFuncEntl),
                   }}
+                  openedAccordion={openedAdminAccordion}
                   readOnly={readOnly}
+                  toggleAccordionOpen={(id, checked) =>
+                    toggleAccordion(id, checked, setOpenedAdminAccordion)
+                  }
                 />
               )}
               {activeTabPage === 'operator' && (
                 <EntitlementTabPage
                   control={control}
-                  openedAccordion={openedOperatorAccordion}
-                  toggleAccordionOpen={(id, checked) =>
-                    toggleAccordion(id, checked, setOpenedOperatorAccordion)
-                  }
-                  siteEntitlementConfig={{
-                    language: selectedLanguage,
-                    siteGroupedByRegion: groupedByRegion,
-                  }}
                   functionEntitlementConfig={{
                     functionTreeId: 'operator',
                     openedTreeNode: openedOperatorFuncEntl,
@@ -766,10 +682,18 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
                         node,
                         open,
                         openedOperatorFuncEntl,
-                        setOpenedOperatorFuncEntl
+                        setOpenedOperatorFuncEntl,
                       ),
                   }}
+                  openedAccordion={openedOperatorAccordion}
                   readOnly={readOnly}
+                  siteEntitlementConfig={{
+                    language: selectedLanguage,
+                    siteGroupedByRegion: groupedByRegion,
+                  }}
+                  toggleAccordionOpen={(id, checked) =>
+                    toggleAccordion(id, checked, setOpenedOperatorAccordion)
+                  }
                 />
               )}
             </div>

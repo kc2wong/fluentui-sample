@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import React, { createContext, useContext, useRef, useState } from 'react';
 import {
   Button,
@@ -107,8 +108,8 @@ const Toast = ({ message, animate, onDimiss }: ToastProps) => {
               <Button
                 appearance="transparent"
                 icon={<DismissRegular />}
-                size="small"
                 onClick={onDimiss}
+                size="small"
               />
             }
           ></MessageBarActions>
@@ -153,9 +154,7 @@ export const MessageProvider: React.FC<{
   const handleDispatchMessage = (message: Omit<ToastMessage, 'id'>) => {
     const { messages, ...others } = messageStore;
     const lastMessageId =
-      messages.length > 0
-        ? messages[messages.length - 1].id
-        : others.lastMessageId;
+      messages.length > 0 ? messages[messages.length - 1].id : others.lastMessageId;
     // generate id from current time
     messages.push({ id: new Date().getTime(), ...message });
     setMessageStore({ ...others, messages, lastMessageId });
@@ -189,8 +188,8 @@ export const MessageProvider: React.FC<{
         return (
           <Toast
             key={item.id}
-            message={item}
             animate={item.id > lastMessageId}
+            message={item}
             onDimiss={() => dimissToast(item.id)}
           />
         );

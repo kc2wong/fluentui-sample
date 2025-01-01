@@ -6,13 +6,9 @@ interface FormDirtyContextType {
   resetDirty: () => void;
 }
 
-const FormDirtyContext = createContext<FormDirtyContextType | undefined>(
-  undefined
-);
+const FormDirtyContext = createContext<FormDirtyContextType | undefined>(undefined);
 
-export const FormDirtyProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const FormDirtyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isFormDirty = useRef(false); // Use useRef instead of useState
 
   const isDirty = () => {

@@ -9,12 +9,7 @@ interface HamburgerMenuProps {
 
 const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ toggleMenu }) => {
   return (
-    <Button
-      icon={<RowTripleFilled />}
-      aria-label="Menu"
-      appearance="subtle"
-      onClick={toggleMenu}
-    />
+    <Button appearance="subtle" aria-label="Menu" icon={<RowTripleFilled />} onClick={toggleMenu} />
   );
 };
 

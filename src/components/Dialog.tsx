@@ -31,21 +31,18 @@ export const Dialog: React.FC<HideShowDialogProps> = ({
   open,
   buttons,
 }: HideShowDialogProps) => {
-
   return (
     <FluentUiDialog modalType="alert" open={open}>
       <DialogSurface>
         <DialogBody>
-          <DialogTitle>
-              {title}
-          </DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogContent>{`${message} ?`}</DialogContent>
           <DialogActions>
             {buttons.map((b, index) => {
               return (
                 <Button
                   key={index}
-                  appearance={b.isCta ?? false ? 'primary' : 'secondary'}
+                  appearance={(b.isCta ?? false) ? 'primary' : 'secondary'}
                   icon={b.icon}
                   onClick={b.action}
                 >

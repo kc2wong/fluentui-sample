@@ -1,9 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import {
-  FluentProvider,
-  webLightTheme,
-  webDarkTheme,
-} from '@fluentui/react-components';
+import { FluentProvider, webLightTheme, webDarkTheme } from '@fluentui/react-components';
 
 export type Theme = 'light' | 'dark';
 
@@ -14,6 +10,7 @@ interface ThemedAppContextType {
 
 const ThemedAppContext = createContext<ThemedAppContextType>({
   theme: 'light',
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   setTheme: () => {},
 });
 

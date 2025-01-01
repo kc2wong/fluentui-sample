@@ -21,10 +21,7 @@ import { currencyAtom } from '../../states/currency';
 import { useAtom } from 'jotai';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  emptyStringToUndefined,
-  undefinedToEmptyString,
-} from '../../utils/object-util';
+import { emptyStringToUndefined, undefinedToEmptyString } from '../../utils/object-util';
 import { constructMessage } from '../../utils/string-util';
 import { Language, MessageType } from '../../models/system';
 import { Field } from '../../components/Field';
@@ -38,13 +35,13 @@ import { Input } from '../../components/Input';
 
 // form in drawer for editing multi language name or shortname
 const nameMultiLangSchema = z.object(
-  Object.values(Language).reduce((acc, lang) => {
-    acc[lang] = z.preprocess(
-      (val) => emptyStringToUndefined(val),
-      z.string().default('')
-    );
-    return acc;
-  }, {} as Record<string, z.ZodEffects<z.ZodDefault<z.ZodString>, string, unknown>>)
+  Object.values(Language).reduce(
+    (acc, lang) => {
+      acc[lang] = z.preprocess((val) => emptyStringToUndefined(val), z.string().default(''));
+      return acc;
+    },
+    {} as Record<string, z.ZodEffects<z.ZodDefault<z.ZodString>, string, unknown>>,
+  ),
 );
 type NameMultiLangFormData = z.infer<typeof nameMultiLangSchema>;
 
@@ -72,17 +69,12 @@ const NameMultiLangDrawer = ({
     resolver: zodResolver(nameMultiLangSchema),
   });
   return (
-    <DetailEditingDrawer
-      isOpen={isOpen}
-      onCloseDrawer={onDrawerClose}
-      title={title}
-      t={t}
-    >
+    <DetailEditingDrawer isOpen={isOpen} onCloseDrawer={onDrawerClose} t={t} title={title}>
       <Form numColumn={1}>
         {Object.values(Language).map((lang) => (
           <Field
-            label={t(`system.language.value.${lang}`)}
             key={lang}
+            label={t(`system.language.value.${lang}`)}
             required={lang === Language.English}
           >
             <Input
@@ -105,45 +97,27 @@ const maxShortNameLength = 10;
 const minPrecision = 0;
 const maxPrecision = 5;
 const schema = z.object({
-  code: z.preprocess(
-    (val) => emptyStringToUndefined(val),
-    z.string().max(maxCodeLength)
-  ),
+  code: z.preprocess((val) => emptyStringToUndefined(val), z.string().max(maxCodeLength)),
   name: z
     .record(
-      z.preprocess(
-        (val) => emptyStringToUndefined(val),
-        z.string().max(maxNameLength).optional()
-      )
+      z.preprocess((val) => emptyStringToUndefined(val), z.string().max(maxNameLength).optional()),
     )
-    .refine(
-      (data) =>
-        data[Language.English] && data[Language.English].trim().length > 0,
-      {
-        message: 'Required',
-        path: ['en'], // path of error
-      }
-    ),
+    .refine((data) => data[Language.English] && data[Language.English].trim().length > 0, {
+      message: 'Required',
+      path: ['en'], // path of error
+    }),
   shortName: z
     .record(
       z.preprocess(
         (val) => emptyStringToUndefined(val),
-        z.string().max(maxShortNameLength).optional()
-      )
+        z.string().max(maxShortNameLength).optional(),
+      ),
     )
-    .refine(
-      (data) =>
-        data[Language.English] && data[Language.English].trim().length > 0,
-      {
-        message: 'Required',
-        path: ['en'], // path of error
-      }
-    ),
-  precision: z
-    .number()
-    .min(minPrecision)
-    .max(maxPrecision)
-    .default(minPrecision),
+    .refine((data) => data[Language.English] && data[Language.English].trim().length > 0, {
+      message: 'Required',
+      path: ['en'], // path of error
+    }),
+  precision: z.number().min(minPrecision).max(maxPrecision).default(minPrecision),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -151,8 +125,7 @@ type FormData = z.infer<typeof schema>;
 const missingRequiredField = (formValues: FormData): boolean => {
   const validationResult = schema.safeParse(emptyStringToUndefined(formValues));
   const missingRequiredFieldIssue = validationResult.error?.issues.find(
-    (i) =>
-      ['invalid_type', 'custom'].includes(i.code) && i.message === 'Required'
+    (i) => ['invalid_type', 'custom'].includes(i.code) && i.message === 'Required',
   );
   return missingRequiredFieldIssue !== undefined;
 };
@@ -163,15 +136,13 @@ type NameMultiLangButtonProps = {
   onClick: () => void;
 };
 const NameMultiLangButton: React.FC<NameMultiLangButtonProps> = (
-  props: NameMultiLangButtonProps
+  props: NameMultiLangButtonProps,
 ) => {
   return (
     <Button
       {...props}
       appearance="transparent"
-      icon={
-        props.isOpen ? <ArrowCircleLeftRegular /> : <TranslateAutoRegular />
-      }
+      icon={props.isOpen ? <ArrowCircleLeftRegular /> : <TranslateAutoRegular />}
       onClick={props.onClick}
       size="medium"
     />
@@ -231,32 +202,23 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
       ? 'system.message.view'
       : 'system.message.edit'
     : 'system.message.add';
-  useAppendBreadcrumb(
-    'currencyMaintenance.titleEdit',
-    mode,
-    onBackButtonPressed
-  );
+  useAppendBreadcrumb('currencyMaintenance.titleEdit', mode, onBackButtonPressed);
 
   const handleNameFieldChange = (
     fieldName: 'name' | 'shortName',
     langStr: string,
-    value: string
+    value: string,
   ) => {
     const currentFieldValues = getValues()[fieldName];
 
     currentFieldValues[
-      langStr === Language.TraditionalChinese
-        ? Language.TraditionalChinese
-        : Language.English
+      langStr === Language.TraditionalChinese ? Language.TraditionalChinese : Language.English
     ] = value;
 
     setValue(fieldName, currentFieldValues, { shouldDirty: true });
   };
 
-  const handlePrecisionChange = (
-    e: SpinButtonChangeEvent,
-    data: SpinButtonOnChangeData
-  ) => {
+  const handlePrecisionChange = (e: SpinButtonChangeEvent, data: SpinButtonOnChangeData) => {
     if (data.value) {
       setValue('precision', data.value, { shouldDirty: true });
     } else if ('value' in e.target) {
@@ -301,6 +263,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
     <Button
       appearance="primary"
       disabled={missingRequiredField(getValues())}
+      icon={<SaveRegular />}
       onClick={handleSubmit(() => {
         showConfirmationDialog({
           confirmType: 'save',
@@ -330,7 +293,6 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
           },
         });
       })}
-      icon={<SaveRegular />}
     >
       {t('system.message.save')}
     </Button>
@@ -351,8 +313,8 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
         ])}
       >
         <Controller
-          name="code"
           control={control}
+          name="code"
           render={({ field }) => (
             <Field
               label={t('currencyMaintenance.code')}
@@ -361,8 +323,8 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
             >
               <Input
                 {...field}
-                readOnly={readOnly || currencyState.activeRecord !== undefined}
                 maxLength={maxCodeLength}
+                readOnly={readOnly || currencyState.activeRecord !== undefined}
               />
             </Field>
           )}
@@ -370,34 +332,30 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
         <EmptyCell colSpan={2} />
 
         <Controller
-          name="shortName"
           control={control}
+          name="shortName"
           render={({ field }) => {
             return (
               <Field
+                colSpan={3}
                 label={t('currencyMaintenance.shortName')}
                 required
-                colSpan={3}
                 validationMessage={errors?.shortName?.en?.message}
               >
                 <Input
-                  name={field.name}
-                  disabled={readOnly ? false : isShortNameDrawerOpen}
-                  onChange={(evt, data) => {
-                    handleNameFieldChange(
-                      field.name,
-                      evt.target.name,
-                      data.value
-                    );
-                  }}
-                  value={field.value[Language.English]}
-                  readOnly={readOnly}
                   contentAfter={
                     <NameMultiLangButton
                       isOpen={isShortNameDrawerOpen}
                       onClick={() => toggleDrawer('shortName')}
                     />
                   }
+                  disabled={readOnly ? false : isShortNameDrawerOpen}
+                  name={field.name}
+                  onChange={(evt, data) => {
+                    handleNameFieldChange(field.name, evt.target.name, data.value);
+                  }}
+                  readOnly={readOnly}
+                  value={field.value[Language.English]}
                 />
               </Field>
             );
@@ -405,34 +363,30 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
         />
 
         <Controller
-          name="name"
           control={control}
+          name="name"
           render={({ field }) => {
             return (
               <Field
+                colSpan={3}
                 label={t('currencyMaintenance.name')}
                 required
-                colSpan={3}
                 validationMessage={errors?.name?.en?.message}
               >
                 <Input
-                  name={field.name}
-                  disabled={readOnly ? false : isShortNameDrawerOpen}
-                  onChange={(evt, data) => {
-                    handleNameFieldChange(
-                      field.name,
-                      evt.target.name,
-                      data.value
-                    );
-                  }}
-                  value={field.value[Language.English]}
-                  readOnly={readOnly}
                   contentAfter={
                     <NameMultiLangButton
                       isOpen={isNameDrawerOpen}
                       onClick={() => toggleDrawer('name')}
                     />
                   }
+                  disabled={readOnly ? false : isShortNameDrawerOpen}
+                  name={field.name}
+                  onChange={(evt, data) => {
+                    handleNameFieldChange(field.name, evt.target.name, data.value);
+                  }}
+                  readOnly={readOnly}
+                  value={field.value[Language.English]}
                 />
               </Field>
             );
@@ -440,8 +394,8 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
         />
 
         <Controller
-          name="precision"
           control={control}
+          name="precision"
           render={({ field }) => {
             const { value, ...others } = field;
             return (
@@ -451,12 +405,12 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
                 validationMessage={errors?.precision?.message}
               >
                 {readOnly ? (
-                  <Input {...others} readOnly value={value.toString()} />
+                  <Input {...others} readOnly={true} value={value.toString()} />
                 ) : (
                   <SpinButton
                     {...field}
-                    min={minPrecision}
                     max={maxPrecision}
+                    min={minPrecision}
                     onChange={handlePrecisionChange}
                   />
                 )}
@@ -473,11 +427,9 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
         isOpen={isShortNameDrawerOpen}
         isReadOnly={readOnly}
         onDrawerClose={() => toggleDrawer('shortName')}
-        onValueChange={(ev, data) =>
-          handleNameFieldChange('shortName', ev, data)
-        }
-        title={t('currencyMaintenance.shortName')}
+        onValueChange={(ev, data) => handleNameFieldChange('shortName', ev, data)}
         t={t}
+        title={t('currencyMaintenance.shortName')}
       />
 
       <NameMultiLangDrawer
@@ -486,8 +438,8 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
         isReadOnly={readOnly}
         onDrawerClose={() => toggleDrawer('name')}
         onValueChange={(ev, data) => handleNameFieldChange('name', ev, data)}
-        title={t('currencyMaintenance.name')}
         t={t}
+        title={t('currencyMaintenance.name')}
       />
     </Root>
   );

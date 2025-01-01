@@ -38,7 +38,7 @@ import { Language, UiMode } from '../models/system';
 import { Theme } from '../contexts/Theme';
 import { useNavigate } from 'react-router-dom';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { entitledSiteAtom } from '../states/entitledSite';
+import { entitledSiteAtom } from '../states/entitled-site';
 import { Site } from '../models/site';
 import { useMessage } from '../contexts/Message';
 import { useNotification } from '../states/base-state';
@@ -108,6 +108,7 @@ const EnititledSiteSelectionMenu: React.FC<EnititledSiteSelectionMenuProps> = ({
   useNotification(entitledSiteState, {
     showSpinner: showSpinner,
     stopSpinner: stopSpinner,
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     showOperationResultMessage: () => {},
   });
 
@@ -118,7 +119,7 @@ const EnititledSiteSelectionMenu: React.FC<EnititledSiteSelectionMenuProps> = ({
       setEntitledSites(
         entitledSiteState.resultSet.entitledSite.map((item) => {
           return { ...item.site, selected: item.selected };
-        })
+        }),
       );
     }
   }, [action, entitledSiteState.resultSet?.entitledSite]);
@@ -144,9 +145,7 @@ const EnititledSiteSelectionMenu: React.FC<EnititledSiteSelectionMenuProps> = ({
     const site = entitledSites.find((item) => item.code === siteCode);
     if (site) {
       if (site.selected) {
-        const numOfSelectedSite = entitledSites.filter(
-          (item) => item.selected === true
-        ).length;
+        const numOfSelectedSite = entitledSites.filter((item) => item.selected === true).length;
         if (numOfSelectedSite > 1) {
           site.selected = false;
         } else {
@@ -167,7 +166,7 @@ const EnititledSiteSelectionMenu: React.FC<EnititledSiteSelectionMenuProps> = ({
       setEntitledSites(
         entitledSitesAtom.map((item) => {
           return { ...item.site, selected: item.selected };
-        })
+        }),
       );
     }
   };
@@ -176,9 +175,7 @@ const EnititledSiteSelectionMenu: React.FC<EnititledSiteSelectionMenuProps> = ({
     setIsOpen(false);
     action({
       selectEntitledSite: {
-        siteCode: entitledSites
-          .filter((item) => item.selected)
-          .map((item) => item.code),
+        siteCode: entitledSites.filter((item) => item.selected).map((item) => item.code),
       },
     });
     // reset payment state
@@ -209,25 +206,14 @@ const EnititledSiteSelectionMenu: React.FC<EnititledSiteSelectionMenuProps> = ({
     .filter((e) => e.selected)
     .map((e) => e.code);
 
-  const siteButtonLabel =
-    selectedSiteCode.length === 0 ? '\u2002' : selectedSiteCode.join(',');
+  const siteButtonLabel = selectedSiteCode.length === 0 ? '\u2002' : selectedSiteCode.join(',');
   return (
-    <div
-      style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
-    >
-      <Label weight="semibold">
-        {t('system.message.site')}&nbsp;&nbsp;&nbsp;
-      </Label>
+    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+      <Label weight="semibold">{t('system.message.site')}&nbsp;&nbsp;&nbsp;</Label>
       <Menu checkedValues={{ siteCode: selectedSiteCode }} open={isOpen}>
         <MenuTrigger disableButtonEnhancement>
-          <Button
-            icon={<BuildingBankRegular />}
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            <Text
-              className={styles.siteButtonText}
-              truncate
-            >{`${siteButtonLabel}`}</Text>
+          <Button icon={<BuildingBankRegular />} onClick={() => setIsOpen(!isOpen)}>
+            <Text className={styles.siteButtonText} truncate>{`${siteButtonLabel}`}</Text>
           </Button>
         </MenuTrigger>
         <MenuPopover>
@@ -239,15 +225,11 @@ const EnititledSiteSelectionMenu: React.FC<EnititledSiteSelectionMenuProps> = ({
                     <MenuGroupHeader>
                       <Switch
                         checked={
-                          groupedByRegion[e[0]].find(
-                            (e) => e.selected === false
-                          ) === undefined
+                          groupedByRegion[e[0]].find((e) => e.selected === false) === undefined
                         }
                         label={<Caption1Strong italic>{e[0]}</Caption1Strong>}
                         labelPosition="before"
-                        onChange={(_ev, data) =>
-                          handleToggleRegionSelection(e[0], data.checked)
-                        }
+                        onChange={(_ev, data) => handleToggleRegionSelection(e[0], data.checked)}
                       />
                     </MenuGroupHeader>
                     {e[1].map((s) => {
@@ -272,11 +254,7 @@ const EnititledSiteSelectionMenu: React.FC<EnititledSiteSelectionMenuProps> = ({
             <Button onClick={handleUndoSiteSelection} size="small">
               {t('system.message.cancel')}
             </Button>
-            <Button
-              appearance="primary"
-              onClick={handleConfirmSiteSelection}
-              size="small"
-            >
+            <Button appearance="primary" onClick={handleConfirmSiteSelection} size="small">
               {t('system.message.confirm')}
             </Button>
           </div>
@@ -291,10 +269,7 @@ interface UserProfileProps {
   onButtonClick: () => void;
 }
 
-export const UserProfile: React.FC<UserProfileProps> = ({
-  login,
-  onButtonClick,
-}) => {
+export const UserProfile: React.FC<UserProfileProps> = ({ login, onButtonClick }) => {
   const styles = useStyles();
   const action = useSetAtom(authentication);
   const { t } = useTranslation();
@@ -332,15 +307,14 @@ export const UserProfile: React.FC<UserProfileProps> = ({
             {t('userProfile.name')}: {user.name}
           </p>
           <p>
-            {t('userProfile.lastLogin')}:{' '}
-            {new Date(login.user.lastLoginDatetime).toLocaleString()}
+            {t('userProfile.lastLogin')}: {new Date(login.user.lastLoginDatetime).toLocaleString()}
           </p>
           <Button
             icon={<DoorArrowLeftRegular />}
             onClick={() => {
               if (isDirty()) {
                 showConfirmationDialog({
-                  confirmType: t(`system.message.signOut`),
+                  confirmType: t('system.message.signOut'),
                   message: t('userProfile.doYouWantToSignOut'),
                   primaryButton: {
                     label: t('userProfile.signOut'),
@@ -421,8 +395,8 @@ export const SystemToolbar: React.FC<SystemToolbarProps> = ({
       {mode === 'operator' ? (
         <>
           <EnititledSiteSelectionMenu
-            language={language}
             isOpen={isSiteMenuOpen}
+            language={language}
             setIsOpen={(isOpen: boolean) => setIsSiteMenuOpen(isOpen)}
           />
           <Spacer />
@@ -430,42 +404,30 @@ export const SystemToolbar: React.FC<SystemToolbarProps> = ({
       ) : (
         <></>
       )}
-      <div
-        style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
-      >
-        <Label weight="semibold">
-          {t('system.mode.label')}&nbsp;&nbsp;&nbsp;
-        </Label>
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+        <Label weight="semibold">{t('system.mode.label')}&nbsp;&nbsp;&nbsp;</Label>
         <Menu checkedValues={{ mode: [mode] }}>
           <MenuTrigger disableButtonEnhancement>
             <Button
               className={styles.button}
-              icon={
-                mode === 'administrator' ? (
-                  <PersonSettingsRegular />
-                ) : (
-                  <PersonCallRegular />
-                )
-              }
+              icon={mode === 'administrator' ? <PersonSettingsRegular /> : <PersonCallRegular />}
               onClick={handleCloseSiteMenu}
             >
-              <Text>
-                {mode === 'administrator' ? modeAdministrator : modeOperator}
-              </Text>
+              <Text>{mode === 'administrator' ? modeAdministrator : modeOperator}</Text>
             </Button>
           </MenuTrigger>
           <MenuPopover>
             <MenuList>
               <MenuItemRadio
-                onClick={() => handleChangeMode('administrator')}
                 name="mode"
+                onClick={() => handleChangeMode('administrator')}
                 value="administrator"
               >
                 <Label>{modeAdministrator}</Label>
               </MenuItemRadio>
               <MenuItemRadio
-                onClick={() => handleChangeMode('operator')}
                 name="mode"
+                onClick={() => handleChangeMode('operator')}
                 value="operator"
               >
                 <Label>{modeOperator}</Label>
@@ -477,23 +439,20 @@ export const SystemToolbar: React.FC<SystemToolbarProps> = ({
       <Spacer />
       <Menu checkedValues={{ lang: [language] }}>
         <MenuTrigger disableButtonEnhancement>
-          <Button
-            icon={<GlobeRegular />}
-            onClick={handleCloseSiteMenu}
-          ></Button>
+          <Button icon={<GlobeRegular />} onClick={handleCloseSiteMenu}></Button>
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
             <MenuItemRadio
-              onClick={() => handleChangeLanguage(Language.English)}
               name="lang"
+              onClick={() => handleChangeLanguage(Language.English)}
               value="en"
             >
               {languageEn}
             </MenuItemRadio>
             <MenuItemRadio
-              onClick={() => handleChangeLanguage(Language.TraditionalChinese)}
               name="lang"
+              onClick={() => handleChangeLanguage(Language.TraditionalChinese)}
               value="zhHant"
             >
               {languageZhHant}
@@ -504,40 +463,22 @@ export const SystemToolbar: React.FC<SystemToolbarProps> = ({
       <Menu checkedValues={{ theme: [theme] }}>
         <MenuTrigger disableButtonEnhancement>
           <Button
-            icon={
-              theme === 'light' ? (
-                <WeatherSunnyRegular />
-              ) : (
-                <WeatherMoonRegular />
-              )
-            }
+            icon={theme === 'light' ? <WeatherSunnyRegular /> : <WeatherMoonRegular />}
             onClick={handleCloseSiteMenu}
           ></Button>
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
-            <MenuItemRadio
-              onClick={() => handleChangeTheme('light')}
-              name="theme"
-              value="light"
-            >
+            <MenuItemRadio name="theme" onClick={() => handleChangeTheme('light')} value="light">
               {themeLight}
             </MenuItemRadio>
-            <MenuItemRadio
-              onClick={() => handleChangeTheme('dark')}
-              name="theme"
-              value="dark"
-            >
+            <MenuItemRadio name="theme" onClick={() => handleChangeTheme('dark')} value="dark">
               {themeDark}
             </MenuItemRadio>
           </MenuList>
         </MenuPopover>
       </Menu>
-      {login ? (
-        <UserProfile login={login} onButtonClick={handleCloseSiteMenu} />
-      ) : (
-        <></>
-      )}
+      {login ? <UserProfile login={login} onButtonClick={handleCloseSiteMenu} /> : <></>}
     </div>
   );
 };

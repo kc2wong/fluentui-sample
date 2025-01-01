@@ -1,10 +1,5 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+/* eslint-disable @typescript-eslint/no-empty-function */
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { isEqual } from '../utils/object-util';
 
 export type PageElement = {
@@ -15,57 +10,38 @@ export type PageElement = {
 
 interface PageElementNavigationContextType {
   pageElementNavigation: PageElement[];
-  popPageElementNavigationTill: (
-    labelKey: string,
-    labelParam?: string[]
-  ) => boolean;
+  popPageElementNavigationTill: (labelKey: string, labelParam?: string[]) => boolean;
   startPageElementNavigation: (labelKey: string, labelParam?: string[]) => void;
   appendPageElementNavigation: (
     labelKey: string,
     labelParam?: string[],
-    parentAction?: () => void
+    parentAction?: () => void,
   ) => void;
-  replaceLastPageElementNavigation: (
-    labelKey: string,
-    labelParam?: string[]
-  ) => void;
+  replaceLastPageElementNavigation: (labelKey: string, labelParam?: string[]) => void;
 }
 
-const PageElementNavigationContext =
-  createContext<PageElementNavigationContextType>({
-    pageElementNavigation: [],
-    popPageElementNavigationTill: () => false,
-    startPageElementNavigation: () => {},
-    appendPageElementNavigation: () => {},
-    replaceLastPageElementNavigation: () => {},
-  });
+const PageElementNavigationContext = createContext<PageElementNavigationContextType>({
+  pageElementNavigation: [],
+  popPageElementNavigationTill: () => false,
+  startPageElementNavigation: () => {},
+  appendPageElementNavigation: () => {},
+  replaceLastPageElementNavigation: () => {},
+});
 
 export const PageElementNavigationProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const [pageElementNavigation, setPageElementNavigation] = useState<
-    PageElement[]
-  >([]);
+  const [pageElementNavigation, setPageElementNavigation] = useState<PageElement[]>([]);
 
-  const handlePopPageNavigationTill = (
-    labelKey: string,
-    labelParam?: string[]
-  ): boolean => {
+  const handlePopPageNavigationTill = (labelKey: string, labelParam?: string[]): boolean => {
     let newPageElement: PageElement[];
-    const existingIndex = pageElementNavigation.findIndex(
-      (e) => e.labelKey === labelKey
-    );
+    const existingIndex = pageElementNavigation.findIndex((e) => e.labelKey === labelKey);
     if (existingIndex < 0) {
       // not found
       return false;
     } else if (existingIndex === pageElementNavigation.length - 1) {
       // already the last one, check if need to replace parameter
-      if (
-        !isEqual(
-          pageElementNavigation[existingIndex].labelParams ?? [],
-          labelParam ?? []
-        )
-      ) {
+      if (!isEqual(pageElementNavigation[existingIndex].labelParams ?? [], labelParam ?? [])) {
         newPageElement = [...pageElementNavigation];
         newPageElement[existingIndex].labelParams = labelParam;
         setPageElementNavigation(newPageElement);
@@ -86,23 +62,17 @@ export const PageElementNavigationProvider: React.FC<{
     }
   };
 
-  const handleStartPageNavigation = (
-    labelKey: string,
-    labelParams?: string[]
-  ) => {
+  const handleStartPageNavigation = (labelKey: string, labelParams?: string[]) => {
     setPageElementNavigation([{ labelKey, labelParams }]);
   };
 
   const handleAppendPageNavigation = (
     labelKey: string,
     labelParams?: string[],
-    parentAction?: () => void
+    parentAction?: () => void,
   ) => {
     // check if last element is having same label key or not
-    if (
-      pageElementNavigation[pageElementNavigation.length - 1]?.labelKey !==
-      labelKey
-    ) {
+    if (pageElementNavigation[pageElementNavigation.length - 1]?.labelKey !== labelKey) {
       const newPageElement = [...pageElementNavigation];
       if (newPageElement.length > 0) {
         newPageElement[newPageElement.length - 1].action = parentAction;
@@ -113,7 +83,7 @@ export const PageElementNavigationProvider: React.FC<{
   };
 
   const handleReplaceLastPageNavigation = (labelKey: string) => {
-    let newPageElement = [...pageElementNavigation];
+    const newPageElement = [...pageElementNavigation];
     if (newPageElement.length > 1) {
       newPageElement[newPageElement.length - 1].labelKey = labelKey;
     }
@@ -135,16 +105,13 @@ export const PageElementNavigationProvider: React.FC<{
   );
 };
 
-export const usePageElementNavigation =
-  (): PageElementNavigationContextType => {
-    const context = useContext(PageElementNavigationContext);
-    if (!context) {
-      throw new Error(
-        'usePageElementNavigation must be used within a PageElementNavigationProvider'
-      );
-    }
-    return context;
-  };
+export const usePageElementNavigation = (): PageElementNavigationContextType => {
+  const context = useContext(PageElementNavigationContext);
+  if (!context) {
+    throw new Error('usePageElementNavigation must be used within a PageElementNavigationProvider');
+  }
+  return context;
+};
 
 export const useStartBreadcrumb = (labelKey: string) => {
   const navigationCtx = useContext(PageElementNavigationContext);
@@ -161,7 +128,7 @@ const emptyArray: string[] = [];
 export const useAppendBreadcrumb = (
   labelKey: string,
   paramKey?: string | string[],
-  action?: () => void
+  action?: () => void,
 ) => {
   const paramKeyArray = useMemo(() => {
     if (!paramKey) return emptyArray;
@@ -171,11 +138,7 @@ export const useAppendBreadcrumb = (
   const navigationCtx = useContext(PageElementNavigationContext);
   useEffect(() => {
     if (!navigationCtx.popPageElementNavigationTill(labelKey, paramKeyArray)) {
-      navigationCtx.appendPageElementNavigation(
-        labelKey,
-        paramKeyArray,
-        action
-      );
+      navigationCtx.appendPageElementNavigation(labelKey, paramKeyArray, action);
     }
   }, [navigationCtx, labelKey, action, paramKeyArray]);
 };
