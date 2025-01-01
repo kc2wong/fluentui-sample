@@ -10,7 +10,6 @@ interface ThemedAppContextType {
 
 const ThemedAppContext = createContext<ThemedAppContextType>({
   theme: 'light',
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   setTheme: () => {},
 });
 

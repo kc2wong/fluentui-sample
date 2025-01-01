@@ -12,7 +12,6 @@ interface PageTransitionContextType {
 const defaultDuration = 300;
 
 const PageTransitionContext = createContext<PageTransitionContextType>({
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   startTransition: () => {},
 });
 

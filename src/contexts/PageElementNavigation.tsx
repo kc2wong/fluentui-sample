@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { isEqual } from '../utils/object-util';
 

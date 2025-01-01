@@ -108,7 +108,6 @@ const EnititledSiteSelectionMenu: React.FC<EnititledSiteSelectionMenuProps> = ({
   useNotification(entitledSiteState, {
     showSpinner: showSpinner,
     stopSpinner: stopSpinner,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     showOperationResultMessage: () => {},
   });
 

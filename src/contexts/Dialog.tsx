@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import React, { createContext, useContext, useState } from 'react';
 import { CheckmarkRegular, DismissRegular } from '@fluentui/react-icons';
 import { Dialog, DialogProps } from '../components/Dialog';

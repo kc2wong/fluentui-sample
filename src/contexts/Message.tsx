@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import React, { createContext, useContext, useRef, useState } from 'react';
 import {
   Button,
