@@ -51,7 +51,12 @@ import { Payment, PaymentDirection, PaymentStatus } from '../../models/payment';
 import { paymentAtom } from '../../states/payment';
 import { sharedDataAtom } from '../../states/shared-data';
 import { DatePicker } from '@fluentui/react-datepicker-compat';
-import { formatDateDDMMYYYY, parseDateMMDDYYYY } from '../../utils/date-util';
+import {
+  formatDateDDMMYYYY,
+  parseDateMMDDYYYY,
+  nullDateToUndefined,
+  undefinedDateToNull,
+} from '../../utils/date-util';
 import { EmptyCell } from '../../components/EmptyCell';
 import { Account } from '../../models/account';
 import { useMessage } from '../../contexts/Message';
@@ -236,7 +241,7 @@ const AccountSearchDrawer = ({
                     {...field}
                     multiselect
                     onOptionSelect={(_ev, data) => {
-                      setValue(field.name, data.selectedOptions);
+                      setValue(field.name, data.selectedOptions, { shouldDirty: true });
                     }}
                     selectedOptions={field.value}
                     value={field.value.join(',')}
@@ -603,36 +608,34 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
             action: () => {
               const { creditCcy, creditAmount, debitCcy, debitAmount, executeDate, ...others } =
                 getValues();
-              if (executeDate) {
-                paymentAction({
-                  savePayment: {
-                    payment: {
-                      ...others,
-                      creditAmount: {
-                        ccy: creditCcy,
-                        value: creditAmount,
-                      },
-                      debitAmount: {
-                        ccy: debitCcy,
-                        value: debitAmount,
-                      },
-                      executeDate: executeDate,
-                      status: PaymentStatus.New,
+              paymentAction({
+                savePayment: {
+                  payment: {
+                    ...others,
+                    creditAmount: {
+                      ccy: creditCcy,
+                      value: creditAmount,
                     },
-                    onSaveSuccess: {
-                      message: {
-                        key: 'paymentMaintenance.message.initiatePaymentSuccess',
-                        type: MessageType.Success,
-                        parameters: ['Payment', ''],
-                      },
-                      callback: (_payment) => {
-                        resetDirty();
-                        onSave();
-                      },
+                    debitAmount: {
+                      ccy: debitCcy,
+                      value: debitAmount,
+                    },
+                    executeDate: nullDateToUndefined(executeDate),
+                    status: PaymentStatus.New,
+                  },
+                  onSaveSuccess: {
+                    message: {
+                      key: 'paymentMaintenance.message.initiatePaymentSuccess',
+                      type: MessageType.Success,
+                      parameters: ['Payment', ''],
+                    },
+                    callback: (_payment) => {
+                      resetDirty();
+                      onSave();
                     },
                   },
-                });
-              }
+                },
+              });
             },
           },
           secondaryButton: {
@@ -718,7 +721,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
                     }}
                     onOptionSelect={(_ev, data) => {
                       if (data.optionValue) {
-                        setValue('site', data.optionValue);
+                        setValue('site', data.optionValue, { shouldDirty: true });
                       }
                     }}
                     selectedOptions={[field.value]}
@@ -751,7 +754,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
                 onChange={(_e, data) => {
                   const newValue = stringToEnum(PaymentDirection, data.value);
                   if (newValue) {
-                    setValue('direction', newValue);
+                    setValue('direction', newValue, { shouldDirty: true });
                   }
                 }}
                 value={field.value ?? ''}
@@ -776,11 +779,11 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
           creditDebit="credit"
           label={t('paymentMaintenance.bankBuy')}
           onAmountChange={(value) => {
-            setValue('creditAmount', value);
+            setValue('creditAmount', value, { shouldDirty: true });
           }}
           onCcyChange={(value) => {
             if (value) {
-              setValue('creditCcy', value);
+              setValue('creditCcy', value, { shouldDirty: true });
               if (getValues().debitCcy === value) {
                 setValue('debitCcy', '');
               }
@@ -799,11 +802,11 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
           creditDebit="debit"
           label={t('paymentMaintenance.bankSell')}
           onAmountChange={(value) => {
-            setValue('debitAmount', value);
+            setValue('debitAmount', value, { shouldDirty: true });
           }}
           onCcyChange={(value) => {
             if (value) {
-              setValue('debitCcy', value);
+              setValue('debitCcy', value, { shouldDirty: true });
               if (getValues().creditCcy === value) {
                 setValue('creditCcy', '');
               }
@@ -843,6 +846,9 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
                 {...field}
                 disabled={paymentState.activeRecord !== undefined}
                 formatDate={formatDateDDMMYYYY}
+                onSelectDate={(value) => {
+                  setValue(field.name, undefinedDateToNull(value), { shouldDirty: true });
+                }}
                 parseDateFromString={(str) => parseDateMMDDYYYY(str) ?? null}
               />
             </Field>

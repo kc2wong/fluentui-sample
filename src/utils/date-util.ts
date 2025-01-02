@@ -51,4 +51,12 @@ export const parseDateMMDDYYYY = (dateStr: string): Date | undefined => {
   return isValid ? date : undefined;
 };
 
+export const nullDateToUndefined = (value: Date | null | undefined): Date | undefined => {
+  return value === null ? undefined : value;
+};
+
+export const undefinedDateToNull = (value: Date | null | undefined): Date | null => {
+  return value === undefined ? null : value;
+};
+
 export const delay = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
