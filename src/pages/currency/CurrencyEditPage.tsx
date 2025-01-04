@@ -17,7 +17,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { TFunction } from 'i18next';
-import { currencyAtom } from '../../states/currency';
+import { currencyAtom, OperationType } from '../../states/currency';
 import { useAtom } from 'jotai';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,6 +32,8 @@ import { Form, Root } from '../../components/Container';
 import { useFormDirty } from '../../contexts/FormDirty';
 import { EmptyCell } from '../../components/EmptyCell';
 import { Input } from '../../components/Input';
+import { useNotification } from '../../states/base-state';
+import { useMessage } from '../../contexts/Message';
 
 // form in drawer for editing multi language name or shortname
 const nameMultiLangSchema = z.object(
@@ -151,15 +153,16 @@ const NameMultiLangButton: React.FC<NameMultiLangButtonProps> = (
 
 type CurrencyEditPageProps = {
   readOnly: boolean;
-  onBackButtonPressed: () => void;
+  onBackButtonClick: () => void;
 };
 
 export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
-  onBackButtonPressed,
+  onBackButtonClick,
   readOnly,
 }: CurrencyEditPageProps) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState([false, false]); // shortName, name
   const { t } = useTranslation();
+  const { dispatchMessage } = useMessage();
 
   const [currencyState, action] = useAtom(currencyAtom);
   const initialData = currencyState.activeRecord;
@@ -167,11 +170,29 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
   const { showConfirmationDialog } = useDialog();
   const { markDirty, resetDirty } = useFormDirty();
 
+  useNotification(currencyState, {
+    operationStart: () => {},
+    operationComplete: (type, result) => {
+      if (type === OperationType.Save && result.operationFailureReason?.type !== MessageType.Error) {
+        dispatchMessage({
+          type: MessageType.Success,
+          text: constructMessage(t, 'system.message.saveObjectSuccess', [
+            'Currency',
+            formValues.code,
+          ]),
+        });
+        reset();
+        resetDirty();
+      }
+    },
+  });
+
   const {
     control,
     setValue,
     getValues,
     handleSubmit,
+    reset,
     watch,
     formState: { errors, isDirty },
   } = useForm<FormData>({
@@ -202,7 +223,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
       ? 'system.message.view'
       : 'system.message.edit'
     : 'system.message.add';
-  useAppendBreadcrumb('currencyMaintenance.titleEdit', mode, onBackButtonPressed);
+  useAppendBreadcrumb('currencyMaintenance.titleEdit', mode, onBackButtonClick);
 
   const handleNameFieldChange = (
     fieldName: 'name' | 'shortName',
@@ -255,7 +276,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
   };
 
   const backButton = (
-    <Button icon={<ArrowTurnUpLeftRegular />} onClick={onBackButtonPressed}>
+    <Button icon={<ArrowTurnUpLeftRegular />} onClick={onBackButtonClick}>
       {t('system.message.back')}
     </Button>
   );
@@ -275,14 +296,6 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
               action({
                 save: {
                   currency: { ...initialData, ...getValues() },
-                  onSaveSuccess: {
-                    message: {
-                      key: 'system.message.saveObjectSuccess',
-                      type: MessageType.Success,
-                      parameters: ['Currency', formValues.code],
-                    },
-                    callback: resetDirty,
-                  },
                 },
               });
             },

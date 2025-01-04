@@ -1,43 +1,42 @@
 import { useEffect, useRef } from 'react';
 import { Message } from '../models/system';
 
-export interface BaseState {
+// expects to be an enum
+type OperationType = string | number;
+
+export interface BaseState<R extends OperationType> {
   version: number;
   operationStartTime: number;
   operationEndTime: number;
-  operationResult?: Message;
+  operationType: R;
+  operationFailureReason?: Message;
 }
 
-type UseNotificationProps<T extends BaseState> = {
-  additionAction?: (state: T) => void; // Callback for additional actions
-  showSpinner: () => void;
-  stopSpinner: () => void;
-  showOperationResultMessage: (operationMessage: Message) => void;
+type UseNotificationProps<R extends OperationType, T extends BaseState<R>> = {
+  operationStart: () => void;
+  operationComplete: (
+    operationType: OperationType,
+    result: T,
+  ) => void;
 };
 
-export function useNotification<T extends BaseState>(
+export function useNotification<R extends OperationType, T extends BaseState<R>>(
   state: T,
-  { showSpinner, stopSpinner, showOperationResultMessage, additionAction }: UseNotificationProps<T>,
+  { operationStart, operationComplete }: UseNotificationProps<R, T>,
 ) {
-  const stateVersion = useRef(0);
+  const stateVersion = useRef(state.version);
 
   useEffect(() => {
     if (stateVersion.current !== state.version) {
       if (state.operationStartTime > state.operationEndTime) {
-        showSpinner();
+        operationStart();
       } else if (state.operationEndTime > state.operationStartTime) {
-        stopSpinner();
-        const operationResult = state.operationResult;
-        if (operationResult) {
-          showOperationResultMessage(operationResult);
-        }
-
-        // Execute the additional action
-        if (additionAction) {
-          additionAction(state);
-        }
+        operationComplete(
+          state.operationType,
+          state,
+        );
       }
       stateVersion.current = state.version;
     }
-  }, [state, showSpinner, stopSpinner, showOperationResultMessage, additionAction]);
+  }, [state, operationStart, operationComplete]);
 }

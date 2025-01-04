@@ -48,7 +48,7 @@ import { NumericInput } from '../../components/NumericInput';
 import { Row } from '../../components/Row';
 import { Currency } from '../../models/currency';
 import { Payment, PaymentDirection, PaymentStatus } from '../../models/payment';
-import { paymentAtom } from '../../states/payment';
+import { OperationType, paymentAtom } from '../../states/payment';
 import { sharedDataAtom } from '../../states/shared-data';
 import { DatePicker } from '@fluentui/react-datepicker-compat';
 import {
@@ -61,11 +61,12 @@ import { EmptyCell } from '../../components/EmptyCell';
 import { Account } from '../../models/account';
 import { useMessage } from '../../contexts/Message';
 import { searchAccount } from '../../services/account';
-import { MessageType } from '../../models/system';
 import { Input } from '../../components/Input';
 import { PaymentStatusBar } from './PaymentStatusComponent';
 import { Memo } from './Memo';
 import { useFormDirty } from '../../contexts/FormDirty';
+import { useNotification } from '../../states/base-state';
+import { MessageType } from '../../models/system';
 
 const useStyles = makeStyles({
   formWrapper: {
@@ -76,7 +77,7 @@ const useStyles = makeStyles({
     minWidth: 'unset',
   },
   bankBuySellCcyInput: {
-    width: '30px',
+    width: '50px',
   },
   bankBuySellAmount: {
     flex: '1',
@@ -405,20 +406,21 @@ const missingRequiredField = (formValues: FormData): boolean => {
 
 type PaymentDetailPageProps = {
   mode: 'add' | 'edit';
-  onBack: () => void;
-  onNext: () => void;
-  onSave: () => void;
+  onBackButtonClick: () => void;
+  onNextButtonClick: () => void;
+  onSaveButtonClick: () => void;
 };
 
 export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
   mode,
-  onBack,
-  onNext,
-  onSave,
+  onBackButtonClick,
+  onNextButtonClick,
+  onSaveButtonClick,
 }: PaymentDetailPageProps) => {
   const styles = useStyles();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { t } = useTranslation();
+  const { dispatchMessage } = useMessage();
 
   const entitledSiteState = useAtomValue(entitledSiteAtom);
   const [paymentState, paymentAction] = useAtom(paymentAtom);
@@ -427,6 +429,25 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
 
   const { markDirty, resetDirty } = useFormDirty();
   const { showConfirmationDialog } = useDialog();
+
+  useNotification(paymentState, {
+    operationStart: () => {},
+    operationComplete: (type, result) => {
+      if (type === OperationType.SavePayment && result.operationFailureReason?.type !== MessageType.Error) {
+        reset();
+        resetDirty();
+        dispatchMessage({
+          type: MessageType.Success,
+          text: constructMessage(t, 'paymentMaintenance.message.initiatePaymentSuccess', [
+            'Payment',
+            '',
+          ]),
+        });
+        onSaveButtonClick();
+      }
+    },
+    // showOperationResultMessage: (_message) => {},
+  });
 
   const paymentToFormData = (payment?: Payment) => {
     return {
@@ -517,7 +538,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
     label: 'paymentMaintenance.titleEdit',
     param: [`system.message.${mode}`],
   };
-  useAppendBreadcrumb(title.label, title.param, onBack);
+  useAppendBreadcrumb(title.label, title.param, onBackButtonClick);
 
   const handleLookupAccount = (accountCode: string) => {
     paymentAction({
@@ -582,13 +603,13 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
   const accountLookupIconId = useId();
 
   const backButton = (
-    <Button icon={<ArrowTurnUpLeftRegular />} onClick={onBack}>
+    <Button icon={<ArrowTurnUpLeftRegular />} onClick={onBackButtonClick}>
       {t('system.message.back')}
     </Button>
   );
 
   const nextButton = (
-    <Button icon={<ArrowRightRegular />} onClick={onNext}>
+    <Button icon={<ArrowRightRegular />} onClick={onNextButtonClick}>
       {t('system.message.next')}
     </Button>
   );
@@ -622,17 +643,6 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
                     },
                     executeDate: nullDateToUndefined(executeDate),
                     status: PaymentStatus.New,
-                  },
-                  onSaveSuccess: {
-                    message: {
-                      key: 'paymentMaintenance.message.initiatePaymentSuccess',
-                      type: MessageType.Success,
-                      parameters: ['Payment', ''],
-                    },
-                    callback: (_payment) => {
-                      resetDirty();
-                      onSave();
-                    },
                   },
                 },
               });

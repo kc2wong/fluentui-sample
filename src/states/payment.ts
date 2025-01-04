@@ -45,10 +45,10 @@ type PopulateDealPayload = EmptyObject;
 
 type SavePaymentPayload = {
   payment: PaymentBase;
-  onSaveSuccess: {
-    message?: Message;
-    callback?: (payment: Payment) => void;
-  };
+  // onSaveSuccess: {
+  //   message?: Message;
+  //   callback?: (payment: Payment) => void;
+  // };
 };
 
 type MatchDealPayload = {
@@ -64,10 +64,10 @@ type SubmitPaymentPayload = OneOnly<{
   matchDealPayload: MatchDealPayload;
   bookDealPayload: BookDealPayload;
 }> & {
-  onSaveSuccess: {
-    message?: Message;
-    callback?: (payment: Payment) => void;
-  };
+  // onSaveSuccess: {
+  //   message?: Message;
+  //   callback?: (payment: Payment) => void;
+  // };
 };
 
 type SearchProductPayload = EmptyObject;
@@ -96,8 +96,24 @@ export type PaymentPayload = {
   addMemo: AddMemoPayload;
 };
 
+export enum OperationType {
+  None,
+  NewPayment,
+  SearchPayment,
+  Refresh,
+  SearchAccount,
+  SelectAccount,
+  SearchDeal,
+  PopulateDeal,
+  SearchProduct,
+  SavePayment,
+  GetPayment,
+  SubmitPayment,
+  AddMemo,
+}
+
 // State of the currency maintenance function
-interface PaymentState extends BaseState {
+interface PaymentState extends BaseState<OperationType> {
   payload: SearchPaymentPayload;
   resultSet?: Payment[];
   isResultSetDirty: boolean;
@@ -114,7 +130,8 @@ const initialValue: PaymentState = {
   operationStartTime: -1,
   operationEndTime: -1,
   version: 1,
-  operationResult: undefined,
+  operationType: OperationType.None,
+  operationFailureReason: undefined,
   payload: {
     offset: 0,
     pageSize: 25,
@@ -150,7 +167,7 @@ const setOperationResult = (
     ...current,
     operationEndTime: new Date().getTime(),
     version: current.version + 1,
-    operationResult: message,
+    operationFailureReason: message,
     ...additionalState,
   });
 };
@@ -160,14 +177,15 @@ const handleSearchOrRefresh = async (
   set: PaymentDataAtomSetter,
   search: SearchPaymentPayload | undefined,
 ) => {
-  const { version, operationStartTime, operationEndTime, operationResult, ...backupState } =
+  const { version, operationStartTime, operationEndTime, operationFailureReason: operationResult, ...backupState } =
     current;
 
-  const beforeState = {
+  const beforeState: PaymentState = {
     ...current,
     payload: search ?? current.payload,
+    operationType: search ? OperationType.SearchPayment : OperationType.Refresh,
     operationStartTime: new Date().getTime(),
-    operationResult: undefined,
+    operationFailureReason: undefined,
     version: current.version + 1,
   };
   set(basePaymentAtom, beforeState);
@@ -192,9 +210,10 @@ const handleSearchOrRefresh = async (
 const handleNewPayment = async (current: PaymentState, set: PaymentDataAtomSetter) => {
   const currentTime = new Date().getTime();
   setOperationResult(current, set, undefined, {
+    operationType: OperationType.NewPayment,
     operationStartTime: currentTime,
     operationEndTime: currentTime,
-    operationResult: undefined,
+    operationFailureReason: undefined,
     activeRecord: undefined,
     potentialMatchDeal: undefined,
     productValueDate: undefined,
@@ -208,13 +227,14 @@ const handleGetPayment = async (
   set: PaymentDataAtomSetter,
   payload: GetPaymentPayload,
 ) => {
-  const { version, operationStartTime, operationEndTime, operationResult, ...backupState } =
+  const { version, operationStartTime, operationEndTime, operationFailureReason: operationResult, ...backupState } =
     current;
 
-  const beforeState = {
+  const beforeState: PaymentState = {
     ...current,
+    operationType: OperationType.GetPayment,
     operationStartTime: new Date().getTime(),
-    operationResult: undefined,
+    operationFailureReason: undefined,
     version: current.version + 1,
     activeRecord: undefined,
     potentialMatchDeal: undefined,
@@ -252,28 +272,25 @@ const handleSavePayment = async (
   set: PaymentDataAtomSetter,
   save: SavePaymentPayload,
 ) => {
-  const beforeState = {
+  const beforeState: PaymentState = {
     ...current,
+    operationType: OperationType.SavePayment,
     operationStartTime: new Date().getTime(),
-    operationResult: undefined,
+    operationFailureReason: undefined,
     version: current.version + 1,
   };
   set(basePaymentAtom, beforeState);
 
-  const savedPayment = await addPayment(save.payment);
-  const isError = 'code' in savedPayment;
-  const operationResult = isError ? undefined : save.onSaveSuccess.message;
+  const result = await addPayment(save.payment);
+  const isError = 'code' in result;
+  const operationResult = isError ? result : undefined;
 
   setOperationResult(beforeState, set, operationResult, {
-    activeRecord: isError ? current.activeRecord : savedPayment,
+    activeRecord: isError ? current.activeRecord : result,
     // reset potentialMatchDeal so it will be searched again when go to Pairing page
     potentialMatchDeal: undefined,
     isResultSetDirty: current.resultSet !== undefined,
   });
-
-  if (!isError && save.onSaveSuccess.callback) {
-    save.onSaveSuccess.callback(savedPayment);
-  }
 };
 
 const handleSubmitPayment = async (
@@ -283,10 +300,11 @@ const handleSubmitPayment = async (
 ) => {
   const payment = current.activeRecord;
   if (payment) {
-    const beforeState = {
+    const beforeState: PaymentState = {
       ...current,
       operationStartTime: new Date().getTime(),
-      operationResult: undefined,
+      operationType: OperationType.SubmitPayment,
+      operationFailureReason: undefined,
       version: current.version + 1,
     };
     set(basePaymentAtom, beforeState);
@@ -304,7 +322,8 @@ const handleSubmitPayment = async (
     };
     const result = await matchOrBook();
     const isError = 'code' in result;
-    const operationResult = isError ? result : submit.onSaveSuccess.message;
+    // const operationResult = isError ? result : submit.onSaveSuccess.message;
+    const operationResult = isError ? result : undefined;
 
     setOperationResult(beforeState, set, operationResult, {
       activeRecord: isError ? current.activeRecord : result,
@@ -312,10 +331,6 @@ const handleSubmitPayment = async (
       potentialMatchDeal: undefined,
       isResultSetDirty: current.resultSet !== undefined,
     });
-
-    if (!isError && submit.onSaveSuccess.callback) {
-      submit.onSaveSuccess.callback(result);
-    }
   }
 };
 
@@ -324,10 +339,10 @@ const handleSearchDeal = async (
   set: PaymentDataAtomSetter,
   _payload: SearchDealPayload,
 ) => {
-  const beforeState = {
+  const beforeState: PaymentState = {
     ...current,
+    operationType: OperationType.SearchDeal,
     operationStartTime: new Date().getTime(),
-    unPopuldatedDeal: undefined,
     version: current.version + 1,
   };
   set(basePaymentAtom, beforeState);
@@ -347,8 +362,9 @@ const handleSearchProduct = async (
   set: PaymentDataAtomSetter,
   _payload: SearchProductPayload,
 ) => {
-  const beforeState = {
+  const beforeState: PaymentState = {
     ...current,
+    operationType: OperationType.SearchProduct,
     operationStartTime: new Date().getTime(),
     productValueDate: undefined,
     version: current.version + 1,
@@ -370,10 +386,11 @@ const handleSearchAccount = async (
 ) => {
   if (code !== current.accountCode) {
     if (code.length > 0 && code !== current.accountCode) {
-      const beforeState = {
+      const beforeState: PaymentState = {
         ...current,
+        operationType: OperationType.SearchAccount,
         operationStartTime: new Date().getTime(),
-        operationResult: undefined,
+        operationFailureReason: undefined,
         accountCode: code,
         account: [] as Account[],
         version: current.version + 1,
@@ -412,9 +429,11 @@ const handleAddMemo = async (
   set: PaymentDataAtomSetter,
   payload: AddMemoPayload,
 ) => {
-  const beforeState = {
+  const beforeState: PaymentState = {
     ...current,
+    operationType: OperationType.AddMemo,
     operationStartTime: new Date().getTime(),
+    operationFailureReason: undefined,
     productValueDate: undefined,
     version: current.version + 1,
   };

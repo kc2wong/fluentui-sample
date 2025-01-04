@@ -6,7 +6,7 @@ import { useMessage } from '../../contexts/Message';
 import { MessageType } from '../../models/system';
 import { useNotification } from '../../states/base-state';
 import { sharedDataAtom } from '../../states/shared-data';
-import { constructErrorMessage, constructMessage } from '../../utils/string-util';
+import { constructErrorMessage } from '../../utils/string-util';
 import { PaymentDetailEditPage } from './PaymentDetailEditPage';
 import { PaymentSearchPage } from './PaymentSearchPage';
 import { PaymentPairingPage } from './PaymentPairingPage';
@@ -30,36 +30,28 @@ const PaymentMaintenancePage: React.FC = () => {
   const { startTransition } = usePageTransition();
 
   useNotification(sharedDataState, {
-    showSpinner,
-    stopSpinner,
-    showOperationResultMessage: (message) => {
-      if (message.type === MessageType.Error) {
+    operationStart: showSpinner,
+    operationComplete: (_operationType, result) => {
+      stopSpinner();
+      const message = result.operationFailureReason;
+      if (message?.type === MessageType.Error) {
         dispatchMessage({
           type: message.type,
           text: constructErrorMessage(t, message.key, message.parameters),
-        });
-      } else {
-        dispatchMessage({
-          type: message.type,
-          text: constructMessage(t, message.key, message.parameters),
         });
       }
     },
   });
 
   useNotification(paymentState, {
-    showSpinner,
-    stopSpinner,
-    showOperationResultMessage: (message) => {
-      if (message.type === MessageType.Error) {
+    operationStart: showSpinner,
+    operationComplete: (operationType, result) => {
+      stopSpinner();
+      const message = result.operationFailureReason;
+      if (message?.type === MessageType.Error) {
         dispatchMessage({
           type: message.type,
           text: constructErrorMessage(t, message.key, message.parameters),
-        });
-      } else {
-        dispatchMessage({
-          type: message.type,
-          text: constructMessage(t, message.key, message.parameters),
         });
       }
     },
@@ -118,13 +110,13 @@ const PaymentMaintenancePage: React.FC = () => {
   const addDetailPage = (
     <PaymentDetailEditPage
       mode={'add'}
-      onBack={() => {
+      onBackButtonClick={() => {
         setMode('search');
       }}
-      onNext={() => {
+      onNextButtonClick={() => {
         setMode('editPairing');
       }}
-      onSave={() => {
+      onSaveButtonClick={() => {
         setMode('editPairing');
       }}
     />
@@ -133,13 +125,13 @@ const PaymentMaintenancePage: React.FC = () => {
   const editDetailPage = (
     <PaymentDetailEditPage
       mode={'edit'}
-      onBack={() => {
+      onBackButtonClick={() => {
         setMode('search');
       }}
-      onNext={() => {
+      onNextButtonClick={() => {
         setMode('editPairing');
       }}
-      onSave={() => {
+      onSaveButtonClick={() => {
         setMode('editPairing');
       }}
     />
@@ -155,10 +147,10 @@ const PaymentMaintenancePage: React.FC = () => {
 
   const editPairingPage = (
     <PaymentPairingPage
-      onBackButtonPress={() => {
+      onBackButtonClick={() => {
         setMode('editDetail');
       }}
-      onSubmit={() => {
+      onSubmitButtonClick={() => {
         setMode('search');
       }}
       readOnly={false}
@@ -167,10 +159,10 @@ const PaymentMaintenancePage: React.FC = () => {
 
   const viewPairingPage = (
     <PaymentPairingPage
-      onBackButtonPress={() => {
+      onBackButtonClick={() => {
         setMode('viewDetail');
       }}
-      onSubmit={() => {
+      onSubmitButtonClick={() => {
         setMode('search');
       }}
       readOnly={true}

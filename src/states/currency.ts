@@ -21,10 +21,6 @@ type EditCurrencyPayload = {
 
 type SaveCurrencyPayload = {
   currency: CurrencyBase | Currency;
-  onSaveSuccess: {
-    message?: Message;
-    callback?: (payment: Currency) => void;
-  };
 };
 
 export type CurrencyMaintenancePayload = {
@@ -37,8 +33,19 @@ export type CurrencyMaintenancePayload = {
   refresh: EmptyObject;
 };
 
+export enum OperationType {
+  None,
+  New,
+  Discard,
+  Search,
+  Save,
+  Edit,
+  View,
+  Refresh,
+}
+
 // State of the currency maintenance function
-interface CurrencyMaintenanceState extends BaseState {
+interface CurrencyMaintenanceState extends BaseState<OperationType> {
   payload: SearchCurrencyPayload;
   resultSet?: Currency[];
   isResultSetDirty: boolean;
@@ -49,7 +56,8 @@ const initialValue: CurrencyMaintenanceState = {
   operationStartTime: -1,
   operationEndTime: -1,
   version: 1,
-  operationResult: undefined,
+  operationType: OperationType.None,
+  operationFailureReason: undefined,
   payload: {
     offset: 0,
     pageSize: 25,
@@ -79,7 +87,7 @@ const setOperationResult = (
     ...current,
     operationEndTime: new Date().getTime(),
     version: current.version + 1,
-    operationResult: message,
+    operationFailureReason: message,
     ...additionalState,
   });
 };
@@ -89,11 +97,12 @@ const handleSearchOrRefresh = async (
   set: CurrencyMaintenanceAtomSetter,
   search: SearchCurrencyPayload | undefined,
 ) => {
-  const beforeState = {
+  const beforeState: CurrencyMaintenanceState = {
     ...current,
     payload: search ?? current.payload,
+    operationType: search ? OperationType.Search : OperationType.Refresh,
     operationStartTime: new Date().getTime(),
-    operationResult: undefined,
+    operationFailureReason: undefined,
     version: current.version + 1,
   };
   set(baseCurrencyAtom, beforeState);
@@ -120,10 +129,11 @@ const handleSave = async (
   set: CurrencyMaintenanceAtomSetter,
   save: SaveCurrencyPayload,
 ) => {
-  const beforeState = {
+  const beforeState: CurrencyMaintenanceState = {
     ...current,
+    operationType: OperationType.Save,
     operationStartTime: new Date().getTime(),
-    operationResult: undefined,
+    operationFailureReason: undefined,
     version: current.version + 1,
   };
   set(baseCurrencyAtom, beforeState);
@@ -135,7 +145,7 @@ const handleSave = async (
       : await addCurrency(currency);
 
   const isError = 'code' in result && !('name' in result);
-  const operationResult = isError ? result : save.onSaveSuccess.message;
+  const operationResult = isError ? result : undefined;
 
   setOperationResult(beforeState, set, operationResult, {
     activeRecord: isError ? current.activeRecord : result,
@@ -143,26 +153,27 @@ const handleSave = async (
     isResultSetDirty: current.resultSet !== undefined,
   });
 
-  if (!isError && save.onSaveSuccess.callback) {
-    save.onSaveSuccess.callback(result);
-  }
 };
 
 const handleEditOrView = async (
   current: CurrencyMaintenanceState,
   set: CurrencyMaintenanceAtomSetter,
-  code: string,
+  editOrView: {
+    code: string;
+    type: OperationType;
+  },
 ) => {
-  const beforeState = {
+  const beforeState: CurrencyMaintenanceState = {
     ...current,
     operationStartTime: new Date().getTime(),
     activeRecord: undefined,
-    operationResult: undefined,
+    operationType: editOrView.type,
+    operationFailureReason: undefined,
     version: current.version + 1,
   };
   set(baseCurrencyAtom, beforeState);
 
-  const result = await getCurrency(code);
+  const result = await getCurrency(editOrView.code);
   const isError = 'code' in result && !('name' in result);
   const operationResult = isError ? result : undefined;
 
@@ -193,17 +204,26 @@ export const currencyAtom = atom<
 
     const { search, refresh, save, edit, view, new: newRecord, discard } = payload;
 
-    if (search || refresh) {
+    if (search) {
       await handleSearchOrRefresh(current, set, payload.search);
+    } else if (refresh) {
+      await handleSearchOrRefresh(current, set, undefined);
     } else if (save) {
       await handleSave(current, set, save);
     } else if (edit || view) {
-      await handleEditOrView(current, set, payload.edit ? payload.edit.code : payload.view.code);
+      await handleEditOrView(
+        current,
+        set,
+        payload.edit
+          ? { code: payload.edit.code, type: OperationType.Edit }
+          : { code: payload.view.code, type: OperationType.View },
+      );
     } else if (newRecord || discard) {
       set(baseCurrencyAtom, {
         ...current,
         activeRecord: undefined,
-        operationResult: undefined,
+        operationType: newRecord ? OperationType.New : OperationType.Discard,
+        operationFailureReason: undefined,
       });
     }
   },

@@ -1,7 +1,7 @@
 import { useAtom, useAtomValue } from 'jotai';
 import { useEffect, useState } from 'react';
 import { useMessage } from '../../contexts/Message';
-import { constructErrorMessage, constructMessage } from '../../utils/string-util';
+import { constructErrorMessage } from '../../utils/string-util';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../../states/base-state';
 import { MessageType } from '../../models/system';
@@ -16,40 +16,32 @@ export const FunctionGroupMaintenancePage: React.FC = () => {
   const { showSpinner, stopSpinner, dispatchMessage } = useMessage();
   const { t } = useTranslation();
 
-  const state = useAtomValue(functionGroupAtom);
+  const functionGroupState = useAtomValue(functionGroupAtom);
   const [sharedDataState, sharedDataAction] = useAtom(sharedDataAtom);
 
   useNotification(sharedDataState, {
-    showSpinner,
-    stopSpinner,
-    showOperationResultMessage: (message) => {
-      if (message.type === MessageType.Error) {
+    operationStart: showSpinner,
+    operationComplete: (_operationType, result) => {
+      stopSpinner();
+      const message = result.operationFailureReason;
+      if (message?.type === MessageType.Error) {
         dispatchMessage({
           type: message.type,
           text: constructErrorMessage(t, message.key, message.parameters),
-        });
-      } else {
-        dispatchMessage({
-          type: message.type,
-          text: constructMessage(t, message.key, message.parameters),
         });
       }
     },
   });
 
-  useNotification(state, {
-    showSpinner,
-    stopSpinner,
-    showOperationResultMessage: (message) => {
-      if (message.type === MessageType.Error) {
+  useNotification(functionGroupState, {
+    operationStart: showSpinner,
+    operationComplete: (_operationType, result) => {
+      stopSpinner();
+      const message = result.operationFailureReason;
+      if (message?.type === MessageType.Error) {
         dispatchMessage({
           type: message.type,
           text: constructErrorMessage(t, message.key, message.parameters),
-        });
-      } else {
-        dispatchMessage({
-          type: message.type,
-          text: constructMessage(t, message.key, message.parameters),
         });
       }
     },
@@ -75,7 +67,7 @@ export const FunctionGroupMaintenancePage: React.FC = () => {
 
   const editPage = (readOnly: boolean) => (
     <FunctionGroupEditPage
-      onBackButtonPressed={() => {
+      onBackButtonClick={() => {
         setMode('search');
       }}
       readOnly={readOnly}
@@ -91,7 +83,7 @@ export const FunctionGroupMaintenancePage: React.FC = () => {
     }
     case 'view':
     case 'edit': {
-      if (state.activeRecord) {
+      if (functionGroupState.activeRecord) {
         return editPage(mode === 'view');
       } else {
         // otherwise keep showing the search page

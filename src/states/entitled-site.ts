@@ -18,7 +18,13 @@ type EntitledSite = {
   selected: boolean;
 };
 
-interface EntitledSiteState extends BaseState {
+enum OperationType {
+  None,
+  Search,
+  Select,
+}
+
+interface EntitledSiteState extends BaseState<OperationType> {
   resultSet?: {
     entitledSite: EntitledSite[];
   };
@@ -29,6 +35,7 @@ const initialValue: EntitledSiteState = {
   operationStartTime: -1,
   operationEndTime: -1,
   version: 1,
+  operationType: OperationType.None,
   resultSet: undefined,
   isResultSetDirty: false,
 };
@@ -45,7 +52,7 @@ const setOperationResult = (
   set(baseEntitledSiteAtom, {
     ...current,
     operationEndTime: new Date().getTime(),
-    operationResult,
+    operationFailureReason: operationResult,
     version: current.version + 1,
     ...additionalState,
   });
@@ -55,8 +62,9 @@ const handleSearchOrRefresh = async (
   current: EntitledSiteState,
   set: SiteMaintenanceAtomSetter,
 ) => {
-  const beforeState = {
+  const beforeState: EntitledSiteState = {
     ...current,
+    operationType: OperationType.Search,
     operationStartTime: new Date().getTime(),
     version: current.version + 1,
   };
@@ -90,8 +98,9 @@ const handleSelectEntitledSite = async (
   set: SiteMaintenanceAtomSetter,
   siteCode: string[],
 ) => {
-  const beforeState = {
+  const beforeState: EntitledSiteState = {
     ...current,
+    operationType: OperationType.Select,
     operationStartTime: new Date().getTime(),
     version: current.version + 1,
   };

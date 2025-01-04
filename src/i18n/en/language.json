@@ -153,6 +153,7 @@
         "started": "Started",
         "cancelled": "Cancelled",
         "rejected": "Rejected",
+        "submitted": "Submitted",
         "paired": "Paired"
       }
     },

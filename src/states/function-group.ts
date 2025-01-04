@@ -38,7 +38,18 @@ export type FunctionGroupMaintenancePayload = {
   refresh: EmptyObject;
 };
 
-interface FunctionGroupMaintenanceState extends BaseState {
+enum OperationType {
+  None,
+  New,
+  Discard,
+  Search,
+  Save,
+  Edit,
+  View,
+  Refresh,
+}
+
+interface FunctionGroupMaintenanceState extends BaseState<OperationType> {
   payload: SearchFunctionGroupPayload;
   resultSet?: FunctionGroup[];
   isResultSetDirty: boolean;
@@ -49,7 +60,8 @@ const initialValue: FunctionGroupMaintenanceState = {
   operationStartTime: -1,
   operationEndTime: -1,
   version: 1,
-  operationResult: undefined,
+  operationType: OperationType.None,
+  operationFailureReason: undefined,
   payload: {
     offset: 0,
     pageSize: 25,
@@ -79,7 +91,7 @@ const setOperationResult = (
     ...current,
     operationEndTime: new Date().getTime(),
     version: current.version + 1,
-    operationResult: message,
+    operationFailureReason: message,
     ...additionalState,
   });
 };
@@ -89,11 +101,12 @@ const handleSearchOrRefresh = async (
   set: FunctionGroupMaintenanceAtomSetter,
   search: SearchFunctionGroupPayload | undefined,
 ) => {
-  const beforeState = {
+  const beforeState: FunctionGroupMaintenanceState = {
     ...current,
     payload: search ?? current.payload,
+    operationType: search ? OperationType.Search : OperationType.Refresh,
     operationStartTime: new Date().getTime(),
-    operationResult: undefined,
+    operationFailureReason: undefined,
     version: current.version + 1,
   };
   set(baseFunctionGroupAtom, beforeState);
@@ -120,10 +133,11 @@ const handleSave = async (
   set: FunctionGroupMaintenanceAtomSetter,
   save: SaveFunctionGroupPayload,
 ) => {
-  const beforeState = {
+  const beforeState: FunctionGroupMaintenanceState = {
     ...current,
+    operationType: OperationType.Save,
     operationStartTime: new Date().getTime(),
-    operationResult: undefined,
+    operationFailureReason: undefined,
     version: current.version + 1,
   };
   set(baseFunctionGroupAtom, beforeState);
@@ -147,18 +161,22 @@ const handleSave = async (
 const handleEditOrView = async (
   current: FunctionGroupMaintenanceState,
   set: FunctionGroupMaintenanceAtomSetter,
-  code: string,
+  editOrView: {
+    code: string;
+    type: OperationType;
+  },
 ) => {
-  const beforeState = {
+  const beforeState: FunctionGroupMaintenanceState = {
     ...current,
+    operationType: editOrView.type,
     operationStartTime: new Date().getTime(),
     activeRecord: undefined,
-    operationResult: undefined,
+    operationFailureReason: undefined,
     version: current.version + 1,
   };
   set(baseFunctionGroupAtom, beforeState);
 
-  const result = await getFunctionGroup(code);
+  const result = await getFunctionGroup(editOrView.code);
   const isError = 'code' in result && !('name' in result);
   const operationResult = isError ? result : undefined;
 
@@ -190,12 +208,19 @@ export const functionGroupAtom = atom<
       } else if (save) {
         await handleSave(current, set, save);
       } else if (edit || view) {
-        await handleEditOrView(current, set, payload.edit ? payload.edit.code : payload.view.code);
+        await handleEditOrView(
+          current,
+          set,
+          payload.edit
+            ? { code: payload.edit.code, type: OperationType.Edit }
+            : { code: payload.view.code, type: OperationType.View },
+        );
       } else if (newRecord || discard) {
         set(baseFunctionGroupAtom, {
           ...current,
           activeRecord: undefined,
-          operationResult: undefined,
+          operationType: newRecord ? OperationType.New : OperationType.Discard,
+          operationFailureReason: undefined,
         });
       }
     }

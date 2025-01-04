@@ -13,11 +13,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Field } from '../components/Field';
 import { emptyStringToUndefined } from '../utils/object-util';
 import { useNotification } from '../states/base-state';
-import { constructErrorMessage, constructMessage } from '../utils/string-util';
-import { MessageType } from '../models/system';
+// import { constructErrorMessage, constructMessage } from '../utils/string-util';
+import { constructErrorMessage } from '../utils/string-util';
+// import { MessageType } from '../models/system';
 import { entitledSiteAtom } from '../states/entitled-site';
 import { useResetAtom } from 'jotai/utils';
 import { currencyAtom } from '../states/currency';
+import { MessageType } from '../models/system';
 
 const useStyles = makeStyles({
   container: {
@@ -73,29 +75,46 @@ export const LoginPage = () => {
   });
 
   useNotification(state, {
-    showSpinner: showSpinner,
-    stopSpinner: stopSpinner,
-    showOperationResultMessage: (message) => {
-      if (message.type === MessageType.Error) {
+    operationStart: showSpinner,
+    // operationComplete: stopSpinner,
+    operationComplete: (_operationType, result) => {
+      stopSpinner();
+      const message = result.operationFailureReason;
+      if (message?.type === MessageType.Error) {
         dispatchMessage({
           type: message.type,
           text: constructErrorMessage(t, message.key, message.parameters),
         });
-      } else {
-        dispatchMessage({
-          type: message.type,
-          text: constructMessage(t, message.key, message.parameters),
-        });
+      }
+      else {
+        if (result.login) {
+          setTimeout(() => {
+            action({ acknowledgeSignIn: {} });
+          }, 1000);  
+        }
       }
     },
-    additionAction: (state) => {
-      if (state.login !== undefined) {
-        // display main page 1 second after login success
-        setTimeout(() => {
-          action({ acknowledgeSignIn: {} });
-        }, 1000);
-      }
-    },
+    // showOperationResultMessage: (message) => {
+    //   if (message.type === MessageType.Error) {
+    //     dispatchMessage({
+    //       type: message.type,
+    //       text: constructErrorMessage(t, message.key, message.parameters),
+    //     });
+    //   } else {
+    //     dispatchMessage({
+    //       type: message.type,
+    //       text: constructMessage(t, message.key, message.parameters),
+    //     });
+    //   }
+    // },
+    // additionAction: (state) => {
+    //   if (state.login !== undefined) {
+    //     // display main page 1 second after login success
+    //     setTimeout(() => {
+    //       action({ acknowledgeSignIn: {} });
+    //     }, 1000);
+    //   }
+    // },
   });
 
   useEffect(() => {

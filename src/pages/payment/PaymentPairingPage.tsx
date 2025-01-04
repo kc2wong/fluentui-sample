@@ -40,7 +40,7 @@ import { Form, Root } from '../../components/Container';
 import { NumericInput } from '../../components/NumericInput';
 import { Currency } from '../../models/currency';
 import { PaymentDirection } from '../../models/payment';
-import { paymentAtom } from '../../states/payment';
+import { OperationType, paymentAtom } from '../../states/payment';
 import { sharedDataAtom } from '../../states/shared-data';
 import { formatDateDDMMYYYY, getCurrentDate, parseDateMMDDYYYY } from '../../utils/date-util';
 import { EmptyCell } from '../../components/EmptyCell';
@@ -49,6 +49,9 @@ import { Input } from '../../components/Input';
 import { PaymentStatusBar } from './PaymentStatusComponent';
 import { MessageType } from '../../models/system';
 import { Memo } from './Memo';
+import { useNotification } from '../../states/base-state';
+import { useFormDirty } from '../../contexts/FormDirty';
+import { useMessage } from '../../contexts/Message';
 
 const useStyles = makeStyles({
   formWrapper: {
@@ -344,17 +347,16 @@ const BookingTab: React.FC<BookingTabProps> = ({ control, setValue, productCode 
 
 type PaymentDetailPageProps = {
   readOnly: boolean;
-  onBackButtonPress: () => void;
-  onSubmit: () => void;
+  onBackButtonClick: () => void;
+  onSubmitButtonClick: () => void;
 };
 
 export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
-  onBackButtonPress,
-  onSubmit,
+  onBackButtonClick,
+  onSubmitButtonClick,
   readOnly,
 }: PaymentDetailPageProps) => {
   const styles = useStyles();
-  const { t } = useTranslation();
 
   const entitledSiteState = useAtomValue(entitledSiteAtom);
   const [paymentState, paymentAction] = useAtom(paymentAtom);
@@ -364,7 +366,29 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
   const sharedDataState = useAtomValue(sharedDataAtom);
   const ccyList = sharedDataState.resultSet?.currencies ?? [];
 
+  const { t } = useTranslation();
+  const { dispatchMessage } = useMessage();
+  const { resetDirty } = useFormDirty();
   const { showConfirmationDialog } = useDialog();
+
+  useNotification(paymentState, {
+    operationStart: () => {},
+    operationComplete: (type, result) => {
+      if (type === OperationType.SubmitPayment && result.operationFailureReason?.type !== MessageType.Error) {
+        reset();
+        resetDirty();
+        dispatchMessage({
+          type: MessageType.Success,
+          text: constructMessage(t, 'paymentMaintenance.message.submitRequestSuccess', [
+            formValues.activeTab == TabPageType.Booking
+              ? t('paymentMaintenance.pairing.value.booking')
+              : t('paymentMaintenance.pairing.value.matching'),
+          ]),
+        });
+        onSubmitButtonClick();
+      }
+    },
+  });
 
   const {
     control,
@@ -390,7 +414,7 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
   }, [formValues]);
 
   const labelKey = 'paymentMaintenance.pairing.title';
-  useAppendBreadcrumb(labelKey, [], onBackButtonPress);
+  useAppendBreadcrumb(labelKey, [], onBackButtonClick);
 
   const getInstructionIdPrefix = (site: string): string | undefined => {
     return entitledSiteState.resultSet?.entitledSite.find((s) => s.site.code === site)?.site
@@ -403,7 +427,7 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
   };
 
   const backButton = (
-    <Button icon={<ArrowTurnUpLeftRegular />} onClick={onBackButtonPress}>
+    <Button icon={<ArrowTurnUpLeftRegular />} onClick={onBackButtonClick}>
       {t('system.message.back')}
     </Button>
   );
@@ -436,14 +460,6 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
                   paymentAction({
                     submitPayment: {
                       matchDealPayload: { fxRef: formValues.matchFxRef },
-                      onSaveSuccess: {
-                        message: {
-                          key: 'paymentMaintenance.message.submitRequestSuccess',
-                          type: MessageType.Success,
-                          parameters: ['paymentMaintenance.pairing.value.matching'],
-                        },
-                        callback: onSubmit,
-                      },
                     },
                   });
                 } else if (formValues.productCode && formValues.valueDate) {
@@ -452,14 +468,6 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
                       bookDealPayload: {
                         product: formValues.productCode,
                         valueDate: formValues.valueDate,
-                      },
-                      onSaveSuccess: {
-                        message: {
-                          key: 'paymentMaintenance.message.submitRequestSuccess',
-                          type: MessageType.Success,
-                          parameters: ['paymentMaintenance.pairing.value.booking'],
-                        },
-                        callback: onSubmit,
                       },
                     },
                   });

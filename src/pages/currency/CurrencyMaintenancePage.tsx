@@ -4,7 +4,7 @@ import { CurrencySearchPage } from './CurrencySearchPage';
 import { CurrencyEditPage } from './CurrencyEditPage';
 import { useEffect, useState } from 'react';
 import { useMessage } from '../../contexts/Message';
-import { constructErrorMessage, constructMessage } from '../../utils/string-util';
+import { constructErrorMessage } from '../../utils/string-util';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../../states/base-state';
 import { MessageType } from '../../models/system';
@@ -15,21 +15,17 @@ export const CurrencyMaintenancePage: React.FC = () => {
   const { showSpinner, stopSpinner, dispatchMessage } = useMessage();
   const { t } = useTranslation();
 
-  const state = useAtomValue(currencyAtom);
+  const currencyState = useAtomValue(currencyAtom);
 
-  useNotification(state, {
-    showSpinner: showSpinner,
-    stopSpinner: stopSpinner,
-    showOperationResultMessage: (message) => {
-      if (message.type === MessageType.Error) {
+  useNotification(currencyState, {
+    operationStart: showSpinner,
+    operationComplete: (_operationType, result) => {
+      stopSpinner();
+      const message = result.operationFailureReason;
+      if (message?.type === MessageType.Error) {
         dispatchMessage({
           type: message.type,
           text: constructErrorMessage(t, message.key, message.parameters),
-        });
-      } else {
-        dispatchMessage({
-          type: message.type,
-          text: constructMessage(t, message.key, message.parameters),
         });
       }
     },
@@ -38,22 +34,22 @@ export const CurrencyMaintenancePage: React.FC = () => {
   const [mode, setMode] = useState<Mode>('search');
   useEffect(() => {
     // change mode to edit after new record is saved successfully
-    if (mode === 'add' && state.activeRecord) {
+    if (mode === 'add' && currencyState.activeRecord) {
       setMode('edit');
     }
-  }, [mode, state.activeRecord]);
+  }, [mode, currencyState.activeRecord]);
 
   const searchPage = (
     <CurrencySearchPage
-      onAddButtonPressed={() => setMode('add')}
-      onEditButtonPressed={() => setMode('edit')}
-      onViewButtonPressed={() => setMode('view')}
+      onAddButtonClick={() => setMode('add')}
+      onEditButtonClick={() => setMode('edit')}
+      onViewButtonClick={() => setMode('view')}
     />
   );
 
   const editPage = (readOnly: boolean) => (
     <CurrencyEditPage
-      onBackButtonPressed={() => {
+      onBackButtonClick={() => {
         setMode('search');
       }}
       readOnly={readOnly}
@@ -69,7 +65,7 @@ export const CurrencyMaintenancePage: React.FC = () => {
     }
     case 'view':
     case 'edit': {
-      if (state.activeRecord) {
+      if (currencyState.activeRecord) {
         return editPage(mode === 'view');
       } else {
         // otherwise keep showing the search page

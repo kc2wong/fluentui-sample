@@ -123,9 +123,9 @@ const columns: TableColumnDefinition<Item>[] = [
 ];
 
 type CurrencySearchPageProps = {
-  onAddButtonPressed: () => void;
-  onEditButtonPressed: () => void;
-  onViewButtonPressed: () => void;
+  onAddButtonClick: () => void;
+  onEditButtonClick: () => void;
+  onViewButtonClick: () => void;
 };
 
 const drawerOpenAtom = atom(false);
@@ -187,7 +187,7 @@ export const CurrencySearchPage: React.FC<CurrencySearchPageProps> = (
       icon={<AddCircleRegular />}
       onClick={() => {
         action({ new: {} });
-        props.onAddButtonPressed();
+        props.onAddButtonClick();
       }}
     />
   );
@@ -208,7 +208,7 @@ export const CurrencySearchPage: React.FC<CurrencySearchPageProps> = (
       onClick={() => {
         if (selectedCcyCode) {
           action({ edit: { code: selectedCcyCode } });
-          props.onEditButtonPressed();
+          props.onEditButtonClick();
         }
       }}
     />
@@ -222,7 +222,7 @@ export const CurrencySearchPage: React.FC<CurrencySearchPageProps> = (
       onClick={() => {
         if (selectedCcyCode) {
           action({ view: { code: selectedCcyCode } });
-          props.onViewButtonPressed();
+          props.onViewButtonClick();
         }
       }}
     />

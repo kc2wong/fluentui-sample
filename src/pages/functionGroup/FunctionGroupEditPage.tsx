@@ -23,6 +23,8 @@ import {
 import {
   AddSquareRegular,
   ArrowTurnUpLeftRegular,
+  CheckmarkRegular,
+  DismissRegular,
   SaveRegular,
   SubtractSquare16Regular,
 } from '@fluentui/react-icons';
@@ -45,6 +47,7 @@ import { Form, Root } from '../../components/Container';
 import { useFormDirty } from '../../contexts/FormDirty';
 import { Input } from '../../components/Input';
 import { EmptyCell } from '../../components/EmptyCell';
+import { useDialog } from '../../contexts/Dialog';
 
 const useStyles = makeStyles({
   tab: {
@@ -420,11 +423,11 @@ const collectLowestFunctionTrees = (tree: FunctionTree): FunctionAccess[] => {
 
 type FunctionGroupEditPageProps = {
   readOnly: boolean;
-  onBackButtonPressed: () => void;
+  onBackButtonClick: () => void;
 };
 
 export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
-  onBackButtonPressed,
+  onBackButtonClick,
   readOnly,
 }: FunctionGroupEditPageProps) => {
   const styles = useStyles();
@@ -469,8 +472,7 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
       .flatMap((item) => item.action.map((a) => `${item.id}.${a}`)),
   };
 
-  // const { popPageElementNavigationTill, appendPageElementNavigation } =
-  //   usePageElementNavigation();
+  const { showConfirmationDialog } = useDialog();
   const { markDirty, resetDirty } = useFormDirty();
 
   const {
@@ -506,7 +508,7 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
       ? 'system.message.view'
       : 'system.message.edit'
     : 'system.message.add';
-  useAppendBreadcrumb('functionGroupMaintenance.titleEdit', mode, onBackButtonPressed);
+  useAppendBreadcrumb('functionGroupMaintenance.titleEdit', mode, onBackButtonClick);
 
   const toggleAccordion = (
     id: string,
@@ -546,36 +548,49 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
       return acc;
     }, {});
 
-  const onSubmit = (data: FormData) => {
-    const errorMessage = t('system.error.functionGroupMaintenance.siteFunctionEntitlementRequired');
-    if (data.operatorFunctionIds.length > 0 && data.operatorSites.length === 0) {
-      setError('operatorSites', { type: 'required', message: errorMessage });
-      return;
-    } else if (data.operatorSites.length > 0 && data.operatorFunctionIds.length === 0) {
-      setError('operatorFunctionIds', {
-        type: 'required',
-        message: errorMessage,
-      });
-      return;
-    }
-  };
-
   const backButton = (
-    <Button icon={<ArrowTurnUpLeftRegular />} onClick={onBackButtonPressed}>
+    <Button icon={<ArrowTurnUpLeftRegular />} onClick={onBackButtonClick}>
       {t('system.message.back')}
     </Button>
   );
+  
   const saveButton = (
     <Button
       appearance="primary"
       disabled={missingRequiredField(getValues())}
       icon={<SaveRegular />}
-      onClick={handleSubmit(onSubmit)}
+      onClick={handleSubmit(() => {
+        showConfirmationDialog({
+          confirmType: 'save',
+          message: t('system.message.doYouWantToSaveChange'),
+          primaryButton: {
+            label: t('system.message.save'),
+            icon: <CheckmarkRegular />,
+            action: () => {
+              const errorMessage = t('system.error.functionGroupMaintenance.siteFunctionEntitlementRequired');
+              if (formValues.operatorFunctionIds.length > 0 && formValues.operatorSites.length === 0) {
+                setError('operatorSites', { type: 'required', message: errorMessage });
+                return;
+              } else if (formValues.operatorSites.length > 0 && formValues.operatorFunctionIds.length === 0) {
+                setError('operatorFunctionIds', {
+                  type: 'required',
+                  message: errorMessage,
+                });
+                return;
+              }          
+            },
+          },
+          secondaryButton: {
+            label: t('system.message.cancel'),
+            icon: <DismissRegular />,
+          },
+        });
+      })}
     >
       {t('system.message.save')}
     </Button>
-  );
-
+  )
+  
   return (
     <Root>
       <Form

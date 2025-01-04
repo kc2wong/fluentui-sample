@@ -106,9 +106,8 @@ const EnititledSiteSelectionMenu: React.FC<EnititledSiteSelectionMenuProps> = ({
   const { showSpinner, stopSpinner } = useMessage();
 
   useNotification(entitledSiteState, {
-    showSpinner: showSpinner,
-    stopSpinner: stopSpinner,
-    showOperationResultMessage: () => {},
+    operationStart: showSpinner,
+    operationComplete: stopSpinner,
   });
 
   useEffect(() => {

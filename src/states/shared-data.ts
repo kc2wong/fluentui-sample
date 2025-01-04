@@ -17,7 +17,14 @@ export type SharedDataPayload = {
   getFunctionTree: EmptyObject;
 };
 
-interface SharedDataState extends BaseState {
+enum OperationType {
+  None,
+  GetCurrency,
+  GetSite,
+  GetFunctionTree,
+}
+
+interface SharedDataState extends BaseState<OperationType> {
   resultSet?: {
     currencies?: Currency[];
     sites?: Site[];
@@ -30,6 +37,7 @@ const initialValue: SharedDataState = {
   operationEndTime: -1,
   version: 1,
   resultSet: undefined,
+  operationType: OperationType.None,
 };
 
 const setOperationResult = (
@@ -44,7 +52,7 @@ const setOperationResult = (
   set(baseSharedDataAtom, {
     ...current,
     operationEndTime: new Date().getTime(),
-    operationResult,
+    operationFailureReason: operationResult,
     version: current.version + 1,
     ...additionalState,
   });
