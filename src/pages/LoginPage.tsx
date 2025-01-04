@@ -2,7 +2,7 @@ import { makeStyles, Body1, Button, Input, tokens } from '@fluentui/react-compon
 import { PersonPasskeyRegular } from '@fluentui/react-icons';
 import { Card, CardHeader, CardPreview } from '@fluentui/react-components';
 import { ButtonPanel } from '../components/ButtonPanel';
-import { authentication } from '../states/authentication';
+import { authentication, OperationType } from '../states/authentication';
 import { useAtom } from 'jotai';
 import { useEffect } from 'react';
 import { useMessage } from '../contexts/Message';
@@ -13,9 +13,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Field } from '../components/Field';
 import { emptyStringToUndefined } from '../utils/object-util';
 import { useNotification } from '../states/base-state';
-// import { constructErrorMessage, constructMessage } from '../utils/string-util';
-import { constructErrorMessage } from '../utils/string-util';
-// import { MessageType } from '../models/system';
+import { constructErrorMessage, constructMessage } from '../utils/string-util';
 import { entitledSiteAtom } from '../states/entitled-site';
 import { useResetAtom } from 'jotai/utils';
 import { currencyAtom } from '../states/currency';
@@ -62,7 +60,7 @@ export const LoginPage = () => {
 
   const { t } = useTranslation();
 
-  const [state, action] = useAtom(authentication);
+  const [authenticationState, action] = useAtom(authentication);
   const resetSharedData = useResetAtom(entitledSiteAtom);
   const resetCurrencyMaintenance = useResetAtom(currencyAtom);
 
@@ -74,9 +72,8 @@ export const LoginPage = () => {
     resolver: zodResolver(schema),
   });
 
-  useNotification(state, {
+  useNotification(authenticationState, {
     operationStart: showSpinner,
-    // operationComplete: stopSpinner,
     operationComplete: (_operationType, result) => {
       stopSpinner();
       const message = result.operationFailureReason;
@@ -85,44 +82,28 @@ export const LoginPage = () => {
           type: message.type,
           text: constructErrorMessage(t, message.key, message.parameters),
         });
-      }
-      else {
-        if (result.login) {
-          setTimeout(() => {
-            action({ acknowledgeSignIn: {} });
-          }, 1000);  
+      } else {
+        if (result.operationType === OperationType.SignIn) {
+          if (result.login) {
+            dispatchMessage({
+              type: MessageType.Success,
+              text: constructMessage(t, 'login.success'),
+            });
+            setTimeout(() => {
+              action({ acknowledgeSignIn: {} });
+            }, 1000);
+          }
         }
       }
     },
-    // showOperationResultMessage: (message) => {
-    //   if (message.type === MessageType.Error) {
-    //     dispatchMessage({
-    //       type: message.type,
-    //       text: constructErrorMessage(t, message.key, message.parameters),
-    //     });
-    //   } else {
-    //     dispatchMessage({
-    //       type: message.type,
-    //       text: constructMessage(t, message.key, message.parameters),
-    //     });
-    //   }
-    // },
-    // additionAction: (state) => {
-    //   if (state.login !== undefined) {
-    //     // display main page 1 second after login success
-    //     setTimeout(() => {
-    //       action({ acknowledgeSignIn: {} });
-    //     }, 1000);
-    //   }
-    // },
   });
 
   useEffect(() => {
-    if (state.login === undefined) {
+    if (authenticationState.login === undefined) {
       resetSharedData();
       resetCurrencyMaintenance();
     }
-  }, [state.login, resetSharedData, resetCurrencyMaintenance]);
+  }, [authenticationState.login, resetSharedData, resetCurrencyMaintenance]);
 
   const handleLogin = async (data: FormData) => {
     action({

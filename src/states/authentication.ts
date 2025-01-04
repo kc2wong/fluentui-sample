@@ -3,12 +3,11 @@ import { Login } from '../models/login';
 import { signIn as signApi } from '../services/authentication';
 import { OneOnly } from '../utils/object-util';
 import { BaseState } from './base-state';
-// import { Message, MessageType } from '../models/system';
 import { EmptyObject } from '../models/common';
 
 type OptionalLogin = Login | undefined;
 
-enum OperationType {
+export enum OperationType {
   None,
   SignIn,
   AcknowledgeSignIn,
@@ -51,10 +50,12 @@ export const authentication = atom<
   (get) => get(authenticationAtom),
   async (get, set, { signIn, acknowledgeSignIn, signOut }: OneOnly<AuthenticationPayload>) => {
     const current = get(authenticationAtom);
+    const currentTime = new Date().getTime();
     if (signIn) {
       const beforeState: AuthenticationState = {
         ...current,
-        operationStartTime: new Date().getTime(),
+        operationType: OperationType.SignIn,
+        operationStartTime: currentTime,
         version: current.version + 1,
         operationFailureReason: undefined,
         login: undefined,
@@ -62,11 +63,6 @@ export const authentication = atom<
       };
       set(authenticationAtom, beforeState);
       const result = await signApi(signIn.id, signIn.password);
-      // const operationResult: Message = {
-      //   key: 'login.success',
-      //   type: MessageType.Success,
-      //   parameters: undefined,
-      // };
       const afterState: AuthenticationState = {
         ...beforeState,
         operationEndTime: new Date().getTime(),
@@ -78,6 +74,9 @@ export const authentication = atom<
     } else if (acknowledgeSignIn) {
       set(authenticationAtom, {
         ...current,
+        operationType: OperationType.AcknowledgeSignIn,
+        operationStartTime: currentTime - 1,
+        operationEndTime: currentTime,
         version: current.version + 1,
         operationFailureReason: undefined,
         acknowledge: true,
@@ -85,6 +84,9 @@ export const authentication = atom<
     } else if (signOut) {
       set(authenticationAtom, {
         ...current,
+        operationType: OperationType.SignOut,
+        operationStartTime: currentTime - 1,
+        operationEndTime: currentTime,
         version: current.version + 1,
         operationFailureReason: undefined,
         login: undefined,
