@@ -1,9 +1,16 @@
 import esbuild from 'esbuild';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { copy } from 'esbuild-plugin-copy';
 
 // Load `.env` variables
-const dotenvConfig = dotenv.config().parsed || {};
+const environment = process.env.NODE_ENV || 'development';
+
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
+const envFilePath = path.resolve(__dirname, `.env.${environment}`);
+const dotenvConfig = dotenv.config({ path: envFilePath }).parsed || {};
 
 // Merge `process.env` with `dotenv` variables
 const env = {
@@ -25,7 +32,6 @@ esbuild
     sourcemap: true,
     outdir: 'dist',
     define: {
-      'process.env.NODE_ENV': '"production"',
       ...envKeys,
     },
     loader: {

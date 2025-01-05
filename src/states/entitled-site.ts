@@ -129,7 +129,7 @@ export const entitledSiteAtom = atom<
 >(
   (get) => get(baseEntitledSiteAtom),
   async (get, set, payload: OneOnly<EntitledSitePayload> | typeof RESET) => {
-    const current = get(baseEntitledSiteAtom);
+    const current: EntitledSiteState = get(baseEntitledSiteAtom);
     if (payload === RESET) {
       set(baseEntitledSiteAtom, payload);
     } else {

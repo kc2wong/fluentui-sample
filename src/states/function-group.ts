@@ -198,7 +198,7 @@ export const functionGroupAtom = atom<
 >(
   (get) => get(baseFunctionGroupAtom),
   async (get, set, payload: OneOnly<FunctionGroupMaintenancePayload> | typeof RESET) => {
-    const current = get(baseFunctionGroupAtom);
+    const current: FunctionGroupMaintenanceState = get(baseFunctionGroupAtom);
     if (payload === RESET) {
       set(baseFunctionGroupAtom, payload);
     } else {

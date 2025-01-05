@@ -464,7 +464,7 @@ export const paymentAtom = atom<
 >(
   (get) => get(basePaymentAtom),
   async (get, set, payload) => {
-    const current = get(basePaymentAtom);
+    const current: PaymentState = get(basePaymentAtom);
     if (payload === RESET) {
       set(basePaymentAtom, payload);
     } else {

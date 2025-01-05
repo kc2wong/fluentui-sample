@@ -195,7 +195,7 @@ export const currencyAtom = atom<
 >(
   (get) => get(baseCurrencyAtom),
   async (get, set, payload: OneOnly<CurrencyMaintenancePayload> | typeof RESET) => {
-    const current = get(baseCurrencyAtom);
+    const current: CurrencyMaintenanceState = get(baseCurrencyAtom);
 
     if (payload === RESET) {
       set(baseCurrencyAtom, payload);

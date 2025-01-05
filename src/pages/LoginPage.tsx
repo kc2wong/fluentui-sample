@@ -18,6 +18,7 @@ import { entitledSiteAtom } from '../states/entitled-site';
 import { useResetAtom } from 'jotai/utils';
 import { currencyAtom } from '../states/currency';
 import { MessageType } from '../models/system';
+import { logger } from '../utils/logging-util';
 
 const useStyles = makeStyles({
   container: {
@@ -106,6 +107,7 @@ export const LoginPage = () => {
   }, [authenticationState.login, resetSharedData, resetCurrencyMaintenance]);
 
   const handleLogin = async (data: FormData) => {
+    logger.info(`Start sign in for user ${data.email}`);      
     action({
       signIn: {
         id: data.email,

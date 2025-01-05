@@ -145,7 +145,7 @@ export const sharedDataAtom = atom<
 >(
   (get) => get(baseSharedDataAtom),
   async (get, set, payload: OneOnly<SharedDataPayload> | typeof RESET) => {
-    const current = get(baseSharedDataAtom);
+    const current: SharedDataState = get(baseSharedDataAtom);
     if (payload === RESET) {
       set(baseSharedDataAtom, payload);
     } else {
