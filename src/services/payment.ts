@@ -1,6 +1,7 @@
 import { Memo, Payment, PaymentBase, PaymentStatus } from '../models/payment';
-import { Error, systemError } from '../models/system';
+import { Error, isError } from '../models/system';
 import { delay, getCurrentDate } from '../utils/date-util';
+import { get } from '../utils/http-util';
 
 type MemoEntity = Omit<Memo, 'createDatetime'> & { createDatetime: number };
 type PaymentEntity = Omit<Payment, 'executeDate' | 'memo'> & {
@@ -10,38 +11,25 @@ type PaymentEntity = Omit<Payment, 'executeDate' | 'memo'> & {
 
 export const searchPayment = async (site?: string[]): Promise<Payment[] | Error> => {
   const url = 'https://demo1029256.mockable.io/payments';
-  const res = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-type': 'application/json; charset=UTF-8',
-    },
-  });
-  if (res.status === 200) {
-    const data = ((await res.json()) as PaymentEntity[]).map((row) => {
-      return {
-        ...row,
-        executeDate: new Date(row.executeDate),
-        valueDate: row.valueDate ? new Date(row.valueDate) : undefined,
-        memo: row.memo.map((m) => {
-          return {
-            createDatetime: new Date(m.createDatetime),
-            message: m.message,
-          };
-        }),
-      };
-    });
-    return data.filter((p) => site === undefined || site.includes(p.site));
+  const resp = await get<PaymentEntity[]>(url);
+  if (isError(resp)) {
+    return resp;
   } else {
-    const text = await res.text();
-    const contentType = res.headers.get('content-type');
-    if (contentType?.includes('application/json')) {
-      const json = JSON.parse(text);
-      const errorCode = json.code;
-      const errorParameters = json.parameters;
-      return { code: errorCode, parameters: errorParameters as string[] };
-    } else {
-      return systemError(text);
-    }
+    return resp
+      .filter((p) => site === undefined || site.includes(p.site))
+      .map((row) => {
+        return {
+          ...row,
+          executeDate: new Date(row.executeDate),
+          valueDate: row.valueDate ? new Date(row.valueDate) : undefined,
+          memo: row.memo.map((m) => {
+            return {
+              createDatetime: new Date(m.createDatetime),
+              message: m.message,
+            };
+          }),
+        };
+      });
   }
 };
 

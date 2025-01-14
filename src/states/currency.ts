@@ -3,7 +3,7 @@ import { atomWithReset, RESET } from 'jotai/utils';
 import { addCurrency, getCurrency, searchCurrency, updateCurrency } from '../services/currency';
 import { OneOnly } from '../utils/object-util';
 import { BaseState } from './base-state';
-import { Message, MessageType, Error } from '../models/system';
+import { Message, MessageType, Error, isError } from '../models/system';
 import { Currency, CurrencyBase } from '../models/currency';
 import { EmptyObject } from '../models/common';
 
@@ -76,7 +76,7 @@ const setOperationResult = (
   const message =
     operationResult === undefined
       ? undefined
-      : 'code' in operationResult
+      : isError(operationResult)
         ? {
             key: operationResult.code,
             type: MessageType.Error,
@@ -108,12 +108,12 @@ const handleSearchOrRefresh = async (
   set(baseCurrencyAtom, beforeState);
 
   const result = await searchCurrency();
-  const isError = 'code' in result;
+  const isFailed = isError(result);
   setOperationResult(
     beforeState,
     set,
-    isError ? result : undefined,
-    isError
+    isFailed ? result : undefined,
+    isFailed
       ? { isResultSetDirty: false }
       : {
           payload: search ?? current.payload,
@@ -144,15 +144,14 @@ const handleSave = async (
       ? await updateCurrency(currency)
       : await addCurrency(currency);
 
-  const isError = 'code' in result && !('name' in result);
-  const operationResult = isError ? result : undefined;
+  const isFailed = isError(result);
+  const operationResult = isFailed ? result : undefined;
 
   setOperationResult(beforeState, set, operationResult, {
-    activeRecord: isError ? current.activeRecord : result,
+    activeRecord: isFailed ? current.activeRecord : result,
     // result set may mismatch with input payload after record is updated
     isResultSetDirty: current.resultSet !== undefined,
   });
-
 };
 
 const handleEditOrView = async (
@@ -174,11 +173,11 @@ const handleEditOrView = async (
   set(baseCurrencyAtom, beforeState);
 
   const result = await getCurrency(editOrView.code);
-  const isError = 'code' in result && !('name' in result);
-  const operationResult = isError ? result : undefined;
+  const isFailed = isError(result);
+  const operationResult = isFailed ? result : undefined;
 
   setOperationResult(beforeState, set, operationResult, {
-    activeRecord: isError ? undefined : result,
+    activeRecord: isFailed ? undefined : result,
   });
 };
 

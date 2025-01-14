@@ -4,6 +4,7 @@ import { signIn as signApi } from '../services/authentication';
 import { OneOnly } from '../utils/object-util';
 import { BaseState } from './base-state';
 import { EmptyObject } from '../models/common';
+import { isError, MessageType } from '../models/system';
 
 type OptionalLogin = Login | undefined;
 
@@ -63,12 +64,18 @@ export const authentication = atom<
       };
       set(authenticationAtom, beforeState);
       const result = await signApi(signIn.id, signIn.password);
+      const isFailed = isError(result);
+
       const afterState: AuthenticationState = {
         ...beforeState,
         operationEndTime: new Date().getTime(),
         version: beforeState.version + 1,
-        operationFailureReason: undefined,
-        login: result,
+        operationFailureReason: isFailed ? {
+          key: result.code,
+          type: MessageType.Error,
+          parameters: result.parameters,
+        } : undefined,
+        login: isFailed ? undefined : result,
       };
       set(authenticationAtom, afterState);
     } else if (acknowledgeSignIn) {

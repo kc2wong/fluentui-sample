@@ -45,10 +45,6 @@ type PopulateDealPayload = EmptyObject;
 
 type SavePaymentPayload = {
   payment: PaymentBase;
-  // onSaveSuccess: {
-  //   message?: Message;
-  //   callback?: (payment: Payment) => void;
-  // };
 };
 
 type MatchDealPayload = {
@@ -64,10 +60,6 @@ type SubmitPaymentPayload = OneOnly<{
   matchDealPayload: MatchDealPayload;
   bookDealPayload: BookDealPayload;
 }> & {
-  // onSaveSuccess: {
-  //   message?: Message;
-  //   callback?: (payment: Payment) => void;
-  // };
 };
 
 type SearchProductPayload = EmptyObject;

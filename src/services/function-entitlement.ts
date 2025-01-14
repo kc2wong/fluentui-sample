@@ -1,106 +1,29 @@
 import { FunctionGroup, FunctionGroupBase, FunctionTree } from '../models/function-entitlement';
-import { Error, systemError } from '../models/system';
+import { Error } from '../models/system';
+import { get, post, put } from '../utils/http-util';
 
 export const searchFunctionTree = async (): Promise<FunctionTree[] | Error> => {
   const url = 'https://demo1029256.mockable.io/functions';
-  const res = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-type': 'application/json; charset=UTF-8',
-    },
-  });
-  if (res.status === 200) {
-    return await res.json();
-  } else {
-    const text = await res.text();
-    const contentType = res.headers.get('content-type');
-    if (contentType?.includes('application/json')) {
-      const json = JSON.parse(text);
-      const errorCode = json.code;
-      const errorParameters = json.parameters;
-      return { code: errorCode, parameters: errorParameters as string[] };
-    } else {
-      return systemError(text);
-    }
-  }
+  return await get<FunctionTree[]>(url);
 };
 
 export const searchFunctionGroup = async (): Promise<FunctionGroup[] | Error> => {
   const url = 'https://demo1029256.mockable.io/functiongroups';
-  const res = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-type': 'application/json; charset=UTF-8',
-    },
-  });
-  if (res.status === 200) {
-    return await res.json();
-  } else {
-    const text = await res.text();
-    const contentType = res.headers.get('content-type');
-    if (contentType?.includes('application/json')) {
-      const json = JSON.parse(text);
-      const errorCode = json.code;
-      const errorParameters = json.parameters;
-      return { code: errorCode, parameters: errorParameters as string[] };
-    } else {
-      return systemError(text);
-    }
-  }
+  return await get<FunctionGroup[]>(url);
 };
 
 export const addFunctionGroup = async (
   functionGroup: FunctionGroupBase,
 ): Promise<FunctionGroup | Error> => {
   const url = 'https://demo1029256.mockable.io/functiongroups';
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-type': 'application/json; charset=UTF-8',
-    },
-    body: JSON.stringify(functionGroup),
-  });
-  if (res.status === 201) {
-    return await res.json();
-  } else {
-    const text = await res.text();
-    const contentType = res.headers.get('content-type');
-    if (contentType?.includes('application/json')) {
-      const json = JSON.parse(text);
-      const errorCode = json.code;
-      const errorParameters = json.parameters;
-      return { code: errorCode, parameters: errorParameters as string[] };
-    } else {
-      return systemError(text);
-    }
-  }
+  return await post<FunctionGroup, FunctionGroupBase>(url, functionGroup);
 };
 
 export const updateFunctionGroup = async (
   functionGroup: FunctionGroup,
 ): Promise<FunctionGroup | Error> => {
   const url = `https://demo1029256.mockable.io/functiongroup/${functionGroup.code}`;
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      'Content-type': 'application/json; charset=UTF-8',
-    },
-    body: JSON.stringify(functionGroup),
-  });
-  if (res.status === 201) {
-    return await res.json();
-  } else {
-    const text = await res.text();
-    const contentType = res.headers.get('content-type');
-    if (contentType?.includes('application/json')) {
-      const json = JSON.parse(text);
-      const errorCode = json.code;
-      const errorParameters = json.parameters;
-      return { code: errorCode, parameters: errorParameters as string[] };
-    } else {
-      return systemError(text);
-    }
-  }
+  return await put<FunctionGroup, FunctionGroup>(url, functionGroup);
 };
 
 export const getFunctionGroup = async (code: string): Promise<FunctionGroup | Error> => {

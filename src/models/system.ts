@@ -33,6 +33,19 @@ export class NotFound implements Error {
   }
 }
 
+export const isError = (object: any): object is Error => {
+  const numOfAttribute = Object.keys(object).length;
+  if (numOfAttribute === 1) {
+    return 'code' in object;    
+  }
+  else if (numOfAttribute === 2) {
+    return 'code' in object && 'parameters' in object;
+  }
+  else {
+    return false
+  }
+};
+
 export const isNotFound = (error: Error): error is NotFound => {
   return error.code === 'NotFound';
 };
