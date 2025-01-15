@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import languageEn from './i18n/en/language.json';
 import languageZhHant from './i18n/zhHant/language.json';
@@ -13,6 +13,7 @@ import { DialogProvider } from './contexts/Dialog';
 import { PageElementNavigationProvider } from './contexts/PageElementNavigation';
 import { authentication } from './states/authentication';
 import { FormDirtyProvider } from './contexts/FormDirty';
+import { traceManager } from './utils/trace-manager';
 
 i18next.use(initReactI18next).init({
   interpolation: { escapeValue: false },
@@ -26,6 +27,12 @@ i18next.use(initReactI18next).init({
 
 const App: React.FC = () => {
   const authenticationState = useAtomValue(authentication);
+
+  useEffect(() => {
+    if (authenticationState.login === undefined) {
+      traceManager.newTrace();
+    }
+  }, [authenticationState.login]);
 
   return (
     <ThemedAppProvider>

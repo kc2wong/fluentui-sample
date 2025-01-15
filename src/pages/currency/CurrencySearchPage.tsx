@@ -35,6 +35,7 @@ import { SearchCriteriaDrawer } from '../../components/Drawer';
 import { useStartBreadcrumb } from '../../contexts/PageElementNavigation';
 import { Form, Root } from '../../components/Container';
 import { Field } from '../../components/Field';
+import { logger } from '../../utils/logging-util';
 
 const searchSchema = z.object({
   code: z.preprocess((val) => emptyStringToUndefined(val), z.string().default('')),
@@ -66,6 +67,7 @@ const SearchDrawer = ({ t, isOpen, onOpenChange }: SearchDrawerProps) => {
       onDrawerClose={() => onOpenChange(false)}
       onSearch={handleSubmit(() => {
         const formData = getValues();
+        logger.info(`Start search currency with criteria ${JSON.stringify(formData)}`);
         action({
           search: {
             offset: 0,

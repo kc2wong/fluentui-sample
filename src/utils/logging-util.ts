@@ -1,7 +1,4 @@
-/* eslint-disable no-console */
-import * as Sentry from '@sentry/react';
-import React from 'react';
-import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router-dom';
+import { TraceManager, traceManager } from './trace-manager';
 
 interface Logger {
   info: (message: string) => void;
@@ -10,66 +7,26 @@ interface Logger {
   error: (message: string) => void;
 }
 
+const logMessage = (tm: TraceManager, type: string, message: string) => {
+  const trace = tm.getCurrentTrace();
+  /* eslint-disable no-console */
+  console.log(`${type} [${trace.traceId},${trace.spanId}] ${message}`);
+};
+
 // Console-based logger
-const createLoggerConsole = (): Logger => ({
+const createLoggerConsole = (traceManager: TraceManager): Logger => ({
   info: (message: string) => {
-    console.log(`[info] ${message}`);
+    logMessage(traceManager, 'INFO ', message);
   },
   debug: (message: string) => {
-    console.log(`[debug] ${message}`);
+    logMessage(traceManager, 'DEBUG', message);
   },
   warn: (message: string) => {
-    console.warn(`[warn] ${message}`);
+    logMessage(traceManager, 'WARN ', message);
   },
   error: (message: string) => {
-    console.error(`[error] ${message}`);
+    logMessage(traceManager, 'ERROR', message);
   },
 });
 
-// Sentry-based logger (created only if in production)
-const createLoggerSentry = (): Logger => {
-  Sentry.init({
-    dsn: 'https://3fe2e01ba9affa2f98171d88ad29029c@o4508590198489088.ingest.de.sentry.io/4508590202683472',
-    // dsn: process.env.REACT_APP_SENTRY_DSN,
-    // integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
-
-    integrations: [
-      Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration(),
-      Sentry.reactRouterV7BrowserTracingIntegration({
-        useEffect: React.useEffect,
-        useLocation,
-        useNavigationType,
-        createRoutesFromChildren,
-        matchRoutes,
-      }),      
-    ],
-
-    // Tracing
-    tracesSampleRate: 1.0, //  Capture 100% of the transactions
-    // Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
-    // tracePropagationTargets: ["localhost", /^https:\/\/yourserver\.io\/api/],
-    // Session Replay
-    replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
-    replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
-  });
-
-  return {
-    info: (message: string) => {
-      Sentry.captureMessage(message, 'info');
-    },
-    debug: (message: string) => {
-      Sentry.captureMessage(message, 'debug');
-    },
-    warn: (message: string) => {
-      Sentry.captureMessage(message, 'warning');
-    },
-    error: (message: string) => {
-      Sentry.captureMessage(message, 'error');
-    },
-  };
-};
-
-// Determine environment and choose logger
-const isProd = process.env.NODE_ENV === 'production';
-export const logger: Logger = isProd ? createLoggerSentry() : createLoggerConsole();
+export const logger: Logger = createLoggerConsole(traceManager);
