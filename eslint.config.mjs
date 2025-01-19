@@ -6,7 +6,7 @@ import tsParser from '@typescript-eslint/parser';
 export default [
   {
     files: ['**/*.{ts,tsx}'],
-    ignores: ['src/index.tsx'],
+    ignores: ['src/index.tsx', 'src/__tests__/**/*'],
     plugins: {
       '@typescript-eslint': typescriptEslint,
       'check-file': checkFile,
@@ -22,7 +22,7 @@ export default [
     },
     rules: {
       quotes: ['error', 'single'],
-      
+
       'no-console': 'error',
 
       'check-file/filename-naming-convention': [
@@ -31,6 +31,7 @@ export default [
           '**/*.ts': 'KEBAB_CASE',
           '**/*.tsx': 'PASCAL_CASE',
         },
+        { ignoreMiddleExtensions: true },
       ],
 
       '@typescript-eslint/no-unused-vars': [

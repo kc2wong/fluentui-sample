@@ -34,6 +34,7 @@ import { EmptyCell } from '../../components/EmptyCell';
 import { Input } from '../../components/Input';
 import { useNotification } from '../../states/base-state';
 import { useMessage } from '../../contexts/Message';
+import { hasMissingRequiredField } from '../../utils/form-util';
 
 // form in drawer for editing multi language name or shortname
 const nameMultiLangSchema = z.object(
@@ -123,15 +124,6 @@ const schema = z.object({
 });
 type FormData = z.infer<typeof schema>;
 
-// function to check if all required fields are entered
-const missingRequiredField = (formValues: FormData): boolean => {
-  const validationResult = schema.safeParse(emptyStringToUndefined(formValues));
-  const missingRequiredFieldIssue = validationResult.error?.issues.find(
-    (i) => ['invalid_type', 'custom'].includes(i.code) && i.message === 'Required',
-  );
-  return missingRequiredFieldIssue !== undefined;
-};
-
 // button to toggle multi lang drawer
 type NameMultiLangButtonProps = {
   isOpen: boolean;
@@ -173,7 +165,10 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
   useNotification(currencyState, {
     operationStart: () => {},
     operationComplete: (type, result) => {
-      if (type === OperationType.Save && result.operationFailureReason?.type !== MessageType.Error) {
+      if (
+        type === OperationType.Save &&
+        result.operationFailureReason?.type !== MessageType.Error
+      ) {
         dispatchMessage({
           type: MessageType.Success,
           text: constructMessage(t, 'system.message.saveObjectSuccess', [
@@ -190,7 +185,6 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
   const {
     control,
     setValue,
-    getValues,
     handleSubmit,
     reset,
     watch,
@@ -230,7 +224,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
     langStr: string,
     value: string,
   ) => {
-    const currentFieldValues = getValues()[fieldName];
+    const currentFieldValues = formValues[fieldName];
 
     currentFieldValues[
       langStr === Language.TraditionalChinese ? Language.TraditionalChinese : Language.English
@@ -283,7 +277,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
   const saveButton = (
     <Button
       appearance="primary"
-      disabled={missingRequiredField(getValues())}
+      disabled={hasMissingRequiredField(formValues, schema)}
       icon={<SaveRegular />}
       onClick={handleSubmit(() => {
         showConfirmationDialog({
@@ -295,7 +289,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
             action: () => {
               action({
                 save: {
-                  currency: { ...initialData, ...getValues() },
+                  currency: { ...initialData, ...formValues },
                 },
               });
             },
@@ -436,7 +430,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
       <div style={{ flex: 1 }}></div>
 
       <NameMultiLangDrawer
-        initialData={getValues().shortName}
+        initialData={formValues.shortName}
         isOpen={isShortNameDrawerOpen}
         isReadOnly={readOnly}
         onDrawerClose={() => toggleDrawer('shortName')}
@@ -446,7 +440,7 @@ export const CurrencyEditPage: React.FC<CurrencyEditPageProps> = ({
       />
 
       <NameMultiLangDrawer
-        initialData={getValues().name}
+        initialData={formValues.name}
         isOpen={isNameDrawerOpen}
         isReadOnly={readOnly}
         onDrawerClose={() => toggleDrawer('name')}

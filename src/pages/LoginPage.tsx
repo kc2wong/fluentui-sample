@@ -1,4 +1,4 @@
-import { makeStyles, Body1, Button, Input, tokens } from '@fluentui/react-components';
+import { makeStyles, Body1, Input, tokens } from '@fluentui/react-components';
 import { PersonPasskeyRegular } from '@fluentui/react-icons';
 import { Card, CardHeader, CardPreview } from '@fluentui/react-components';
 import { ButtonPanel } from '../components/ButtonPanel';
@@ -18,7 +18,10 @@ import { entitledSiteAtom } from '../states/entitled-site';
 import { useResetAtom } from 'jotai/utils';
 import { currencyAtom } from '../states/currency';
 import { MessageType } from '../models/system';
+import { hasMissingRequiredField } from '../utils/form-util';
 import { logger } from '../utils/logging-util';
+import { Button } from '../components/Button';
+// import { Button } from '../components/Button';
 
 const useStyles = makeStyles({
   container: {
@@ -68,6 +71,7 @@ export const LoginPage = () => {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -99,6 +103,8 @@ export const LoginPage = () => {
     },
   });
 
+  const formValues = watch();
+
   useEffect(() => {
     if (authenticationState.login === undefined) {
       resetSharedData();
@@ -107,7 +113,7 @@ export const LoginPage = () => {
   }, [authenticationState.login, resetSharedData, resetCurrencyMaintenance]);
 
   const handleLogin = async (data: FormData) => {
-    logger.info(`Start sign in for user ${data.email}`);      
+    logger.info(`Start sign in for user ${data.email}`);
     action({
       signIn: {
         id: data.email,
@@ -143,6 +149,7 @@ export const LoginPage = () => {
             <ButtonPanel className={styles.buttonPanel}>
               <Button
                 appearance="primary"
+                disabled={hasMissingRequiredField(formValues, schema)}
                 icon={<PersonPasskeyRegular />}
                 onClick={handleSubmit(handleLogin)}
               >

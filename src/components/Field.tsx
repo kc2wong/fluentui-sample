@@ -8,7 +8,7 @@ import {
   tokens,
 } from '@fluentui/react-components';
 import { ErrorCircleFilled } from '@fluentui/react-icons';
-import { CSSProperties, ReactNode } from 'react';
+import { cloneElement, CSSProperties, ReactElement, useId } from 'react';
 
 const useStyles = makeStyles({
   column: { display: 'flex', flexDirection: 'column', gap: '2px' },
@@ -36,8 +36,9 @@ const useStyles = makeStyles({
   },
 });
 
-type FieldProps = Omit<FlientUiFieldProps, 'children'> & {
-  children: ReactNode;
+export type FieldProps = Omit<FlientUiFieldProps, 'children'> & {
+  // children: ReactNode;
+  children: ReactElement;
   horizontal?: boolean;
   infoMessage?: string;
   label: string;
@@ -82,11 +83,17 @@ export const Field: React.FC<FieldProps> = ({
       </FluentUiField>
     );
   } else {
+    // generate unique ID
+    const id = children.props.id;
+    const generatedId = id ?? useId();
+
     return (
       <div className={styles.column} style={mergedStyle}>
         <div className={styles.row}>
           {/* First Row: Label and Error Message */}
-          <Label required={others.required}>{label}</Label>
+          <Label htmlFor={generatedId} required={others.required}>
+            {label}
+          </Label>
           {validationMessage && (
             <div className={styles.errorMessageCell}>
               <ErrorCircleFilled className={styles.errorIcon} />
@@ -95,7 +102,7 @@ export const Field: React.FC<FieldProps> = ({
           )}
         </div>
         {/* Second Row: child */}
-        <>{children}</>
+        <> {id ? children : cloneElement(children, { id: generatedId })}</>
         {/* Third Row: info message */}
         {infoMessage ? (
           <Caption1 align="end" italic>

@@ -30,7 +30,6 @@ import { TFunction } from 'i18next';
 import { useAtom, useAtomValue } from 'jotai';
 import { Control, Controller, useForm, UseFormSetValue } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { emptyStringToUndefined } from '../../utils/object-util';
 import { constructMessage, formatNumber } from '../../utils/string-util';
 import { Field } from '../../components/Field';
 import { useAppendBreadcrumb } from '../../contexts/PageElementNavigation';
@@ -52,6 +51,7 @@ import { Memo } from './Memo';
 import { useNotification } from '../../states/base-state';
 import { useFormDirty } from '../../contexts/FormDirty';
 import { useMessage } from '../../contexts/Message';
+import { hasMissingRequiredField } from '../../utils/form-util';
 
 const useStyles = makeStyles({
   formWrapper: {
@@ -128,15 +128,6 @@ const schema = z
   });
 
 type FormData = z.infer<typeof schema>;
-
-// function to check if all required fields are entered
-const missingRequiredField = (formValues: FormData): boolean => {
-  const validationResult = schema.safeParse(emptyStringToUndefined(formValues));
-  const missingRequiredFieldIssue = validationResult.error?.issues.find(
-    (i) => ['invalid_type', 'custom'].includes(i.code) && i.message === 'Required',
-  );
-  return missingRequiredFieldIssue !== undefined;
-};
 
 type MatchingTabProps = {
   control: Control<FormData>;
@@ -393,7 +384,6 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
   const {
     control,
     setValue,
-    getValues,
     handleSubmit,
     reset,
     watch,
@@ -435,7 +425,7 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
   const submitButton = (
     <Button
       appearance="primary"
-      disabled={missingRequiredField(getValues())}
+      disabled={hasMissingRequiredField(formValues, schema)}
       icon={<CheckmarkRegular />}
       onClick={handleSubmit(() => {
         if (!readOnly) {

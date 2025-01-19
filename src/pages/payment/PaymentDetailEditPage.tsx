@@ -67,6 +67,7 @@ import { Memo } from './Memo';
 import { useFormDirty } from '../../contexts/FormDirty';
 import { useNotification } from '../../states/base-state';
 import { MessageType } from '../../models/system';
+import { hasMissingRequiredField } from '../../utils/form-util';
 
 const useStyles = makeStyles({
   formWrapper: {
@@ -395,15 +396,6 @@ const schema = z
 
 type FormData = z.infer<typeof schema>;
 
-// function to check if all required fields are entered
-const missingRequiredField = (formValues: FormData): boolean => {
-  const validationResult = schema.safeParse(emptyStringToUndefined(formValues));
-  const missingRequiredFieldIssue = validationResult.error?.issues.find(
-    (i) => ['invalid_type', 'custom'].includes(i.code) && i.message === 'Required',
-  );
-  return missingRequiredFieldIssue !== undefined;
-};
-
 type PaymentDetailPageProps = {
   mode: 'add' | 'edit';
   onBackButtonClick: () => void;
@@ -470,7 +462,6 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
   const {
     control,
     setValue,
-    getValues,
     handleSubmit,
     watch,
     reset,
@@ -617,7 +608,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
   const saveButton = (
     <Button
       appearance="primary"
-      disabled={missingRequiredField(getValues())}
+      disabled={hasMissingRequiredField(formValues, schema)}
       icon={<CheckmarkRegular />}
       onClick={handleSubmit(() => {
         showConfirmationDialog({
@@ -628,7 +619,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
             icon: <CheckmarkRegular />,
             action: () => {
               const { creditCcy, creditAmount, debitCcy, debitAmount, executeDate, ...others } =
-                getValues();
+                formValues;
               paymentAction({
                 savePayment: {
                   payment: {
@@ -794,7 +785,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
           onCcyChange={(value) => {
             if (value) {
               setValue('creditCcy', value, { shouldDirty: true });
-              if (getValues().debitCcy === value) {
+              if (formValues.debitCcy === value) {
                 setValue('debitCcy', '');
               }
             }
@@ -817,7 +808,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
           onCcyChange={(value) => {
             if (value) {
               setValue('debitCcy', value, { shouldDirty: true });
-              if (getValues().creditCcy === value) {
+              if (formValues.creditCcy === value) {
                 setValue('creditCcy', '');
               }
             }

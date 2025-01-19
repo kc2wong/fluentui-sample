@@ -48,6 +48,7 @@ import { useFormDirty } from '../../contexts/FormDirty';
 import { Input } from '../../components/Input';
 import { EmptyCell } from '../../components/EmptyCell';
 import { useDialog } from '../../contexts/Dialog';
+import { hasMissingRequiredField } from '../../utils/form-util';
 
 const useStyles = makeStyles({
   tab: {
@@ -391,17 +392,6 @@ const schema = z
 
 type FormData = z.infer<typeof schema>;
 
-// function to check if all required fields are entered
-const missingRequiredField = (formValues: FormData): boolean => {
-  const validationResult = schema.safeParse(emptyStringToUndefined(formValues));
-  const missingRequiredFieldIssue = validationResult.error?.issues.find(
-    (i) =>
-      (['invalid_type', 'custom'].includes(i.code) && i.message === 'Required') ||
-      (['custom'].includes(i.code) && i.message === missingFunctionIdErrorMessage),
-  );
-  return missingRequiredFieldIssue !== undefined;
-};
-
 const collectLowestFunctionTrees = (tree: FunctionTree): FunctionAccess[] => {
   // Helper function to check if all children are FunctionAccess
   const allChildrenAreFunctionAccess = (children: (FunctionTree | FunctionAccess)[]): boolean => {
@@ -478,7 +468,6 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
   const {
     control,
     setError,
-    getValues,
     handleSubmit,
     watch,
     formState: { errors, isDirty },
@@ -553,11 +542,16 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
       {t('system.message.back')}
     </Button>
   );
-  
+
   const saveButton = (
     <Button
       appearance="primary"
-      disabled={missingRequiredField(getValues())}
+      disabled={hasMissingRequiredField(
+        formValues,
+        schema,
+        (issue) =>
+          ['custom'].includes(issue.code) && issue.message === missingFunctionIdErrorMessage,
+      )}
       icon={<SaveRegular />}
       onClick={handleSubmit(() => {
         showConfirmationDialog({
@@ -567,17 +561,25 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
             label: t('system.message.save'),
             icon: <CheckmarkRegular />,
             action: () => {
-              const errorMessage = t('system.error.functionGroupMaintenance.siteFunctionEntitlementRequired');
-              if (formValues.operatorFunctionIds.length > 0 && formValues.operatorSites.length === 0) {
+              const errorMessage = t(
+                'system.error.functionGroupMaintenance.siteFunctionEntitlementRequired',
+              );
+              if (
+                formValues.operatorFunctionIds.length > 0 &&
+                formValues.operatorSites.length === 0
+              ) {
                 setError('operatorSites', { type: 'required', message: errorMessage });
                 return;
-              } else if (formValues.operatorSites.length > 0 && formValues.operatorFunctionIds.length === 0) {
+              } else if (
+                formValues.operatorSites.length > 0 &&
+                formValues.operatorFunctionIds.length === 0
+              ) {
                 setError('operatorFunctionIds', {
                   type: 'required',
                   message: errorMessage,
                 });
                 return;
-              }          
+              }
             },
           },
           secondaryButton: {
@@ -589,8 +591,8 @@ export const FunctionGroupEditPage: React.FC<FunctionGroupEditPageProps> = ({
     >
       {t('system.message.save')}
     </Button>
-  )
-  
+  );
+
   return (
     <Root>
       <Form

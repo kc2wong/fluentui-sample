@@ -11,12 +11,10 @@ const interpolate = (template: string, values?: string[]): string => {
   return result;
 };
 
-export const capitalize = (str: string) => {
-  return `${str.charAt(0)}${str.slice(1)}`;
-};
-
 export const snakeCaseToCamelCase = (input: string) => {
-  return input.replace(/[_-]([a-z])/g, (_, char) => char.toUpperCase());
+  return input
+    .replace(/^[_-]+|[_-]+$/g, '') // Remove leading and trailing hyphens or underscores
+    .replace(/[_-]([a-z])/g, (_, char) => char.toUpperCase());
 };
 
 // Format number with thousand separator
