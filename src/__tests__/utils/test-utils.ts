@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react';
 
-export const getInputByLabel = (labelText: string): HTMLInputElement | null => {
+export const findInputByLabel = (labelText: string): HTMLInputElement | null => {
   const label = screen.queryByText(labelText);
   if (label) {
     const id = label.getAttribute('for');
@@ -15,7 +15,7 @@ export const getInputByLabel = (labelText: string): HTMLInputElement | null => {
   return null;
 };
 
-export const getElementByTestId = <T extends HTMLElement>(
+export const findElementByTestId = <T extends HTMLElement>(
   testId: string,
   elementType: new () => T,
 ): T | null => {
@@ -28,7 +28,7 @@ export const getElementByTestId = <T extends HTMLElement>(
   return null;
 };
 
-export const getElementByText = <T extends HTMLElement>(
+export const findElementByText = <T extends HTMLElement>(
   labelText: string,
   elementType: new () => T,
 ): T | null => {
@@ -41,7 +41,7 @@ export const getElementByText = <T extends HTMLElement>(
   return null;
 };
 
-export const getElementByClassName = <T extends HTMLElement>(
+export const findElementByClassName = <T extends HTMLElement>(
   className: string,
   elementType: new () => T,
   container: HTMLElement,

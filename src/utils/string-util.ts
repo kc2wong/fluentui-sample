@@ -36,7 +36,7 @@ export const formatNumber = (value?: number, numDecimal?: number): string => {
   return formattedDecimal ? `${formattedInteger}.${formattedDecimal}` : formattedInteger;
 };
 
-export const constructMessage = (t: TFunction, key: string, param?: string[]) => {
+export const constructMessage = (t: TFunction, key: string, param?: string[]): string => {
   const baseMsg = t(key);
   return key === baseMsg
     ? key
@@ -46,7 +46,7 @@ export const constructMessage = (t: TFunction, key: string, param?: string[]) =>
       );
 };
 
-export const constructErrorMessage = (t: TFunction, errorCode: string, errorParam?: string[]) => {
+export const constructErrorMessage = (t: TFunction, errorCode: string, errorParam?: string[]): string => {
   return constructMessage(t, `system.error.${errorCode}`, errorParam);
 };
 

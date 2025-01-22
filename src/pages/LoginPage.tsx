@@ -1,4 +1,4 @@
-import { makeStyles, Body1, Input, tokens } from '@fluentui/react-components';
+import { Body1, Button, Input, makeStyles, tokens } from '@fluentui/react-components';
 import { PersonPasskeyRegular } from '@fluentui/react-icons';
 import { Card, CardHeader, CardPreview } from '@fluentui/react-components';
 import { ButtonPanel } from '../components/ButtonPanel';
@@ -20,8 +20,6 @@ import { currencyAtom } from '../states/currency';
 import { MessageType } from '../models/system';
 import { hasMissingRequiredField } from '../utils/form-util';
 import { logger } from '../utils/logging-util';
-import { Button } from '../components/Button';
-// import { Button } from '../components/Button';
 
 const useStyles = makeStyles({
   container: {
@@ -51,7 +49,7 @@ const useStyles = makeStyles({
 const schema = z.object({
   email: z.preprocess(
     (val) => emptyStringToUndefined(val),
-    z.string().email('Invalid email address'),
+    z.string().email('invalid-email-address'),
   ),
   password: z.preprocess((val) => emptyStringToUndefined(val), z.string()),
 });
@@ -61,7 +59,7 @@ type FormData = z.infer<typeof schema>;
 export const LoginPage = () => {
   const styles = useStyles();
   const { showSpinner, stopSpinner, dispatchMessage } = useMessage();
-
+  
   const { t } = useTranslation();
 
   const [authenticationState, action] = useAtom(authentication);
@@ -85,7 +83,7 @@ export const LoginPage = () => {
       if (message?.type === MessageType.Error) {
         dispatchMessage({
           type: message.type,
-          text: constructErrorMessage(t, message.key, message.parameters),
+          text: constructErrorMessage(t, message.key, message.parameters)!,
         });
       } else {
         if (result.operationType === OperationType.SignIn) {
@@ -94,6 +92,7 @@ export const LoginPage = () => {
               type: MessageType.Success,
               text: constructMessage(t, 'login.success'),
             });
+            // action({ acknowledgeSignIn: {} });
             setTimeout(() => {
               action({ acknowledgeSignIn: {} });
             }, 1000);
@@ -105,6 +104,8 @@ export const LoginPage = () => {
 
   const formValues = watch();
 
+  const getErrorMessage = (key?: string) => (key ? constructErrorMessage(t, key) : undefined);
+
   useEffect(() => {
     if (authenticationState.login === undefined) {
       resetSharedData();
@@ -114,7 +115,7 @@ export const LoginPage = () => {
 
   const handleLogin = async (data: FormData) => {
     logger.info(`Start sign in for user ${data.email}`);
-    action({
+    await action({
       signIn: {
         id: data.email,
         password: data.password,
@@ -135,13 +136,17 @@ export const LoginPage = () => {
         <CardPreview className={styles.box}>
           <div>
             <div className={styles.form}>
-              <Field label={t('login.email')} required validationMessage={errors.email?.message}>
+              <Field
+                label={t('login.email')}
+                required
+                validationMessage={getErrorMessage(errors.email?.message)}
+              >
                 <Input type="email" {...register('email')} />
               </Field>
               <Field
                 label={t('login.password')}
                 required
-                validationMessage={errors.password?.message}
+                validationMessage={getErrorMessage(errors.password?.message)}
               >
                 <Input type="password" {...register('password')} />
               </Field>
