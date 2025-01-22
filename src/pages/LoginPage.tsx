@@ -15,7 +15,6 @@ import { emptyStringToUndefined } from '../utils/object-util';
 import { useNotification } from '../states/base-state';
 import { constructErrorMessage, constructMessage } from '../utils/string-util';
 import { entitledSiteAtom } from '../states/entitled-site';
-import { useResetAtom } from 'jotai/utils';
 import { currencyAtom } from '../states/currency';
 import { MessageType } from '../models/system';
 import { hasMissingRequiredField } from '../utils/form-util';
@@ -59,12 +58,12 @@ type FormData = z.infer<typeof schema>;
 export const LoginPage = () => {
   const styles = useStyles();
   const { showSpinner, stopSpinner, dispatchMessage } = useMessage();
-  
+
   const { t } = useTranslation();
 
   const [authenticationState, action] = useAtom(authentication);
-  const resetSharedData = useResetAtom(entitledSiteAtom);
-  const resetCurrencyMaintenance = useResetAtom(currencyAtom);
+  const [, entitleSiteAction] = useAtom(entitledSiteAtom);
+  const [, currencyAction] = useAtom(currencyAtom);
 
   const {
     register,
@@ -108,10 +107,10 @@ export const LoginPage = () => {
 
   useEffect(() => {
     if (authenticationState.login === undefined) {
-      resetSharedData();
-      resetCurrencyMaintenance();
+      entitleSiteAction({ reset: {} });
+      currencyAction({ reset: {} });
     }
-  }, [authenticationState.login, resetSharedData, resetCurrencyMaintenance]);
+  }, [authenticationState.login, entitleSiteAction, currencyAction]);
 
   const handleLogin = async (data: FormData) => {
     logger.info(`Start sign in for user ${data.email}`);

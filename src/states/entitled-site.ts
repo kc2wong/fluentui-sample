@@ -11,6 +11,7 @@ import { EmptyObject } from '../models/common';
 type EntitledSitePayload = {
   get: EmptyObject;
   selectEntitledSite: { siteCode: string[] };
+  reset: EmptyObject;
 };
 
 type EntitledSite = {
@@ -124,21 +125,21 @@ type SiteMaintenanceAtomSetter = (
 
 export const entitledSiteAtom = atom<
   EntitledSiteState,
-  [OneOnly<EntitledSitePayload> | typeof RESET],
+  // [OneOnly<EntitledSitePayload> | typeof RESET],
+  [OneOnly<EntitledSitePayload>],
   Promise<void>
 >(
   (get) => get(baseEntitledSiteAtom),
-  async (get, set, payload: OneOnly<EntitledSitePayload> | typeof RESET) => {
+  async (get, set, payload: OneOnly<EntitledSitePayload>) => {
     const current: EntitledSiteState = get(baseEntitledSiteAtom);
-    if (payload === RESET) {
-      set(baseEntitledSiteAtom, payload);
-    } else {
-      const { get, selectEntitledSite } = payload;
-      if (get) {
-        await handleSearchOrRefresh(current, set);
-      } else if (selectEntitledSite) {
-        handleSelectEntitledSite(current, set, selectEntitledSite.siteCode);
-      }
+
+    const { get: innerGet, selectEntitledSite, reset } = payload;
+    if (innerGet) {
+      await handleSearchOrRefresh(current, set);
+    } else if (selectEntitledSite) {
+      handleSelectEntitledSite(current, set, selectEntitledSite.siteCode);
+    } else if (reset) {
+      set(baseEntitledSiteAtom, RESET);
     }
   },
 );

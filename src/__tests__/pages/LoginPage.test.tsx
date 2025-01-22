@@ -1,13 +1,12 @@
-import React from 'react';
+import React, { useTransition } from 'react';
 import { vi } from 'vitest';
 
-vi.mock('react-i18next', () => {
-  return {
-    useTranslation: vi.fn(() => ({
-      t: (key: string) => key,
-    })),
-  };
-});
+const t = vi.fn((key: string) => key);
+vi.mock('react-i18next', () => ({
+  useTranslation: vi.fn(() => ({
+    t: t,
+  })),
+}));
 
 vi.mock('@fluentui/react-components', async (importOriginal) => {
   const original = (await importOriginal()) as any;
@@ -72,7 +71,6 @@ import { findElementByTestId, findElementByText, findInputByLabel } from '../uti
 import userEvent from '@testing-library/user-event';
 import { OperationType } from '../../states/authentication';
 import { MessageType } from '../../models/system';
-import { delay } from '../../utils/date-util';
 
 describe('LoginPage', () => {
   beforeEach(() => {
@@ -138,6 +136,12 @@ describe('LoginPage', () => {
       }),
       expect.anything(),
     );
+
+    // shared data is reset at the beginning when user is not signed in
+    expect(mockAtomSetter).toHaveBeenCalledTimes(2);
+    expect(mockAtomSetter).toHaveBeenNthCalledWith(1, { reset: {} });
+    expect(mockAtomSetter).toHaveBeenNthCalledWith(2, { reset: {} });
+
   });
 
   it('renders components with correct orders', () => {
@@ -203,7 +207,9 @@ describe('LoginPage', () => {
         expect.anything(), // Ignore the second argument which is forward-ref component
       );
     });
-    expect(mockAtomSetter).not.toHaveBeenCalled();
+    expect(mockAtomSetter).not.toHaveBeenCalledWith(expect.objectContaining({ signIn: expect.any(Object) }));
+    // translate error code to message
+    expect(t).toHaveBeenCalledWith('system.error.invalid-email-address');
   });
 
   it('attempts signIn with valid values', async () => {
@@ -220,6 +226,8 @@ describe('LoginPage', () => {
     });
 
     render(<LoginPage />);
+    // clear invocation history
+    mockAtomSetter.mockClear();
 
     const emailInput = findInputByLabel('login.email')!;
     const passwordInput = findInputByLabel('login.password')!;
@@ -230,7 +238,6 @@ describe('LoginPage', () => {
     userEvent.type(emailInput!, email);
     // signIn button is not enabled yet after entering email
     expect(signInButton!.disabled).toBe(true);
-
     userEvent.type(passwordInput!, password);
 
     // signIn button is enabled after entering email and password
@@ -238,6 +245,7 @@ describe('LoginPage', () => {
 
     // simulate click signIn button and wait for execution is completed
     userEvent.click(signInButton);
+
     await waitFor(() => {
       expect(mockAtomSetter).toHaveBeenCalledTimes(1);
     });
@@ -248,19 +256,10 @@ describe('LoginPage', () => {
   });
 
   it('signIn is success', async () => {
-    const currentTime = new Date().getTime();
-    mockAtomSetter.mockImplementation(async (newState) => {
-      mockAtomGetter = {
-        version: 2,
-        operationStartTime: currentTime,
-        operationEndTime: currentTime + 1,
-        operationType: OperationType.SignIn,
-        login: {},
-        acknowledge: false,
-      };
-    });
 
     render(<LoginPage />);
+    // clear invocation history
+    mockAtomSetter.mockClear();
 
     const emailInput = findInputByLabel('login.email')!;
     const passwordInput = findInputByLabel('login.password')!;
@@ -271,13 +270,22 @@ describe('LoginPage', () => {
     userEvent.type(emailInput!, email);
     userEvent.type(passwordInput!, password);
 
+    const currentTime = new Date().getTime();
+    mockAtomGetter = {
+      version: 2,
+      operationStartTime: currentTime,
+      operationEndTime: currentTime + 1,
+      operationType: OperationType.SignIn,
+      login: {},
+      acknowledge: false,
+    };
+
     // simulate click signIn button and wait for execution is completed
     userEvent.click(signInButton);
 
     await waitFor(
       () => {
         expect(mockAtomSetter).toHaveBeenCalledTimes(1);
-        // expect(mockShowSpinner).toHaveBeenCalledTimes(1);
         expect(mockStopSpinner).toHaveBeenCalledTimes(1);
         expect(mockDispatchMessage).toHaveBeenCalledTimes(1);
         expect(mockDispatchMessage).toHaveBeenCalledWith({

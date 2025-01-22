@@ -31,6 +31,7 @@ export type CurrencyMaintenancePayload = {
   edit: EditCurrencyPayload;
   view: EditCurrencyPayload;
   refresh: EmptyObject;
+  reset: EmptyObject;
 };
 
 export enum OperationType {
@@ -189,19 +190,13 @@ type CurrencyMaintenanceAtomSetter = (
 
 export const currencyAtom = atom<
   CurrencyMaintenanceState,
-  [OneOnly<CurrencyMaintenancePayload> | typeof RESET],
+  [OneOnly<CurrencyMaintenancePayload>],
   Promise<void>
 >(
   (get) => get(baseCurrencyAtom),
-  async (get, set, payload: OneOnly<CurrencyMaintenancePayload> | typeof RESET) => {
+  async (get, set, payload: OneOnly<CurrencyMaintenancePayload>) => {
     const current: CurrencyMaintenanceState = get(baseCurrencyAtom);
-
-    if (payload === RESET) {
-      set(baseCurrencyAtom, payload);
-      return;
-    }
-
-    const { search, refresh, save, edit, view, new: newRecord, discard } = payload;
+    const { search, refresh, save, edit, view, new: newRecord, discard, reset } = payload;
 
     if (search) {
       await handleSearchOrRefresh(current, set, payload.search);
@@ -224,6 +219,8 @@ export const currencyAtom = atom<
         operationType: newRecord ? OperationType.New : OperationType.Discard,
         operationFailureReason: undefined,
       });
+    } else if (reset) {
+      set(baseCurrencyAtom, RESET);
     }
   },
 );
