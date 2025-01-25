@@ -1,4 +1,5 @@
 import { atom } from 'jotai';
+import { atomWithReset, RESET } from 'jotai/utils';
 import { Login } from '../models/login';
 import { signIn as signApi } from '../services/authentication';
 import { OneOnly } from '../utils/object-util';
@@ -30,7 +31,7 @@ const initialValue: AuthenticationState = {
   acknowledge: false,
 };
 
-const authenticationAtom = atom<AuthenticationState>(initialValue);
+const authenticationAtom = atomWithReset<AuthenticationState>(initialValue);
 
 type SignInPayload = {
   id: string;
@@ -41,6 +42,7 @@ export type AuthenticationPayload = {
   signIn: SignInPayload;
   acknowledgeSignIn: EmptyObject;
   signOut: EmptyObject;
+  reset: EmptyObject;
 };
 
 export const authentication = atom<
@@ -49,7 +51,11 @@ export const authentication = atom<
   Promise<void>
 >(
   (get) => get(authenticationAtom),
-  async (get, set, { signIn, acknowledgeSignIn, signOut }: OneOnly<AuthenticationPayload>) => {
+  async (
+    get,
+    set,
+    { signIn, acknowledgeSignIn, signOut, reset }: OneOnly<AuthenticationPayload>,
+  ) => {
     const current = get(authenticationAtom);
     const currentTime = new Date().getTime();
     if (signIn) {
@@ -70,11 +76,13 @@ export const authentication = atom<
         ...beforeState,
         operationEndTime: new Date().getTime(),
         version: beforeState.version + 1,
-        operationFailureReason: isFailed ? {
-          key: result.code,
-          type: MessageType.Error,
-          parameters: result.parameters,
-        } : undefined,
+        operationFailureReason: isFailed
+          ? {
+              key: result.code,
+              type: MessageType.Error,
+              parameters: result.parameters,
+            }
+          : undefined,
         login: isFailed ? undefined : result,
       };
       set(authenticationAtom, afterState);
@@ -99,6 +107,8 @@ export const authentication = atom<
         login: undefined,
         acknowledge: false,
       });
+    } else if (reset) {
+      set(authenticationAtom, RESET);
     }
   },
 );

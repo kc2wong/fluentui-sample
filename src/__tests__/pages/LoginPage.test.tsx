@@ -1,4 +1,4 @@
-import React, { useTransition } from 'react';
+import React from 'react';
 import { vi } from 'vitest';
 
 const t = vi.fn((key: string) => key);
@@ -141,7 +141,6 @@ describe('LoginPage', () => {
     expect(mockAtomSetter).toHaveBeenCalledTimes(2);
     expect(mockAtomSetter).toHaveBeenNthCalledWith(1, { reset: {} });
     expect(mockAtomSetter).toHaveBeenNthCalledWith(2, { reset: {} });
-
   });
 
   it('renders components with correct orders', () => {
@@ -207,7 +206,9 @@ describe('LoginPage', () => {
         expect.anything(), // Ignore the second argument which is forward-ref component
       );
     });
-    expect(mockAtomSetter).not.toHaveBeenCalledWith(expect.objectContaining({ signIn: expect.any(Object) }));
+    expect(mockAtomSetter).not.toHaveBeenCalledWith(
+      expect.objectContaining({ signIn: expect.any(Object) }),
+    );
     // translate error code to message
     expect(t).toHaveBeenCalledWith('system.error.invalid-email-address');
   });
@@ -256,7 +257,6 @@ describe('LoginPage', () => {
   });
 
   it('signIn is success', async () => {
-
     render(<LoginPage />);
     // clear invocation history
     mockAtomSetter.mockClear();
@@ -300,6 +300,58 @@ describe('LoginPage', () => {
       () => {
         expect(mockAtomSetter).toHaveBeenCalledTimes(2);
         expect(mockAtomSetter).toHaveBeenCalledWith({
+          acknowledgeSignIn: {},
+        });
+      },
+      { timeout: 1500 },
+    );
+  });
+
+  it('signIn is failed', async () => {
+    render(<LoginPage />);
+    // clear invocation history
+    mockAtomSetter.mockClear();
+
+    const emailInput = findInputByLabel('login.email')!;
+    const passwordInput = findInputByLabel('login.password')!;
+    const signInButton = findElementByText('login.signIn', HTMLButtonElement)!;
+
+    const email = 'testuser@example.com';
+    const password = 'securepassword';
+    userEvent.type(emailInput!, email);
+    userEvent.type(passwordInput!, password);
+
+    const currentTime = new Date().getTime();
+    mockAtomGetter = {
+      version: 2,
+      operationStartTime: currentTime,
+      operationEndTime: currentTime + 1,
+      operationType: OperationType.SignIn,
+      login: undefined,
+      operationFailureReason: { key: 'ACCOUNT_LOCKED', type: MessageType.Error, parameters: [] },
+      acknowledge: false,
+    };
+
+    // simulate click signIn button and wait for execution is completed
+    userEvent.click(signInButton);
+
+    await waitFor(
+      () => {
+        expect(mockAtomSetter).toHaveBeenCalledTimes(1);
+        expect(mockStopSpinner).toHaveBeenCalledTimes(1);
+        expect(mockDispatchMessage).toHaveBeenCalledTimes(1);
+        expect(mockDispatchMessage).toHaveBeenCalledWith({
+          type: MessageType.Error,
+          text: 'system.error.ACCOUNT_LOCKED',
+        });
+      },
+      { timeout: 1500 },
+    );
+
+    // acknowledgeSignIn not called
+    await waitFor(
+      () => {
+        expect(mockAtomSetter).not.toHaveBeenCalledWith({
           acknowledgeSignIn: {},
         });
       },

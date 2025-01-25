@@ -91,7 +91,6 @@ export const LoginPage = () => {
               type: MessageType.Success,
               text: constructMessage(t, 'login.success'),
             });
-            // action({ acknowledgeSignIn: {} });
             setTimeout(() => {
               action({ acknowledgeSignIn: {} });
             }, 1000);
