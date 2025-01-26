@@ -170,7 +170,6 @@ describe('LoginPage', () => {
     expect(style.margin).toEqual('40px 20px 20px 0px');
   });
 
-  it('attempts signIn with invalid values', async () => {
   it('signIn with invalid values', async () => {
     const fieldSpy = vi.spyOn(FieldModule, 'Field');
 
