@@ -6,6 +6,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: './vitest.setup.mjs'
+    setupFiles: './vitest.setup.mjs',
+    coverage: {
+      provider: 'v8', // or 'istanbul',
+      reporter: ['text', 'json', 'html'],
+    },
   },
 });
