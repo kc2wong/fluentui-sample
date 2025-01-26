@@ -38,7 +38,7 @@ type SignInPayload = {
   password: string | undefined;
 };
 
-export type AuthenticationPayload = {
+type AuthenticationPayload = {
   signIn: SignInPayload;
   acknowledgeSignIn: EmptyObject;
   signOut: EmptyObject;

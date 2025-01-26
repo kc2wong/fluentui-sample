@@ -171,6 +171,7 @@ describe('LoginPage', () => {
   });
 
   it('attempts signIn with invalid values', async () => {
+  it('signIn with invalid values', async () => {
     const fieldSpy = vi.spyOn(FieldModule, 'Field');
 
     render(<LoginPage />);
@@ -213,7 +214,7 @@ describe('LoginPage', () => {
     expect(t).toHaveBeenCalledWith('system.error.invalid-email-address');
   });
 
-  it('attempts signIn with valid values', async () => {
+  it('signIn with valid values', async () => {
     const currentTime = new Date().getTime();
     mockAtomSetter.mockImplementation(async (newState) => {
       mockAtomGetter = {
