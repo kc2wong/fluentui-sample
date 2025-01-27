@@ -215,7 +215,8 @@ describe('LoginPage', () => {
 
   it('signIn with valid values', async () => {
     const currentTime = new Date().getTime();
-    mockAtomSetter.mockImplementation(async (newState) => {
+    mockAtomSetter.mockImplementation(async () => {
+      // update state after button is clicked
       mockAtomGetter = {
         version: 1,
         operationStartTime: currentTime,
@@ -257,19 +258,12 @@ describe('LoginPage', () => {
   });
 
   it('signIn is success', async () => {
-    render(<LoginPage />);
+    const {rerender} = render(<LoginPage />);
+
     // clear invocation history
     mockAtomSetter.mockClear();
 
-    const emailInput = findInputByLabel('login.email')!;
-    const passwordInput = findInputByLabel('login.password')!;
-    const signInButton = findElementByText('login.signIn', HTMLButtonElement)!;
-
-    const email = 'testuser@example.com';
-    const password = 'securepassword';
-    userEvent.type(emailInput!, email);
-    userEvent.type(passwordInput!, password);
-
+    // re-render with new state
     const currentTime = new Date().getTime();
     mockAtomGetter = {
       version: 2,
@@ -280,12 +274,10 @@ describe('LoginPage', () => {
       acknowledge: false,
     };
 
-    // simulate click signIn button and wait for execution is completed
-    userEvent.click(signInButton);
+    rerender(<LoginPage />);
 
     await waitFor(
       () => {
-        expect(mockAtomSetter).toHaveBeenCalledTimes(1);
         expect(mockStopSpinner).toHaveBeenCalledTimes(1);
         expect(mockDispatchMessage).toHaveBeenCalledTimes(1);
         expect(mockDispatchMessage).toHaveBeenCalledWith({
@@ -298,7 +290,7 @@ describe('LoginPage', () => {
 
     await waitFor(
       () => {
-        expect(mockAtomSetter).toHaveBeenCalledTimes(2);
+        expect(mockAtomSetter).toHaveBeenCalledTimes(1);
         expect(mockAtomSetter).toHaveBeenCalledWith({
           acknowledgeSignIn: {},
         });
@@ -308,19 +300,12 @@ describe('LoginPage', () => {
   });
 
   it('signIn is failed', async () => {
-    render(<LoginPage />);
+    const {rerender} = render(<LoginPage />);
+
     // clear invocation history
     mockAtomSetter.mockClear();
 
-    const emailInput = findInputByLabel('login.email')!;
-    const passwordInput = findInputByLabel('login.password')!;
-    const signInButton = findElementByText('login.signIn', HTMLButtonElement)!;
-
-    const email = 'testuser@example.com';
-    const password = 'securepassword';
-    userEvent.type(emailInput!, email);
-    userEvent.type(passwordInput!, password);
-
+    // re-render with new state
     const currentTime = new Date().getTime();
     mockAtomGetter = {
       version: 2,
@@ -332,12 +317,10 @@ describe('LoginPage', () => {
       acknowledge: false,
     };
 
-    // simulate click signIn button and wait for execution is completed
-    userEvent.click(signInButton);
+    rerender(<LoginPage />);
 
     await waitFor(
       () => {
-        expect(mockAtomSetter).toHaveBeenCalledTimes(1);
         expect(mockStopSpinner).toHaveBeenCalledTimes(1);
         expect(mockDispatchMessage).toHaveBeenCalledTimes(1);
         expect(mockDispatchMessage).toHaveBeenCalledWith({
@@ -355,7 +338,7 @@ describe('LoginPage', () => {
           acknowledgeSignIn: {},
         });
       },
-      { timeout: 1500 },
+      { timeout: 200 },
     );
   });
 });
