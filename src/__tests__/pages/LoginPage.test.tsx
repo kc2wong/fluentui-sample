@@ -22,13 +22,14 @@ vi.mock('@fluentui/react-components', async (importOriginal) => {
 });
 
 // state will be changed in mockedSetter
-let mockAtomGetter: Record<string, any> = { version: 0 };
+const mockAuthenticationAtomSetter = vi.fn();
 const mockAtomSetter = vi.fn();
 vi.mock('jotai', async (importOriginal) => {
   const original = (await importOriginal()) as any;
   return {
     ...original,
-    useAtom: vi.fn(() => [mockAtomGetter, mockAtomSetter]),
+    useAtom: vi.fn(),
+    useSetAtom: vi.fn(() => mockAtomSetter),
   };
 });
 
@@ -71,11 +72,14 @@ import { findElementByTestId, findElementByText, findInputByLabel } from '../uti
 import userEvent from '@testing-library/user-event';
 import { OperationType } from '../../states/authentication';
 import { MessageType } from '../../models/system';
+import { useAtom } from 'jotai';
 
 describe('LoginPage', () => {
   beforeEach(() => {
     // Reset state before each test
-    mockAtomGetter = {};
+    vi.mocked(useAtom).mockImplementation(
+      () => [{ version: 0 }, mockAuthenticationAtomSetter] as any,
+    );
   });
 
   afterEach(() => {
@@ -215,16 +219,22 @@ describe('LoginPage', () => {
 
   it('signIn with valid values', async () => {
     const currentTime = new Date().getTime();
-    mockAtomSetter.mockImplementation(async () => {
+    mockAuthenticationAtomSetter.mockImplementation(async () => {
       // update state after button is clicked
-      mockAtomGetter = {
-        version: 1,
-        operationStartTime: currentTime,
-        operationEndTime: -1,
-        operationType: OperationType.SignIn,
-        login: undefined,
-        acknowledge: false,
-      };
+      vi.mocked(useAtom).mockImplementation(
+        () =>
+          [
+            {
+              version: 1,
+              operationStartTime: currentTime,
+              operationEndTime: -1,
+              operationType: OperationType.SignIn,
+              login: undefined,
+              acknowledge: false,
+            },
+            vi.fn(),
+          ] as any,
+      );
     });
 
     render(<LoginPage />);
@@ -249,31 +259,33 @@ describe('LoginPage', () => {
     userEvent.click(signInButton);
 
     await waitFor(() => {
-      expect(mockAtomSetter).toHaveBeenCalledTimes(1);
+      expect(mockAuthenticationAtomSetter).toHaveBeenCalledTimes(1);
     });
-    expect(mockAtomSetter).toHaveBeenCalledWith({
+    expect(mockAuthenticationAtomSetter).toHaveBeenCalledWith({
       signIn: { id: email, password: password },
     });
     expect(mockShowSpinner).toHaveBeenCalledTimes(1);
   });
 
   it('signIn is success', async () => {
-    const {rerender} = render(<LoginPage />);
-
-    // clear invocation history
-    mockAtomSetter.mockClear();
+    const { rerender } = render(<LoginPage />);
 
     // re-render with new state
     const currentTime = new Date().getTime();
-    mockAtomGetter = {
-      version: 2,
-      operationStartTime: currentTime,
-      operationEndTime: currentTime + 1,
-      operationType: OperationType.SignIn,
-      login: {},
-      acknowledge: false,
-    };
-
+    vi.mocked(useAtom).mockImplementation(
+      () =>
+        [
+          {
+            version: 2,
+            operationStartTime: currentTime,
+            operationEndTime: currentTime + 1,
+            operationType: OperationType.SignIn,
+            login: {},
+            acknowledge: false,
+          },
+          mockAuthenticationAtomSetter,
+        ] as any,
+    );
     rerender(<LoginPage />);
 
     await waitFor(
@@ -290,8 +302,8 @@ describe('LoginPage', () => {
 
     await waitFor(
       () => {
-        expect(mockAtomSetter).toHaveBeenCalledTimes(1);
-        expect(mockAtomSetter).toHaveBeenCalledWith({
+        expect(mockAuthenticationAtomSetter).toHaveBeenCalledTimes(1);
+        expect(mockAuthenticationAtomSetter).toHaveBeenCalledWith({
           acknowledgeSignIn: {},
         });
       },
@@ -300,22 +312,29 @@ describe('LoginPage', () => {
   });
 
   it('signIn is failed', async () => {
-    const {rerender} = render(<LoginPage />);
-
-    // clear invocation history
-    mockAtomSetter.mockClear();
+    const { rerender } = render(<LoginPage />);
 
     // re-render with new state
     const currentTime = new Date().getTime();
-    mockAtomGetter = {
-      version: 2,
-      operationStartTime: currentTime,
-      operationEndTime: currentTime + 1,
-      operationType: OperationType.SignIn,
-      login: undefined,
-      operationFailureReason: { key: 'ACCOUNT_LOCKED', type: MessageType.Error, parameters: [] },
-      acknowledge: false,
-    };
+    vi.mocked(useAtom).mockImplementation(
+      () =>
+        [
+          {
+            version: 2,
+            operationStartTime: currentTime,
+            operationEndTime: currentTime + 1,
+            operationType: OperationType.SignIn,
+            login: undefined,
+            operationFailureReason: {
+              key: 'ACCOUNT_LOCKED',
+              type: MessageType.Error,
+              parameters: [],
+            },
+            acknowledge: false,
+          },
+          mockAuthenticationAtomSetter,
+        ] as any,
+    );
 
     rerender(<LoginPage />);
 
@@ -334,7 +353,7 @@ describe('LoginPage', () => {
     // acknowledgeSignIn not called
     await waitFor(
       () => {
-        expect(mockAtomSetter).not.toHaveBeenCalledWith({
+        expect(mockAuthenticationAtomSetter).not.toHaveBeenCalledWith({
           acknowledgeSignIn: {},
         });
       },

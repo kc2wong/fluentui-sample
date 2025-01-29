@@ -13,7 +13,7 @@ import languageEn from './i18n/en/language.json';
 import languageZhHant from './i18n/zhHant/language.json';
 import i18next from 'i18next';
 import { initReactI18next, useTranslation } from 'react-i18next';
-import { authentication } from './states/authentication';
+import { authenticationAtom } from './states/authentication';
 import { useAtomValue } from 'jotai';
 import { useTheme } from './contexts/Theme';
 import { CurrencyMaintenancePage } from './pages/currency/CurrencyMaintenancePage';
@@ -77,7 +77,7 @@ export const Main: React.FC = () => {
   const { pageElementNavigation } = usePageElementNavigation();
   const { isDirty, resetDirty } = useFormDirty();
   const { showDiscardChangeDialog } = useDialog();
-  const login = useAtomValue(authentication).login;
+  const login = useAtomValue(authenticationAtom).login;
 
   const findMenuItemById = (menuItem: MenuItem, id: string): MenuItem | undefined => {
     if (menuItem.id === id) {

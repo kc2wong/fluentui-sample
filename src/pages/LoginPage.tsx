@@ -2,8 +2,8 @@ import { Body1, Button, Input, makeStyles, tokens } from '@fluentui/react-compon
 import { PersonPasskeyRegular } from '@fluentui/react-icons';
 import { Card, CardHeader, CardPreview } from '@fluentui/react-components';
 import { ButtonPanel } from '../components/ButtonPanel';
-import { authentication, OperationType } from '../states/authentication';
-import { useAtom } from 'jotai';
+import { authenticationAtom, OperationType } from '../states/authentication';
+import { useAtom, useSetAtom } from 'jotai';
 import { useEffect } from 'react';
 import { useMessage } from '../contexts/Message';
 import { useTranslation } from 'react-i18next';
@@ -61,9 +61,9 @@ export const LoginPage = () => {
 
   const { t } = useTranslation();
 
-  const [authenticationState, action] = useAtom(authentication);
-  const [, entitleSiteAction] = useAtom(entitledSiteAtom);
-  const [, currencyAction] = useAtom(currencyAtom);
+  const [authenticationState, action] = useAtom(authenticationAtom);
+  const entitleSiteAction = useSetAtom(entitledSiteAtom);
+  const currencyAction = useSetAtom(currencyAtom);
 
   const {
     register,

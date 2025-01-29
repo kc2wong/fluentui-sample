@@ -11,7 +11,7 @@ import { ThemedAppProvider } from './contexts/Theme';
 import { MessageProvider } from './contexts/Message';
 import { DialogProvider } from './contexts/Dialog';
 import { PageElementNavigationProvider } from './contexts/PageElementNavigation';
-import { authentication } from './states/authentication';
+import { authenticationAtom } from './states/authentication';
 import { FormDirtyProvider } from './contexts/FormDirty';
 import { traceManager } from './utils/trace-manager';
 
@@ -26,7 +26,7 @@ i18next.use(initReactI18next).init({
 });
 
 const App: React.FC = () => {
-  const authenticationState = useAtomValue(authentication);
+  const authenticationState = useAtomValue(authenticationAtom);
 
   useEffect(() => {
     if (authenticationState.login === undefined) {
@@ -39,6 +39,7 @@ const App: React.FC = () => {
       <PageElementNavigationProvider>
         <MessageProvider>
           <DialogProvider>
+            {/* introduce some delay before showing Main  */}
             {authenticationState.login && authenticationState.acknowledge ? (
               <FormDirtyProvider>
                 <Main />

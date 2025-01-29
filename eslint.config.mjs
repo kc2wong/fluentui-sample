@@ -6,7 +6,7 @@ import tsParser from '@typescript-eslint/parser';
 export default [
   {
     files: ['**/*.{ts,tsx}'],
-    ignores: ['src/index.tsx', 'src/__tests__/**/*'],
+    ignores: ['src/index.tsx', 'src/__tests__/**/*', 'coverage/**/*'],
     plugins: {
       '@typescript-eslint': typescriptEslint,
       'check-file': checkFile,

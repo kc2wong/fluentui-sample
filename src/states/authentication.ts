@@ -31,7 +31,7 @@ const initialValue: AuthenticationState = {
   acknowledge: false,
 };
 
-const authenticationAtom = atomWithReset<AuthenticationState>(initialValue);
+const authenticationBaseAtom = atomWithReset<AuthenticationState>(initialValue);
 
 type SignInPayload = {
   id: string;
@@ -45,18 +45,18 @@ type AuthenticationPayload = {
   reset: EmptyObject;
 };
 
-export const authentication = atom<
+export const authenticationAtom = atom<
   AuthenticationState,
   [OneOnly<AuthenticationPayload>],
   Promise<void>
 >(
-  (get) => get(authenticationAtom),
+  (get) => get(authenticationBaseAtom),
   async (
     get,
     set,
     { signIn, acknowledgeSignIn, signOut, reset }: OneOnly<AuthenticationPayload>,
   ) => {
-    const current = get(authenticationAtom);
+    const current = get(authenticationBaseAtom);
     const currentTime = new Date().getTime();
     if (signIn) {
       const beforeState: AuthenticationState = {
@@ -68,7 +68,7 @@ export const authentication = atom<
         login: undefined,
         acknowledge: false,
       };
-      set(authenticationAtom, beforeState);
+      set(authenticationBaseAtom, beforeState);
       const result = await signApi(signIn.id, signIn.password);
       const isFailed = isError(result);
 
@@ -85,30 +85,34 @@ export const authentication = atom<
           : undefined,
         login: isFailed ? undefined : result,
       };
-      set(authenticationAtom, afterState);
+      set(authenticationBaseAtom, afterState);
     } else if (acknowledgeSignIn) {
-      set(authenticationAtom, {
-        ...current,
-        operationType: OperationType.AcknowledgeSignIn,
-        operationStartTime: currentTime - 1,
-        operationEndTime: currentTime,
-        version: current.version + 1,
-        operationFailureReason: undefined,
-        acknowledge: true,
-      });
+      if (current.login && !current.acknowledge) {
+        set(authenticationBaseAtom, {
+          ...current,
+          operationType: OperationType.AcknowledgeSignIn,
+          operationStartTime: currentTime - 1,
+          operationEndTime: currentTime,
+          version: current.version + 1,
+          operationFailureReason: undefined,
+          acknowledge: true,
+        });  
+      }
     } else if (signOut) {
-      set(authenticationAtom, {
-        ...current,
-        operationType: OperationType.SignOut,
-        operationStartTime: currentTime - 1,
-        operationEndTime: currentTime,
-        version: current.version + 1,
-        operationFailureReason: undefined,
-        login: undefined,
-        acknowledge: false,
-      });
+      if (current.login) {
+        set(authenticationBaseAtom, {
+          ...current,
+          operationType: OperationType.SignOut,
+          operationStartTime: currentTime - 1,
+          operationEndTime: currentTime,
+          version: current.version + 1,
+          operationFailureReason: undefined,
+          login: undefined,
+          acknowledge: false,
+        });  
+      }
     } else if (reset) {
-      set(authenticationAtom, RESET);
+      set(authenticationBaseAtom, RESET);
     }
   },
 );

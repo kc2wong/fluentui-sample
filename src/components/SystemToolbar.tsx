@@ -45,7 +45,7 @@ import { useNotification } from '../states/base-state';
 import { useDialog } from '../contexts/Dialog';
 import { useFormDirty } from '../contexts/FormDirty';
 import { Login } from '../models/login';
-import { authentication } from '../states/authentication';
+import { authenticationAtom } from '../states/authentication';
 import { paymentAtom } from '../states/payment';
 import { RESET } from 'jotai/utils';
 
@@ -269,7 +269,7 @@ interface UserProfileProps {
 
 export const UserProfile: React.FC<UserProfileProps> = ({ login, onButtonClick }) => {
   const styles = useStyles();
-  const action = useSetAtom(authentication);
+  const action = useSetAtom(authenticationAtom);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { showConfirmationDialog } = useDialog();
@@ -385,7 +385,7 @@ export const SystemToolbar: React.FC<SystemToolbarProps> = ({
   const modeOperator = t('system.mode.value.operator');
 
   const [isSiteMenuOpen, setIsSiteMenuOpen] = useState(false);
-  const login = useAtomValue(authentication).login;
+  const login = useAtomValue(authenticationAtom).login;
 
   return (
     <div className={styles.item}>
