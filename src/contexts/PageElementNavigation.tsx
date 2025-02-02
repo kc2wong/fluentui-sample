@@ -130,7 +130,9 @@ export const useAppendBreadcrumb = (
   action?: () => void,
 ) => {
   const paramKeyArray = useMemo(() => {
-    if (!paramKey) return emptyArray;
+    if (!paramKey) {
+      return emptyArray;
+    }
     return Array.isArray(paramKey) ? paramKey : [paramKey];
   }, [paramKey]);
 

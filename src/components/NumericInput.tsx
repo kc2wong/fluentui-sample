@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, useRef } from 'react';
+import React, { useState, forwardRef } from 'react';
 import { Input, InputProps } from '@fluentui/react-components';
 import { formatNumber } from '../utils/string-util';
 
@@ -14,12 +14,24 @@ type NumericInputProps = Omit<InputProps, 'type' | 'value' | 'onChange'> & {
 };
 
 export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(
-  ({ appearance, value, decimalPlaces, onFocus, onBlur, onChange, readOnly, ...others }, ref) => {
-    const [isFocused, setIsFocused] = useState(false);
-    const isToAppendDecimal = useRef(false);
+  (
+    { appearance, value, decimalPlaces = 2, onFocus, onBlur, onChange, readOnly, ...others },
+    ref,
+  ) => {
+    const [, setIsFocused] = useState(false);
+    const [formattedValue, setFormattedValue] = useState(
+      value === undefined ? '' : formatNumber(value, decimalPlaces),
+    );
 
     const handleInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
       const { key } = e;
+      const input = e.target as HTMLInputElement;
+      const currentValue = input.value;
+
+      // Get selected text
+      const selectionStart = input.selectionStart ?? 0;
+      const selectionEnd = input.selectionEnd ?? 0;
+      const selectedText = currentValue.substring(selectionStart, selectionEnd);
 
       // Allow navigation and control keys
       if (
@@ -32,17 +44,20 @@ export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(
         return;
       }
 
-      // Allow only digits and a single decimal point
-      const currentValue = (e.target as HTMLInputElement).value;
-      if (!/^\d$/.test(key) && key !== '.') {
+      // Prevent typing '.' if decimalPlaces === 0
+      if (decimalPlaces === 0 && key === '.') {
         e.preventDefault();
-      } else if (key === '.' && currentValue.includes('.')) {
-        e.preventDefault();
+        return;
       }
 
-      // Prevent entering additional decimal points
-      if (key === '.' && (decimalPlaces === 0 || currentValue.includes('.'))) {
+      // Allow only digits and a single decimal point
+      if (!/^\d$/.test(key) && key !== '.') {
         e.preventDefault();
+      } else if (key === '.') {
+        // Allow typing a period if replacing a selected text that contains a period
+        if (currentValue.includes('.') && !selectedText.includes('.')) {
+          e.preventDefault();
+        }
       }
 
       // Prevent exceeding allowed decimal places
@@ -61,44 +76,37 @@ export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(
         appearance={readOnly ? 'underline' : appearance}
         onBlur={(ev) => {
           setIsFocused(false);
+          setFormattedValue(value === undefined ? '' : formatNumber(value, decimalPlaces)); // Reset to formatted
           if (onBlur) {
             onBlur(ev);
           }
         }}
         onChange={(ev, data) => {
-          const value = data.value;
-          const isEndWithDecimal = value.endsWith('.');
-          isToAppendDecimal.current = isEndWithDecimal;
-          if (onChange) {
-            if (isEndWithDecimal) {
-              onChange(ev, {
-                value: value.length === 1 ? 0 : parseFloat(value.substring(0, value.length - 1)),
-              });
-            } else {
-              onChange(ev, {
-                value: value.length === 0 ? undefined : parseFloat(value),
-              });
-            }
+          let newValue = data.value;
+          const isEndWithDecimal = newValue.endsWith('.');
+
+          if (isEndWithDecimal) {
+            setFormattedValue(newValue); // Preserve trailing decimal
+            onChange?.(ev, {
+              value: newValue.length === 1 ? 0 : parseFloat(newValue.slice(0, -1)),
+            });
+          } else {
+            setFormattedValue(newValue || '');
+            onChange?.(ev, { value: newValue.length === 0 ? undefined : parseFloat(newValue) });
           }
         }}
         onFocus={(ev) => {
           setIsFocused(true);
+          setFormattedValue(value === undefined ? '' : value.toString()); // Show raw value
           if (onFocus) {
             onFocus(ev);
           }
         }}
         onKeyDown={handleInput}
-        value={
-          value === undefined
-            ? ''
-            : isFocused && readOnly !== true
-              ? `${value.toString()}${isToAppendDecimal.current ? '.' : ''}`
-              : formatNumber(value, decimalPlaces)
-        }
+        value={formattedValue}
       />
     );
   },
 );
 
-// Set the display name
 NumericInput.displayName = 'NumericInput';

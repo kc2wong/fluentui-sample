@@ -26,7 +26,9 @@ const findPath = (
   if (tree.children) {
     for (const child of tree.children) {
       const result = findPath(child, targetId, currentPath);
-      if (result) return result;
+      if (result) {
+        return result;
+      }
     }
   }
   return undefined;

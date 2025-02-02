@@ -19,7 +19,9 @@ export const snakeCaseToCamelCase = (input: string) => {
 
 // Format number with thousand separator
 export const formatNumber = (value?: number, numDecimal?: number): string => {
-  if (value === undefined || value === null) return '';
+  if (value === undefined || value === null) {
+    return '';
+  }
 
   const num = value.toString();
   const [integer, decimal = ''] = num.split('.');
@@ -46,7 +48,11 @@ export const constructMessage = (t: TFunction, key: string, param?: string[]): s
       );
 };
 
-export const constructErrorMessage = (t: TFunction, errorCode: string, errorParam?: string[]): string => {
+export const constructErrorMessage = (
+  t: TFunction,
+  errorCode: string,
+  errorParam?: string[],
+): string => {
   return constructMessage(t, `system.error.${errorCode}`, errorParam);
 };
 
