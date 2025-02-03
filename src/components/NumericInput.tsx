@@ -82,17 +82,21 @@ export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(
           }
         }}
         onChange={(ev, data) => {
-          let newValue = data.value;
-          const isEndWithDecimal = newValue.endsWith('.');
+          const newStrValue = data.value;
+          const isEndWithDecimal = newStrValue.endsWith('.');
 
-          if (isEndWithDecimal) {
-            setFormattedValue(newValue); // Preserve trailing decimal
+          setFormattedValue(newStrValue || '');
+          const newValue = isEndWithDecimal
+            ? newStrValue.length === 1
+              ? 0 // "." means 0
+              : parseFloat(newStrValue.slice(0, -1))    // remove trailing period
+            : newStrValue.length === 0
+              ? undefined // empty string
+              : parseFloat(newStrValue);
+          if (newValue != value) {
             onChange?.(ev, {
-              value: newValue.length === 1 ? 0 : parseFloat(newValue.slice(0, -1)),
+              value: newValue,
             });
-          } else {
-            setFormattedValue(newValue || '');
-            onChange?.(ev, { value: newValue.length === 0 ? undefined : parseFloat(newValue) });
           }
         }}
         onFocus={(ev) => {

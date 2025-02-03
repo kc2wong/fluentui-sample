@@ -163,6 +163,7 @@ describe('NumericInput', () => {
       }),
       expect.anything(),
     );
+    expect(onChangeMock).not.toHaveBeenCalled();
 
     // type period again (two consecutive periods)
     userEvent.type(input, '.');
