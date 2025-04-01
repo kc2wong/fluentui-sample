@@ -17,6 +17,7 @@ import {
   TableColumnDefinition,
   Combobox,
   TableColumnId,
+  Label,
 } from '@fluentui/react-components';
 import {
   AddCircleRegular,
@@ -368,10 +369,10 @@ export const PaymentSearchPage: React.FC<PaymentSearchPageProps> = (
                 {columns.map((column) => (
                   <TableHeaderCell key={column.columnId}>
                     <TableCellLayout appearance="primary">
-                      <span style={{ color: tokens.colorBrandForeground1 }}>
-                        {columnHeader[column.columnId] ??
+                    <Label><span style={{ color: tokens.colorBrandForeground1 }}>
+                      {columnHeader[column.columnId] ??
                           t(`paymentMaintenance.${column.columnId}`)}
-                      </span>
+                      </span></Label>
                     </TableCellLayout>
                   </TableHeaderCell>
                 ))}
@@ -386,20 +387,20 @@ export const PaymentSearchPage: React.FC<PaymentSearchPageProps> = (
                   onClick={onClick}
                 >
                   <TableSelectionCell checked={selected} type="radio" />
-                  <TableCell>{item.site}</TableCell>
-                  <TableCell>{item.instructionId}</TableCell>
-                  <TableCell>{item.account}</TableCell>
+                  <TableCell><Label>{item.site}</Label></TableCell>
+                  <TableCell><Label>{item.instructionId}</Label></TableCell>
+                  <TableCell><Label>{item.account}</Label></TableCell>
                   <TableCell>
                     <PaymentStatusLabel paymentStatus={item.status} />
                   </TableCell>
-                  <TableCell>{formatDateDDMMYYYY(item.executeDate)}</TableCell>
-                  <TableCell>
-                    {t(`paymentMaintenance.direction.value.${item.direction.toString()}`)}
+                  <TableCell><Label>{formatDateDDMMYYYY(item.executeDate)}</Label></TableCell>
+                  <TableCell><Label>
+                    {t(`paymentMaintenance.direction.value.${item.direction.toString()}`)}</Label>
                   </TableCell>
-                  <TableCell>{item.creditCcy}</TableCell>
-                  <TableCell>{formatNumber(item.creditAmount)}</TableCell>
-                  <TableCell>{item.debitCcy}</TableCell>
-                  <TableCell>{formatNumber(item.debitAmount)}</TableCell>
+                  <TableCell><Label>{item.creditCcy}</Label></TableCell>
+                  <TableCell><Label>{formatNumber(item.creditAmount)}</Label></TableCell>
+                  <TableCell><Label>{item.debitCcy}</Label></TableCell>
+                  <TableCell><Label>{formatNumber(item.debitAmount)}</Label></TableCell>
                 </TableRow>
               ))}
             </TableBody>

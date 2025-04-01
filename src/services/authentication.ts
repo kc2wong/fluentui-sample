@@ -2,6 +2,7 @@ import { jwtDecode } from 'jwt-decode';
 import { Login, MenuItem, User } from '../models/login';
 import { post } from '../utils/http-util';
 import { Error, isError } from '../models/system';
+import { API_ROOT_URL } from './env';
 
 type SignInResp = {
   jwt: string;
@@ -9,7 +10,7 @@ type SignInResp = {
 };
 
 export const signIn = async (id: string, _password: string | undefined): Promise<Login | Error> => {
-  const resp = await post<SignInResp>('https://demo1029256.mockable.io/users', { id: id });
+  const resp = await post<SignInResp>(`${API_ROOT_URL}/users`, { id: id });
   if (isError(resp)) {
     return resp;
   } else {

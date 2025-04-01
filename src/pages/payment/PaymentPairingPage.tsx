@@ -22,6 +22,7 @@ import {
   createTableColumn,
   TableColumnDefinition,
   useTableFeatures,
+  Label,
 } from '@fluentui/react-components';
 import { ArrowTurnUpLeftRegular, CheckmarkRegular, DismissRegular } from '@fluentui/react-icons';
 import { useTranslation } from 'react-i18next';
@@ -212,9 +213,11 @@ const MatchingTab: React.FC<MatchingTabProps> = ({ control, setValue, site, ccyL
                 {columns.map((column) => (
                   <TableHeaderCell key={column.columnId}>
                     <TableCellLayout appearance="primary">
-                      <span style={{ color: tokens.colorBrandForeground1 }}>
-                        {t(`paymentMaintenance.${column.columnId}`)}
-                      </span>
+                      <Label>
+                        <span style={{ color: tokens.colorBrandForeground1 }}>
+                          {t(`paymentMaintenance.${column.columnId}`)}
+                        </span>
+                      </Label>
                     </TableCellLayout>
                   </TableHeaderCell>
                 ))}
@@ -229,18 +232,30 @@ const MatchingTab: React.FC<MatchingTabProps> = ({ control, setValue, site, ccyL
                   onClick={() => setValue('matchFxRef', item.fxRef)}
                 >
                   <TableSelectionCell checked={selected} type="radio" />
-                  <TableCell>{item.fxRef}</TableCell>
-                  <TableCell>{item.dealCcy}</TableCell>
                   <TableCell>
-                    {formatNumber(item.dealAmount, getCcyPrecision(ccyList, item.dealCcy))}
+                    <Label>{item.fxRef}</Label>
                   </TableCell>
-                  <TableCell>{formatDateDDMMYYYY(item.valueDate)}</TableCell>
-                  <TableCell>{item.remainingCcy}</TableCell>
                   <TableCell>
-                    {formatNumber(
-                      item.remainingAmount,
-                      getCcyPrecision(ccyList, item.remainingCcy),
-                    )}
+                    <Label>{item.dealCcy}</Label>
+                  </TableCell>
+                  <TableCell>
+                    <Label>
+                      {formatNumber(item.dealAmount, getCcyPrecision(ccyList, item.dealCcy))}
+                    </Label>
+                  </TableCell>
+                  <TableCell>
+                    <Label>{formatDateDDMMYYYY(item.valueDate)}</Label>
+                  </TableCell>
+                  <TableCell>
+                    <Label>{item.remainingCcy}</Label>
+                  </TableCell>
+                  <TableCell>
+                    <Label>
+                      {formatNumber(
+                        item.remainingAmount,
+                        getCcyPrecision(ccyList, item.remainingCcy),
+                      )}
+                    </Label>
                   </TableCell>
                 </TableRow>
               ))}
@@ -365,7 +380,10 @@ export const PaymentPairingPage: React.FC<PaymentDetailPageProps> = ({
   useNotification(paymentState, {
     operationStart: () => {},
     operationComplete: (type, result) => {
-      if (type === OperationType.SubmitPayment && result.operationFailureReason?.type !== MessageType.Error) {
+      if (
+        type === OperationType.SubmitPayment &&
+        result.operationFailureReason?.type !== MessageType.Error
+      ) {
         reset();
         resetDirty();
         dispatchMessage({

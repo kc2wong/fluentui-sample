@@ -76,12 +76,14 @@
   "login": {
     "greeting": "歡迎使用",
     "email": "電郵",
+    "emailHint": "輸入任何電郵地址",
     "password": "密碼",
+    "passwordHint": "輸入任何字符",
     "signIn": "登入",
     "success": "登入成功"
   },
   "userProfile": {
-    "doYouWantToSignOut": "確定放棄變更再登出嗎",
+    "doYouWantToSignOut": "確定放棄變更並登出嗎",
     "lastLogin": "上次登入",
     "name": "名稱",
     "signOut": "登出"

@@ -18,10 +18,13 @@ export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(
     { appearance, value, decimalPlaces = 2, onFocus, onBlur, onChange, readOnly, ...others },
     ref,
   ) => {
-    const [, setIsFocused] = useState(false);
-    const [formattedValue, setFormattedValue] = useState(
-      value === undefined ? '' : formatNumber(value, decimalPlaces),
-    );
+    const [isFocused, setIsFocused] = useState(false);
+    const [formattedValue, setFormattedValue] = useState('');
+
+    const newFormattedValue = formatNumber(value, decimalPlaces);
+    if (!isFocused && newFormattedValue !== formattedValue) {
+      setFormattedValue(newFormattedValue);
+    }
 
     const handleInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
       const { key } = e;
@@ -33,16 +36,39 @@ export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(
       const selectionEnd = input.selectionEnd ?? 0;
       const selectedText = currentValue.substring(selectionStart, selectionEnd);
 
-      // Allow navigation and control keys
-      if (
+      // Allow navigation
+      if (key === 'Tab') {
+        return;
+      }
+
+      if (readOnly) {
+        e.preventDefault();
+        return;
+      } else if (
         key === 'Backspace' ||
         key === 'Delete' ||
         key === 'ArrowLeft' ||
         key === 'ArrowRight' ||
         key === 'Tab'
       ) {
+        // Allow navigation and control keys
         return;
       }
+      // if (readOnly && key !== 'Tab') {
+      //   e.preventDefault();
+      //   return;
+      // }
+
+      // // Allow navigation and control keys
+      // if (
+      //   key === 'Backspace' ||
+      //   key === 'Delete' ||
+      //   key === 'ArrowLeft' ||
+      //   key === 'ArrowRight' ||
+      //   key === 'Tab'
+      // ) {
+      //   return;
+      // }
 
       // Prevent typing '.' if decimalPlaces === 0
       if (decimalPlaces === 0 && key === '.') {
@@ -89,7 +115,7 @@ export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(
           const newValue = isEndWithDecimal
             ? newStrValue.length === 1
               ? 0 // "." means 0
-              : parseFloat(newStrValue.slice(0, -1))    // remove trailing period
+              : parseFloat(newStrValue.slice(0, -1)) // remove trailing period
             : newStrValue.length === 0
               ? undefined // empty string
               : parseFloat(newStrValue);
@@ -101,7 +127,9 @@ export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(
         }}
         onFocus={(ev) => {
           setIsFocused(true);
-          setFormattedValue(value === undefined ? '' : value.toString()); // Show raw value
+          if (!readOnly) {
+            setFormattedValue(value === undefined ? '' : value.toString()); // Show raw value
+          }
           if (onFocus) {
             onFocus(ev);
           }

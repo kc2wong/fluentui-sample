@@ -1,28 +1,29 @@
 import { FunctionGroup, FunctionGroupBase, FunctionTree } from '../models/function-entitlement';
 import { Error } from '../models/system';
 import { get, post, put } from '../utils/http-util';
+import { API_ROOT_URL } from './env';
 
 export const searchFunctionTree = async (): Promise<FunctionTree[] | Error> => {
-  const url = 'https://demo1029256.mockable.io/functions';
+  const url = `${API_ROOT_URL}/functions`;
   return await get<FunctionTree[]>(url);
 };
 
 export const searchFunctionGroup = async (): Promise<FunctionGroup[] | Error> => {
-  const url = 'https://demo1029256.mockable.io/functiongroups';
+  const url = `${API_ROOT_URL}/functiongroups`;
   return await get<FunctionGroup[]>(url);
 };
 
 export const addFunctionGroup = async (
   functionGroup: FunctionGroupBase,
 ): Promise<FunctionGroup | Error> => {
-  const url = 'https://demo1029256.mockable.io/functiongroups';
+  const url = `${API_ROOT_URL}/functiongroups`;
   return await post<FunctionGroup, FunctionGroupBase>(url, functionGroup);
 };
 
 export const updateFunctionGroup = async (
   functionGroup: FunctionGroup,
 ): Promise<FunctionGroup | Error> => {
-  const url = `https://demo1029256.mockable.io/functiongroup/${functionGroup.code}`;
+  const url = `${API_ROOT_URL}/functiongroup/${functionGroup.code}`;
   return await put<FunctionGroup, FunctionGroup>(url, functionGroup);
 };
 

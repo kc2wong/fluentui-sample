@@ -76,7 +76,9 @@
   "login": {
     "greeting": "Welcome to",
     "email": "Email",
+    "emailHint": "Enter any valid email address",
     "password": "Password",
+    "passwordHint": "Enter any value",
     "signIn": "Sign In",
     "success": "Login success"
   },
@@ -107,6 +109,7 @@
   },
   "paymentMaintenance": {
     "account": "Account",
+    "accountHint": "Valid account code is PK1999 or GJ71WHP",
     "action": "Action",
     "amount": "Amount",
     "code": "Code",

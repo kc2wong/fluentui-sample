@@ -669,6 +669,7 @@ export const PaymentDetailEditPage: React.FC<PaymentDetailPageProps> = ({
               <Field
                 infoMessage={getAccountName(paymentState.account, siteValue)}
                 label={t('paymentMaintenance.account')}
+                labelHint={t('paymentMaintenance.accountHint')}
                 required
                 validationMessage={errors?.account?.message}
               >

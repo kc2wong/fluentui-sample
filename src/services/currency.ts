@@ -1,19 +1,20 @@
 import { Currency, CurrencyBase } from '../models/currency';
 import { Error } from '../models/system';
 import { get, post, put } from '../utils/http-util';
+import { API_ROOT_URL } from './env';
 
 export const searchCurrency = async (): Promise<Currency[] | Error> => {
-  const url = 'https://demo1029256.mockable.io/currencies';
+  const url = `${API_ROOT_URL}/currencies`;
   return await get<Currency[]>(url);
 };
 
 export const addCurrency = async (currency: CurrencyBase): Promise<Currency | Error> => {
-  const url = 'https://demo1029256.mockable.io/currencies';
+  const url = `${API_ROOT_URL}/currencies`;
   return await post<Currency, CurrencyBase>(url, currency);
 };
 
 export const updateCurrency = async (currency: Currency): Promise<Currency | Error> => {
-  const url = `https://demo1029256.mockable.io/currencies/${currency.code}`;
+  const url = `${API_ROOT_URL}/currencies/${currency.code}`;
   return await put<Currency, Currency>(url, currency);
 };
 

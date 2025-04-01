@@ -1,13 +1,14 @@
 import { Account } from '../models/account';
 import { Error, NotFound } from '../models/system';
 import { get } from '../utils/http-util';
+import { API_ROOT_URL } from './env';
 
 export const searchAccount = async (
   _site?: string[],
   _accountCode?: string,
   _accountName?: string,
 ): Promise<Account[] | Error> => {
-  const url = 'https://demo1029256.mockable.io/accounts';
+  const url = `${API_ROOT_URL}/accounts`;
   return await get<Account[]>(url);
 };
 

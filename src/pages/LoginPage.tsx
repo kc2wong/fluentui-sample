@@ -136,6 +136,7 @@ export const LoginPage = () => {
             <div className={styles.form}>
               <Field
                 label={t('login.email')}
+                labelHint={t('login.emailHint')}
                 required
                 validationMessage={getErrorMessage(errors.email?.message)}
               >
@@ -143,6 +144,7 @@ export const LoginPage = () => {
               </Field>
               <Field
                 label={t('login.password')}
+                labelHint={t('login.passwordHint')}
                 required
                 validationMessage={getErrorMessage(errors.password?.message)}
               >

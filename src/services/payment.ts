@@ -10,7 +10,7 @@ type PaymentEntity = Omit<Payment, 'executeDate' | 'memo'> & {
 };
 
 export const searchPayment = async (site?: string[]): Promise<Payment[] | Error> => {
-  const url = 'https://demo1029256.mockable.io/payments';
+  const url = 'http://demo1029256.mockable.io/payments';
   const resp = await get<PaymentEntity[]>(url);
   if (isError(resp)) {
     return resp;

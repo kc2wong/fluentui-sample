@@ -2,6 +2,7 @@ import {
   Caption1,
   FieldProps as FlientUiFieldProps,
   Field as FluentUiField,
+  InfoLabel,
   Label,
   makeStyles,
   Text,
@@ -37,11 +38,11 @@ const useStyles = makeStyles({
 });
 
 export type FieldProps = Omit<FlientUiFieldProps, 'children'> & {
-  // children: ReactNode;
   children: ReactElement;
   horizontal?: boolean;
   infoMessage?: string;
   label: string;
+  labelHint?: string;
   colSpan?: number;
   style?: CSSProperties;
   validationMessage?: string;
@@ -51,6 +52,7 @@ export const Field: React.FC<FieldProps> = ({
   children,
   horizontal,
   label,
+  labelHint,
   colSpan,
   validationMessage,
   infoMessage,
@@ -87,13 +89,25 @@ export const Field: React.FC<FieldProps> = ({
     const id = children.props.id;
     const generatedId = id ?? useId();
 
+    const labelComponent = labelHint ? (
+      <InfoLabel
+        htmlFor={generatedId}
+        info={<>{labelHint} </>}
+        infoButton={{ tabIndex: -1 }}
+        required={others.required}
+      >
+        {label}
+      </InfoLabel>
+    ) : (
+      <Label htmlFor={generatedId} required={others.required}>
+        {label}
+      </Label>
+    );
     return (
       <div className={styles.column} style={mergedStyle}>
         <div className={styles.row}>
           {/* First Row: Label and Error Message */}
-          <Label htmlFor={generatedId} required={others.required}>
-            {label}
-          </Label>
+          {labelComponent}
           {validationMessage && (
             <div className={styles.errorMessageCell}>
               <ErrorCircleFilled className={styles.errorIcon} />
